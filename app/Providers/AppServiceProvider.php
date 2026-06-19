@@ -42,11 +42,6 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // Fonction pour vider le cache après modification
-        if (!function_exists('clear_settings_cache')) {
-            function clear_settings_cache(): void
-            {
-                Cache::forget('settings_cache');
-            }
-        }
+        
     }
 }
