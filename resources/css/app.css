@@ -1,0 +1,194 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    /* ===== COULEURS ELODJI ===== */
+    --color-rouge:          #CC0000;
+    --color-rouge-dark:     #910000;
+    --color-blanc:          #FFFFFF;
+    --color-noir:           #000000;
+    --color-bg-hero:        #F7D6D3;
+    --color-footer:         #3D3D3D;
+    --color-gris-clair:     #F9F9F9;
+
+    /* ===== POLICES ===== */
+    --font-titre:    'Eras Medium ITC', 'Era', serif;
+    --font-contenu:  'Calibri', 'Calibris', sans-serif;
+    --font-poppins:  'Poppins', sans-serif;
+    --font-agence:   'Agency FB', 'Arial Narrow', sans-serif;
+}
+
+* {
+    font-family: var(--font-poppins);
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+*:focus {
+    outline: none;
+    box-shadow: none !important;
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-titre);
+}
+
+p, .contenu-long {
+    font-family: var(--font-contenu);
+}
+
+.font-agence {
+    font-family: var(--font-agence);
+}
+
+/* ===== STYLES GLOBAUX ===== */
+body {
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1a1a1a;
+    background-color: var(--color-blanc);
+}
+
+/* Textes minimum 13px pour le corps, 11px pour annotations */
+body, p, span, li {
+    font-size: 13px;
+    min-font-size: 13px;
+}
+
+small, .annotation {
+    font-size: 11px;
+}
+
+/* ===== BOUTONS PRINCIPAUX ===== */
+.btn-primary {
+    background: linear-gradient(135deg, var(--color-rouge), var(--color-rouge-dark));
+    color: var(--color-blanc);
+    border: none;
+    border-radius: 40px;
+    padding: 12px 28px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(204, 0, 0, 0.35);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* ===== CARTES ===== */
+.card {
+    background: var(--color-blanc);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+    transition: all 0.25s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* ===== IMAGES ===== */
+img {
+    object-fit: cover;
+    max-width: 100%;
+    height: auto;
+}
+
+/* ===== LIENS ===== */
+a {
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+a:hover {
+    color: var(--color-rouge);
+}
+
+/* ===== SECTIONS ===== */
+.section {
+    padding: 80px 0;
+}
+
+.section-alt {
+    background: var(--color-gris-clair);
+}
+
+/* ===== TRANSITIONS ===== */
+.transition-smooth {
+    transition: all 0.25s ease;
+}
+
+/* ===== SUPPRIMER ARTÉFACTS NAVIGATEUR ===== */
+button, a, input, select, textarea {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:focus, a:focus, input:focus, select:focus, textarea:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* ===== CHECKBOX & ACCENT COLOR ===== */
+input[type="checkbox"] {
+    accent-color: var(--color-rouge);
+}
+
+/* ===== INPUTS ===== */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="search"],
+textarea,
+select {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    border: 1px solid #E4E4E4;
+    border-radius: 12px;
+    padding: 14px 16px;
+    transition: all 0.25s ease;
+    background: var(--color-blanc);
+    color: #1a1a1a;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="tel"]:focus,
+input[type="search"]:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--color-rouge);
+    box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.1);
+}
+
+input::placeholder {
+    color: #999;
+}
+
+/* ===== LABELS ===== */
+label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1a1a1a;
+}

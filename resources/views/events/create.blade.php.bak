@@ -1,0 +1,355 @@
+@extends('layouts.app')
+
+@section('title', 'Créer un événement - ELEDJI')
+
+@section('content')
+<div class="min-h-screen bg-gray-50 py-16">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mb-8 rounded-[32px] bg-white p-8 shadow-xl">
+            <div class="mb-8 flex flex-col gap-4 rounded-[28px] border border-red-100 bg-red-50 p-6 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm font-semibold uppercase tracking-[0.3em] text-red-700">Création d'événement</p>
+                    <h1 class="mt-3 text-3xl font-extrabold text-gray-900 sm:text-4xl">Publiez votre prochain événement</h1>
+                    <p class="mt-3 max-w-2xl text-base text-gray-600">Un formulaire pas à pas avec aperçu, billetterie et options premium pour un événement professionnel.</p>
+                </div>
+                <span class="inline-flex items-center rounded-full bg-white px-4 py-2 text-sm font-semibold text-red-700 shadow-sm">Étapes de création</span>
+            </div>
+
+            @if($errors->any())
+                <div class="mb-6 rounded-3xl bg-red-50 p-5 text-sm text-red-700 ring-1 ring-red-200">
+                    <p class="font-semibold">Veuillez corriger les éléments suivants :</p>
+                    <ul class="mt-3 list-disc space-y-1 pl-5">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            @php
+                $eventCreatorInitial = [
+                    'tickets' => old('tickets', [['nom' => 'Entrée Générale', 'prix' => 0, 'quantite' => 50]]),
+                    'premium_options' => old('premium_options', []),
+                    'category_id' => old('category_id', ''),
+                    'is_featured' => old('is_featured', 0),
+                ];
+            @endphp
+
+            <script>
+                window.__eventCreatorInitial = @json($eventCreatorInitial);
+            </script>
+
+            <div x-data="eventCreator()" x-init="initAutocomplete()" x-cloak class="grid gap-8 xl:grid-cols-[1.7fr_1fr]">
+                <div class="space-y-8">
+                    <div class="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm">
+                        <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                            <div>
+                                <p class="text-sm font-semibold uppercase tracking-[0.3em] text-red-700">Étape 1</p>
+                                <h2 class="mt-3 text-2xl font-semibold text-gray-900">Informations générales</h2>
+                                <p class="mt-3 text-sm text-gray-600">Renseignez le titre, la description et le lieu avec Google Maps Autocomplete.</p>
+                            </div>
+                            <div class="rounded-3xl bg-red-50 p-5">
+                                <p class="text-sm font-semibold uppercase tracking-[0.24em] text-red-700">Statut</p>
+                                <p class="mt-3 text-lg font-semibold text-gray-900">Brouillon ou publication immédiate</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form action="{{ route('events.store') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
+                        @csrf
+
+                        <div class="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm">
+                            <div class="grid gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-900">Titre de l'événement</label>
+                                    <input x-model="event.titre" type="text" name="titre" value="{{ old('titre') }}" required class="mt-3 w-full rounded-3xl border border-gray-200 bg-gray-50 px-5 py-4 text-base text-gray-900 outline-none ring-1 ring-transparent transition focus:border-red-500 focus:ring-red-200" placeholder="Nom de votre événement" />
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-900">Catégorie</label>
+                                    <select x-model="event.category_id" name="category_id" required class="mt-3 w-full rounded-3xl border border-gray-200 bg-white px-5 py-4 text-base text-gray-900 outline-none ring-1 ring-transparent transition focus:border-red-500 focus:ring-red-200">
+                                        <option value="">Sélectionnez une catégorie</option>
+                                        @foreach($categories as $category)
+                                            <option value="{{ $category->id }}" @selected(old('category_id') == $category->id)>{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-900">Description</label>
+                                    <textarea x-model="event.description" name="description" rows="6" required class="mt-3 w-full rounded-3xl border border-gray-200 bg-gray-50 px-5 py-4 text-base text-gray-900 outline-none ring-1 ring-transparent transition focus:border-red-500 focus:ring-red-200" placeholder="Décrivez votre événement..."></textarea>
+                                </div>
+
+                                <div class="grid gap-6 lg:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-900">Date</label>
+                                        <input x-model="event.date_heure" type="date" name="date_heure" required class="mt-3 w-full rounded-3xl border border-gray-200 bg-gray-50 px-5 py-4 text-base text-gray-900 outline-none ring-1 ring-transparent transition focus:border-red-500 focus:ring-red-200" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-900">Heure</label>
+                                        <input x-model="event.heure" type="time" name="heure" class="mt-3 w-full rounded-3xl border border-gray-200 bg-gray-50 px-5 py-4 text-base text-gray-900 outline-none ring-1 ring-transparent transition focus:border-red-500 focus:ring-red-200" />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-900">Lieu</label>
+                                    <input id="lieu" x-model="event.lieu" type="text" name="lieu" value="{{ old('lieu') }}" required class="mt-3 w-full rounded-3xl border border-gray-200 bg-gray-50 px-5 py-4 text-base text-gray-900 outline-none ring-1 ring-transparent transition focus:border-red-500 focus:ring-red-200" placeholder="Adresse ou lieu de l’événement" autocomplete="off" />
+                                    <input type="hidden" name="latitude" x-model="event.latitude" />
+                                    <input type="hidden" name="longitude" x-model="event.longitude" />
+                                </div>
+
+                                <div id="map" class="mt-4 h-72 rounded-3xl border border-gray-200 bg-gray-100"></div>
+
+                                <div class="grid gap-6 lg:grid-cols-2">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-900">Prix d'entrée</label>
+                                        <input x-model="event.prix" type="number" name="prix" min="0" step="0.01" value="{{ old('prix') }}" class="mt-3 w-full rounded-3xl border border-gray-200 bg-gray-50 px-5 py-4 text-base text-gray-900 outline-none ring-1 ring-transparent transition focus:border-red-500 focus:ring-red-200" placeholder="0 pour gratuit" />
+                                    </div>
+                                    <div class="flex items-end gap-3">
+                                        <label class="inline-flex items-center gap-3 text-sm font-semibold text-gray-900">
+                                            <input x-model="event.is_featured" type="checkbox" name="is_featured" value="1" class="h-5 w-5 rounded border-gray-300 text-red-600 focus:ring-red-500" />
+                                            Mettre en avant
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-900">Image de couverture</label>
+                                    <div class="mt-3 flex min-h-[210px] items-center justify-center rounded-3xl border border-dashed border-gray-200 bg-gray-50 px-5 py-10 text-center text-gray-500 transition hover:border-red-300 hover:bg-white">
+                                        <div class="space-y-3">
+                                            <p class="text-xl font-semibold text-gray-900">Glissez ou sélectionnez une image</p>
+                                            <p class="text-sm text-gray-500">JPEG, PNG — max 4 MB</p>
+                                            <input x-on:change="previewCoverImage" type="file" name="image_couverture" accept="image/*" class="mx-auto block cursor-pointer opacity-0" />
+                                            <template x-if="event.imagePreview">
+                                                <img :src="event.imagePreview" alt="Aperçu" class="mx-auto h-48 w-full rounded-3xl object-cover" />
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm">
+                        <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <p class="text-sm font-semibold uppercase tracking-[0.3em] text-red-700">Étape 2</p>
+                                <h2 class="mt-3 text-2xl font-semibold text-gray-900">Billetterie & options</h2>
+                                <p class="mt-3 text-sm text-gray-600">Ajoutez des billets et des options payantes pour booster votre visibilité.</p>
+                            </div>
+                            <button type="button" @click="addTicket()" class="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700">Ajouter un billet</button>
+                        </div>
+
+                        <template x-for="(ticket, index) in event.tickets" :key="index">
+                            <div class="mb-5 rounded-3xl border border-gray-200 bg-gray-50 p-5">
+                                <div class="grid gap-4 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.4fr]">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-900">Nom du billet</label>
+                                        <input x-model="ticket.nom" :name="`tickets[${index}][nom]`" type="text" required class="mt-3 w-full rounded-3xl border border-gray-200 bg-white px-4 py-3 text-base text-gray-900 outline-none focus:border-red-500" placeholder="Entrée générale" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-900">Prix</label>
+                                        <input x-model="ticket.prix" :name="`tickets[${index}][prix]`" type="number" min="0" step="0.01" required class="mt-3 w-full rounded-3xl border border-gray-200 bg-white px-4 py-3 text-base text-gray-900 outline-none focus:border-red-500" placeholder="0" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-900">Quantité</label>
+                                        <input x-model="ticket.quantite" :name="`tickets[${index}][quantite]`" type="number" min="1" required class="mt-3 w-full rounded-3xl border border-gray-200 bg-white px-4 py-3 text-base text-gray-900 outline-none focus:border-red-500" placeholder="10" />
+                                    </div>
+                                    <div class="flex items-end justify-end">
+                                        <button type="button" @click="removeTicket(index)" class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-700 transition hover:bg-red-200">×</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div class="rounded-3xl border border-dashed border-gray-300 bg-gray-50 p-5">
+                            <p class="font-semibold text-gray-900">Options premium</p>
+                            <p class="mt-2 text-sm text-gray-600">Sélectionnez une ou plusieurs options pour augmenter la visibilité de votre événement.</p>
+                            <div class="mt-5 grid gap-4 md:grid-cols-2">
+                                @foreach($premiumOptions as $option)
+                                    <label class="flex cursor-pointer items-start gap-4 rounded-3xl border border-gray-200 bg-white p-4 transition hover:border-red-300">
+                                        <input type="checkbox" :value="{{ $option->id }}" name="premium_options[]" x-model.number="event.premium_options" class="mt-1 h-5 w-5 rounded border-gray-300 text-red-600 focus:ring-red-500" />
+                                        <div>
+                                            <p class="font-semibold text-gray-900">{{ $option->titre }} — {{ number_format($option->tarif, 0, ',', ' ') }} XOF</p>
+                                            <p class="mt-1 text-sm text-gray-600">{{ $option->description }}</p>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm font-semibold uppercase tracking-[0.3em] text-red-700">Étape 3</p>
+                                <h2 class="mt-3 text-2xl font-semibold text-gray-900">Aperçu et publication</h2>
+                                <p class="mt-3 text-sm text-gray-600">Vérifiez votre événement avant de publier ou d’enregistrer un brouillon.</p>
+                            </div>
+                            <div class="flex flex-wrap gap-3">
+                                <button type="submit" name="statut" value="brouillon" class="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-900 transition hover:bg-gray-50">Enregistrer brouillon</button>
+                                <button type="submit" name="statut" value="publie" class="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700">Publier maintenant</button>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+                            <div class="space-y-4">
+                                <div class="rounded-3xl border border-gray-200 bg-gray-50 p-5">
+                                    <h3 class="text-lg font-semibold text-gray-900">Résumé rapide</h3>
+                                    <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                                        <div class="rounded-3xl bg-white p-4">
+                                            <p class="text-xs uppercase tracking-[0.24em] text-gray-500">Lieu</p>
+                                            <p class="mt-2 text-sm font-semibold text-gray-900" x-text="event.lieu || 'Aucun lieu saisi'"></p>
+                                        </div>
+                                        <div class="rounded-3xl bg-white p-4">
+                                            <p class="text-xs uppercase tracking-[0.24em] text-gray-500">Date</p>
+                                            <p class="mt-2 text-sm font-semibold text-gray-900" x-text="event.dateLabel || 'Date non définie'"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="rounded-3xl border border-gray-200 bg-white p-5">
+                                    <h3 class="text-lg font-semibold text-gray-900">Facturation</h3>
+                                    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-900">Nom</label>
+                                            <input x-model="event.customer_name" type="text" name="customer_name" value="{{ auth()->user()->name ?? '' }}" required class="mt-3 w-full rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3 text-base text-gray-900 outline-none focus:border-red-500" placeholder="Votre nom" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-900">Email</label>
+                                            <input x-model="event.customer_email" type="email" name="customer_email" value="{{ auth()->user()->email ?? '' }}" required class="mt-3 w-full rounded-3xl border border-gray-200 bg-gray-50 px-4 py-3 text-base text-gray-900 outline-none focus:border-red-500" placeholder="email@exemple.com" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-6">
+                                @include('components.event-card-preview')
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="space-y-6">
+                    <div class="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900">Aperçu rapide</h3>
+                        <p class="mt-3 text-sm text-gray-600">Un aperçu en direct de votre événement avant publication.</p>
+                        <div class="mt-5 space-y-4 rounded-3xl bg-red-50 p-5 text-sm text-gray-700">
+                            <p><span class="font-semibold">Étape 1 :</span> Informations générales</p>
+                            <p><span class="font-semibold">Étape 2 :</span> Billetterie et options</p>
+                            <p><span class="font-semibold">Étape 3 :</span> Publication</p>
+                        </div>
+                    </div>
+
+                    <div class="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900">Besoin d'aide ?</h3>
+                        <p class="mt-3 text-sm text-gray-600">Pour ajouter une tarification plus détaillée ou un espace événementiel, contactez notre support.</p>
+                        <div class="mt-5 flex flex-wrap gap-3">
+                            <a href="#" class="inline-flex items-center justify-center rounded-full bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800">Support</a>
+                            <a href="#" class="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-900 transition hover:bg-gray-50">Guide créateur</a>
+                        </div>
+                    </div>
+                </aside>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places&callback=initEventMap" async defer></script>
+<script>
+    function eventCreator(initial = window.__eventCreatorInitial || {}) {
+        return {
+            step: 1,
+            event: {
+                titre: initial.titre || '',
+                description: initial.description || '',
+                category_id: initial.category_id || '',
+                lieu: initial.lieu || '',
+                date_heure: initial.date_heure || '',
+                heure: initial.heure || '',
+                prix: initial.prix || '',
+                is_featured: initial.is_featured === '1' || initial.is_featured === 1 || false,
+                latitude: initial.latitude || '',
+                longitude: initial.longitude || '',
+                tickets: initial.tickets || [{ nom: 'Entrée générale', prix: 0, quantite: 10 }],
+                premium_options: initial.premium_options || [],
+                customer_name: initial.customer_name || @js(auth()->user()->name ?? ''),
+                customer_email: initial.customer_email || @js(auth()->user()->email ?? ''),
+                imagePreview: null,
+            },
+
+            get dateLabel() {
+                if (! this.event.date_heure) {
+                    return null;
+                }
+
+                return this.event.date_heure + (this.event.heure ? ' à ' + this.event.heure : '');
+            },
+
+            addTicket() {
+                this.event.tickets.push({ nom: '', prix: 0, quantite: 1 });
+            },
+
+            removeTicket(index) {
+                if (this.event.tickets.length > 1) {
+                    this.event.tickets.splice(index, 1);
+                }
+            },
+
+            formattedPrice(value) {
+                const amount = Number(value || 0);
+                return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(amount);
+            },
+
+            previewCoverImage(event) {
+                const file = event.target.files[0];
+                if (! file) {
+                    this.event.imagePreview = null;
+                    return;
+                }
+
+                this.event.imagePreview = URL.createObjectURL(file);
+            },
+
+            initAutocomplete() {
+                window.initEventMap = () => {
+                    const input = document.getElementById('lieu');
+                    if (! input || ! window.google) {
+                        return;
+                    }
+
+                    const autocomplete = new window.google.maps.places.Autocomplete(input, {
+                        componentRestrictions: { country: 'tg' },
+                        fields: ['formatted_address', 'geometry'],
+                        types: ['geocode'],
+                    });
+
+                    const map = new window.google.maps.Map(document.getElementById('map'), {
+                        center: { lat: 6.1725, lng: 1.2314 },
+                        zoom: 12,
+                    });
+
+                    const marker = new window.google.maps.Marker({
+                        map,
+                    });
+
+                    autocomplete.addListener('place_changed', () => {
+                        const place = autocomplete.getPlace();
+                        if (! place.geometry) {
+                            return;
+                        }
+
+                        this.event.lieu = place.formatted_address;
+                        this.event.latitude = place.geometry.location.lat();
+                        this.event.longitude = place.geometry.location.lng();
+                        map.setCenter(place.geometry.location);
+                        marker.setPosition(place.geometry.location);
+                    });
+                };
+            }
+        };
+    }
+</script>
+@endpush
+

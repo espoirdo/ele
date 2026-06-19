@@ -1,0 +1,21 @@
+{
+    "version": 2,
+    "framework": "laravel",
+    "builds": [
+        {
+            "src": "public/index.php",
+            "use": "@vercel/php"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "/public/index.php"
+        }
+    ],
+    "env": {
+        "APP_ENV": "production",
+        "APP_DEBUG": "true",
+        "APP_URL": "https://${VERCEL_URL}"
+    }
+}
