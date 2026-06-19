@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
@@ -11,7 +12,7 @@ use Illuminate\Auth\MustVerifyEmail;
 
 class User extends Authenticatable
 {
-    use MustVerifyEmail, Notifiable;
+    use HasFactory, MustVerifyEmail, Notifiable;
 
     protected $fillable = [
         'name',
