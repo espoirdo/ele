@@ -23,10 +23,9 @@ jobs:
           extensions: mbstring, bcmath, ctype, fileinfo, openssl, pdo, pdo_sqlite, zip, json, tokenizer, xml
           tools: composer
 
-      - name: Install dependencies
+      - name: Install all dependencies (including dev for tests)
         run: |
-          composer install --no-dev --optimize-autoloader --no-scripts
-          composer dump-autoload --optimize
+          composer install --optimize-autoloader
 
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -71,12 +70,13 @@ jobs:
           php artisan route:cache --no-interaction || echo "Route cache done"
           php artisan view:cache --no-interaction || echo "View cache done"
 
-      - name: Supprimer les fichiers de test avant déploiement
+      - name: Remove dev dependencies before deployment
         run: |
+          composer remove --dev --no-interaction --no-scripts 2>/dev/null || true
           rm -rf tests/
           rm -f phpunit.xml
           rm -f .phpunit.result.cache
-          echo "✅ Tests supprimés"
+          echo "✅ Tests et dev dependencies supprimés"
 
       - name: Deploy to InfinityFree via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
