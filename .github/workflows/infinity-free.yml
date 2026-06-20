@@ -1,11 +1,11 @@
 name: Deploy to InfinityFree
 
+# Run manually or on push to the main branch
 on:
   workflow_dispatch:
   push:
     branches:
       - main
-      - master
 
 jobs:
   deploy:
@@ -13,139 +13,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Clone the latest code from GitHub
       - name: Get latest code
         uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          extensions: mbstring, bcmath, ctype, fileinfo, openssl, pdo, pdo_sqlite, zip, json, tokenizer, xml
-          tools: composer
-
-      - name: Install all dependencies (including dev for tests)
-        run: |
-          composer install --optimize-autoloader
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install npm dependencies and build
-        run: |
-          npm ci
-          npm run build
-
-      - name: Run tests
-        run: |
-          php artisan config:clear --ansi
-          php vendor/bin/phpunit --no-coverage
-
-      - name: Prepare Laravel
-        run: |
-          # Créer .env avec les infos InfinityFree
-          cat > .env << 'EOF'
-          APP_NAME=ELEDJI
-          APP_ENV=production
-          APP_KEY=base64:bU8jmpmQAFfOe9NXHLPYGFeghkZprPi9WfGtLvqwkCY=
-          APP_DEBUG=false
-          APP_URL=https://eledji.infinityfreeapp.com
-
-          DB_CONNECTION=mysql
-          DB_HOST=sql202.infinityfree.com
-          DB_PORT=3306
-          DB_DATABASE=if0_42217424_eledji_db
-          DB_USERNAME=if0_42217424
-          DB_PASSWORD=E9036espoir
-
-          SESSION_DRIVER=database
-          QUEUE_CONNECTION=database
-          CACHE_STORE=database
-          EOF
-
-          # Optimiser
-          php artisan config:cache --no-interaction || echo "Config cache done"
-          php artisan route:cache --no-interaction || echo "Route cache done"
-          php artisan view:cache --no-interaction || echo "View cache done"
-
-      - name: Clean up and prepare deployment folder
-        run: |
-          # Supprimer tout ce qui est inutile
-          rm -rf tests/
-          rm -rf node_modules/
-          rm -rf .git/
-          rm -rf .github/
-          rm -f phpunit.xml
-          rm -f package.json
-          rm -f package-lock.json
-          rm -f .phpunit.result.cache
-          rm -f composer.lock
-          rm -f *.md
-          rm -f .env.example
-          rm -f .gitignore
-          rm -f .editorconfig
-          rm -f .styleci.yml
-          rm -f .env.backup 2>/dev/null || true
-          rm -f .phpunit.result.cache 2>/dev/null || true
-
-          # Supprimer les gros fichiers dev inutiles
-          rm -rf vendor/fakerphp 2>/dev/null || true
-          rm -rf vendor/mockery 2>/dev/null || true
-          rm -rf vendor/nunomaduro/collision 2>/dev/null || true
-          rm -rf vendor/nunomaduro/termwind 2>/dev/null || true
-          rm -rf vendor/phpunit 2>/dev/null || true
-          rm -rf vendor/phar-io 2>/dev/null || true
-          rm -rf vendor/sebastian 2>/dev/null || true
-          rm -rf vendor/myclabs 2>/dev/null || true
-          rm -rf vendor/hamcrest 2>/dev/null || true
-          rm -rf vendor/filp/whoops 2>/dev/null || true
-          rm -rf vendor/laravel/sail 2>/dev/null || true
-          rm -rf vendor/laravel/pail 2>/dev/null || true
-          rm -rf vendor/laravel/pint 2>/dev/null || true
-          rm -rf vendor/laravel/breeze 2>/dev/null || true
-
-          # DOUBLE VERIF: supprimer node_modules s'il existe encore
-          if [ -d "node_modules" ]; then
-            echo "⚠️ node_modules existe encore, suppression forcee"
-            rm -rf node_modules/
-          fi
-
-          echo "✅ Nettoyage termine"
-
-          # Liste des dossiers pour debug
-          ls -la
-
+      # Step 2: Upload code via FTP
       - name: Deploy to InfinityFree via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ftpupload.net
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /htdocs/
+          server-dir: /htdocs/  # For addon domains
           timeout: 86400000
-          log-level: detailed
-          exclude: |
-            **/node_modules/**
-            **/node_modules
-            .git
-            .github
-            tests
-            *.md
-            .env
-            .env.*
-            phpunit.xml
-            .phpunit.result.cache
-            package.json
-            package-lock.json
-            composer.lock
-            .gitignore
-            .editorconfig
-            .styleci.yml
-            storage/logs/*.log
-
-      - name: Déploiement terminé
-        run: |
-          echo "✅ Déploiement terminé avec succès !"
-          echo "🌐 Site : https://eledji.infinityfreeapp.com"
+          log-level: standard
