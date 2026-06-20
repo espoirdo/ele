@@ -70,17 +70,42 @@ jobs:
           php artisan route:cache --no-interaction || echo "Route cache done"
           php artisan view:cache --no-interaction || echo "View cache done"
 
-      - name: Remove dev dependencies and node_modules before deployment
+      - name: Clean up and prepare deployment folder
         run: |
-          composer remove --dev --no-interaction --no-scripts 2>/dev/null || true
+          # Supprimer tout ce qui est inutile AVANT de créer le dossier de déploiement
           rm -rf tests/
           rm -rf node_modules/
+          rm -rf .git/
+          rm -rf .github/
           rm -f phpunit.xml
-          rm -f .phpunit.result.cache
+          rm -f package.json
           rm -f package-lock.json
           rm -f .phpunit.result.cache
+          rm -f composer.lock
+          rm -f *.md
+          rm -f .env.example
+          rm -f .gitignore
+          rm -f .editorconfig
+          rm -f .styleci.yml
+
+          # Supprimer les gros fichiers dev inutiles
           rm -rf vendor/fakerphp/faker 2>/dev/null || true
-          echo "✅ Tests, node_modules et dev dependencies supprimés"
+          rm -rf vendor/mockery/mockery 2>/dev/null || true
+          rm -rf vendor/nunomaduro/collision 2>/dev/null || true
+          rm -rf vendor/nunomaduro/termwind 2>/dev/null || true
+          rm -rf vendor/phpunit/phpunit 2>/dev/null || true
+          rm -rf vendor/phar-io 2>/dev/null || true
+          rm -rf vendor/sebastian 2>/dev/null || true
+          rm -rf vendor/myclabs/deep-copy 2>/dev/null || true
+          rm -rf vendor/hamcrest 2>/dev/null || true
+          rm -rf vendor/filp/whoops 2>/dev/null || true
+          rm -rf vendor/laravel/sail 2>/dev/null || true
+          rm -rf vendor/laravel/pail 2>/dev/null || true
+
+          echo "✅ Nettoyage terminé"
+
+          # Verifier que node_modules est bien supprime
+          ls -la | head -20
 
       - name: Deploy to InfinityFree via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -90,7 +115,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /htdocs/
           timeout: 86400000
-          log-level: standard
+          log-level: detailed
           exclude: |
             .git*
             .github*
@@ -99,9 +124,6 @@ jobs:
             .env
             .env.*
             *.md
-            composer.lock
-            package-lock.json
-            yarn.lock
 
       - name: Déploiement terminé
         run: |
