@@ -70,13 +70,17 @@ jobs:
           php artisan route:cache --no-interaction || echo "Route cache done"
           php artisan view:cache --no-interaction || echo "View cache done"
 
-      - name: Remove dev dependencies before deployment
+      - name: Remove dev dependencies and node_modules before deployment
         run: |
           composer remove --dev --no-interaction --no-scripts 2>/dev/null || true
           rm -rf tests/
+          rm -rf node_modules/
           rm -f phpunit.xml
           rm -f .phpunit.result.cache
-          echo "✅ Tests et dev dependencies supprimés"
+          rm -f package-lock.json
+          rm -f .phpunit.result.cache
+          rm -rf vendor/fakerphp/faker 2>/dev/null || true
+          echo "✅ Tests, node_modules et dev dependencies supprimés"
 
       - name: Deploy to InfinityFree via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
