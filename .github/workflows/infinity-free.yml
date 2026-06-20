@@ -1,29 +1,54 @@
 name: Deploy to InfinityFree
 
-# Run manually or on push to the main branch
 on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   deploy:
-    name: Deploy via FTP
+    name: Build and Deploy via FTP
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Clone the latest code from GitHub
       - name: Get latest code
         uses: actions/checkout@v4
 
-      # Step 2: Upload code via FTP
-      - name: Deploy to InfinityFree via FTP
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --prefer-dist
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Run tests
+        run: php artisan test
+
+      - name: Deploy everything to htdocs
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ftpupload.net
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /htdocs/  # For addon domains
+          local-dir: ./
+          server-dir: /htdocs/
           timeout: 86400000
           log-level: standard
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/tests/**
+            **/.github/**
