@@ -72,7 +72,7 @@ jobs:
 
       - name: Clean up and prepare deployment folder
         run: |
-          # Supprimer tout ce qui est inutile AVANT de créer le dossier de déploiement
+          # Supprimer tout ce qui est inutile
           rm -rf tests/
           rm -rf node_modules/
           rm -rf .git/
@@ -87,25 +87,35 @@ jobs:
           rm -f .gitignore
           rm -f .editorconfig
           rm -f .styleci.yml
+          rm -f .env.backup 2>/dev/null || true
+          rm -f .phpunit.result.cache 2>/dev/null || true
 
           # Supprimer les gros fichiers dev inutiles
-          rm -rf vendor/fakerphp/faker 2>/dev/null || true
-          rm -rf vendor/mockery/mockery 2>/dev/null || true
+          rm -rf vendor/fakerphp 2>/dev/null || true
+          rm -rf vendor/mockery 2>/dev/null || true
           rm -rf vendor/nunomaduro/collision 2>/dev/null || true
           rm -rf vendor/nunomaduro/termwind 2>/dev/null || true
-          rm -rf vendor/phpunit/phpunit 2>/dev/null || true
+          rm -rf vendor/phpunit 2>/dev/null || true
           rm -rf vendor/phar-io 2>/dev/null || true
           rm -rf vendor/sebastian 2>/dev/null || true
-          rm -rf vendor/myclabs/deep-copy 2>/dev/null || true
+          rm -rf vendor/myclabs 2>/dev/null || true
           rm -rf vendor/hamcrest 2>/dev/null || true
           rm -rf vendor/filp/whoops 2>/dev/null || true
           rm -rf vendor/laravel/sail 2>/dev/null || true
           rm -rf vendor/laravel/pail 2>/dev/null || true
+          rm -rf vendor/laravel/pint 2>/dev/null || true
+          rm -rf vendor/laravel/breeze 2>/dev/null || true
 
-          echo "✅ Nettoyage terminé"
+          # DOUBLE VERIF: supprimer node_modules s'il existe encore
+          if [ -d "node_modules" ]; then
+            echo "⚠️ node_modules existe encore, suppression forcee"
+            rm -rf node_modules/
+          fi
 
-          # Verifier que node_modules est bien supprime
-          ls -la | head -20
+          echo "✅ Nettoyage termine"
+
+          # Liste des dossiers pour debug
+          ls -la
 
       - name: Deploy to InfinityFree via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -117,13 +127,23 @@ jobs:
           timeout: 86400000
           log-level: detailed
           exclude: |
-            .git*
-            .github*
-            node_modules
-            storage/logs/*.log
+            **/node_modules/**
+            **/node_modules
+            .git
+            .github
+            tests
+            *.md
             .env
             .env.*
-            *.md
+            phpunit.xml
+            .phpunit.result.cache
+            package.json
+            package-lock.json
+            composer.lock
+            .gitignore
+            .editorconfig
+            .styleci.yml
+            storage/logs/*.log
 
       - name: Déploiement terminé
         run: |
