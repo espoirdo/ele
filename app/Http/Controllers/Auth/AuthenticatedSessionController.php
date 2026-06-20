@@ -29,7 +29,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
-        $defaultRoute = route('home', absolute: false);
+        $defaultRoute = route('dashboard', absolute: false);
 
         if ($user && method_exists($user, 'isAdmin') && $user->isAdmin()) {
             // Admin users go to admin dashboard if available

@@ -160,7 +160,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('verification.resend') }}" method="POST">
+            <form action="{{ route('verification.send') }}" method="POST">
                 @csrf
                 <button type="submit" class="btn-resend">
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
