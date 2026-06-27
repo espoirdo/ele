@@ -14,31 +14,31 @@
             <span class="hero-badge-dot"></span>
             <span>Lome, Togo - Evenements live</span>
         </div>
-        <h1 id="hero-title">DECOUVREZ DES EXPERIENCES<br>INOUBLIABLES ET DES</h1>
-        <h2 id="hero-subtitle">EVENEMENTS SPECTACULAIRES</h2>
+        <h1 id="hero-title">{{ setting('home_hero_title_line1', 'DECOUVREZ DES EXPERIENCES') }}<br>{{ setting('home_hero_title_line2', 'INOUBLIABLES ET DES') }}</h1>
+        <h2 id="hero-subtitle">{{ setting('home_hero_subtitle', 'EVENEMENTS SPECTACULAIRES') }}</h2>
         <form action="{{ route('events.index') }}" method="GET" class="hero-search" id="hero-search">
             <div class="hero-search-box">
                 <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                <input type="text" name="q" placeholder="Rechercher un evenement, une categorie...">
+                <input type="text" name="q" placeholder="{{ setting('home_search_placeholder', 'Rechercher un evenement, une categorie...') }}">
                 <button type="submit">Rechercher</button>
             </div>
         </form>
         <div class="hero-stats" id="hero-stats">
             <div class="hero-stat">
                 <span class="hero-stat-num">{{ $totalEvents }}+</span>
-                <span class="hero-stat-label">Evenements</span>
+                <span class="hero-stat-label">{{ setting('home_stats_events_label', 'Evenements') }}</span>
             </div>
             <div class="hero-stat-divider"></div>
             <div class="hero-stat">
                 <span class="hero-stat-num">{{ $totalCategories }}+</span>
-                <span class="hero-stat-label">Categories</span>
+                <span class="hero-stat-label">{{ setting('home_stats_categories_label', 'Categories') }}</span>
             </div>
             <div class="hero-stat-divider"></div>
             <div class="hero-stat">
                 <span class="hero-stat-num">{{ $totalUsers }}+</span>
-                <span class="hero-stat-label">Participants</span>
+                <span class="hero-stat-label">{{ setting('home_stats_participants_label', 'Participants') }}</span>
             </div>
         </div>
     </div>
@@ -55,8 +55,8 @@
 <section class="eledji-section" id="section-vedette">
     <div class="section-header eledji-container">
         <div>
-            <p class="section-label">A ne pas manquer</p>
-            <h2 class="section-title">Top des evenements</h2>
+            <p class="section-label">{{ setting('home_featured_label', 'A ne pas manquer') }}</p>
+            <h2 class="section-title">{{ setting('home_featured_title', 'Top des evenements') }}</h2>
         </div>
     </div>
 
@@ -111,7 +111,7 @@
                 <h2 class="section-title">Nouvelle Evenements a <span class="text-red">Lome</span></h2>
             </div>
             <a href="{{ route('events.index') }}" class="btn-voir-plus">
-                Voir plus
+                {{ setting('home_voir_plus_label', 'Voir plus') }}
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                 </svg>

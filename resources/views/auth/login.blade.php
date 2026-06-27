@@ -7,8 +7,8 @@
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <h1>Connexion</h1>
-                <p>Connectez-vous pour creer, modifier et partager vos evenements.</p>
+                <h1>{{ setting('auth_login_title', 'Bienvenue') }}</h1>
+                <p>{{ setting('auth_login_subtitle', 'Connectez-vous pour creer, modifier et partager vos evenements.') }}</p>
             </div>
 
             @if(session('status'))

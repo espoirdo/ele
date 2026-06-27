@@ -7,8 +7,8 @@
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
-                <h1>Inscription</h1>
-                <p>Creez votre compte pour publier des evenements et gerer vos reservations.</p>
+                <h1>{{ setting('auth_register_title', 'Bienvenue') }}</h1>
+                <p>{{ setting('auth_register_subtitle', 'Creez votre compte pour publier des evenements et gerer vos reservations.') }}</p>
             </div>
 
             @if($errors->any())

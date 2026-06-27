@@ -844,7 +844,7 @@
                                                          110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0
                                                          110-4V7a2 2 0 00-2-2H5z"/>
                                             </svg>
-                                            Acheter maintenant
+                                            {{ setting('event_buy_now_label', 'Acheter maintenant') }}
                                     </a>
                                 @endif
                                 <div class="places-restantes" style="text-align:center;margin-top:8px;font-size:13px;color:#888">
@@ -857,10 +857,10 @@
                             @else
                                 {{-- Evenement complet --}}
                                 <div class="btn-acheter disabled" style="cursor:not-allowed">
-                                    Complet
+                                    {{ setting('event_complete_label', 'Evenement complet') }}
                                 </div>
                                 <div class="places-restantes" style="text-align:center;margin-top:8px;font-size:13px;color:#CC0000">
-                                    Evenement complet
+                                    {{ setting('event_full_label', 'Complet') }}
                                 </div>
                             @endif
                         @else

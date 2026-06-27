@@ -389,7 +389,13 @@
                 <div class="payment-method-card"
                      :class="methode === 'tmoney' ? 'selected' : ''"
                      @click="methode = 'tmoney'">
-                    <div class="payment-method-icon">TM</div>
+                    <div class="payment-method-icon">
+                        @if(setting('logo_tmoney'))
+                            <img src="{{ Storage::url(setting('logo_tmoney')) }}" alt="T-Money" style="width: 32px; height: 32px; object-fit: contain;">
+                        @else
+                            TM
+                        @endif
+                    </div>
                     <div class="payment-method-info">
                         <p class="payment-method-name" style="color: var(--rouge);">T-Money</p>
                         <p class="payment-method-desc">Paiement mobile Togocel</p>
@@ -402,7 +408,13 @@
                 <div class="payment-method-card flooz"
                      :class="methode === 'flooz' ? 'selected flooz' : ''"
                      @click="methode = 'flooz'">
-                    <div class="payment-method-icon">FL</div>
+                    <div class="payment-method-icon">
+                        @if(setting('logo_flooz'))
+                            <img src="{{ Storage::url(setting('logo_flooz')) }}" alt="Flooz" style="width: 32px; height: 32px; object-fit: contain;">
+                        @else
+                            FL
+                        @endif
+                    </div>
                     <div class="payment-method-info">
                         <p class="payment-method-name" style="color: #1A237E;">Flooz</p>
                         <p class="payment-method-desc">Paiement mobile Moov Africa</p>
@@ -416,9 +428,13 @@
                      :class="methode === 'carte' ? 'selected' : ''"
                      @click="methode = 'carte'">
                     <div class="payment-method-icon">
-                        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                        </svg>
+                        @if(setting('logo_carte_bancaire'))
+                            <img src="{{ Storage::url(setting('logo_carte_bancaire')) }}" alt="Carte bancaire" style="width: 32px; height: 32px; object-fit: contain;">
+                        @else
+                            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
+                        @endif
                     </div>
                     <div class="payment-method-info">
                         <p class="payment-method-name">Carte bancaire</p>

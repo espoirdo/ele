@@ -5,7 +5,7 @@
             <div class="footer-left">
                 <div class="footer-logo">
                     <div class="footer-logo-img">
-                        <img src="{{ asset('images/logo.png') }}" alt="Eledji logo" loading="lazy">
+                        <img src="{{ setting('logo_footer') ? Storage::url(setting('logo_footer')) : asset('images/logo.png') }}" alt="Eledji logo" loading="lazy">
                     </div>
                 </div>
                 <div class="footer-links">
@@ -20,8 +20,8 @@
             {{-- Colonne droite: Newsletter --}}
             <div class="footer-right">
                 <div class="newsletter-block">
-                    <h3 class="newsletter-title">Inscrivez-vous a la newsletter</h3>
-                    <p class="newsletter-desc">Soyez informés des événements à Lomé et partout au Togo en temps réel.</p>
+                    <h3 class="newsletter-title">{{ setting('footer_newsletter_title', 'Inscrivez-vous a la newsletter') }}</h3>
+                    <p class="newsletter-desc">{{ setting('footer_newsletter_text', 'Soyez informés des événements à Lomé et partout au Togo en temps réel.') }}</p>
 
                     {{-- Message flash --}}
                     @if(session('newsletter_success'))
@@ -36,9 +36,9 @@
                             <input type="email"
                                    name="email"
                                    class="newsletter-input"
-                                   placeholder="Votre email"
+                                   placeholder="{{ setting('footer_newsletter_placeholder', 'Votre email') }}"
                                    required>
-                            <button type="submit" class="newsletter-btn">Je m'inscris</button>
+                            <button type="submit" class="newsletter-btn">{{ setting('footer_newsletter_button', "Je m'inscris") }}</button>
                         </div>
                     </form>
                 </div>
@@ -73,7 +73,7 @@
 
         {{-- Copyright --}}
         <div class="footer-copyright">
-            <p>Copyright ELEDJI © 2026 Tous droits reserves | Prod by Ayah Communication</p>
+            <p>Copyright {{ setting('footer_agency_name', 'ELEDJI') }} © 2026 {{ setting('footer_copyright', 'Tous droits reserves') }} | Prod by Ayah Communication</p>
         </div>
     </div>
 </footer>

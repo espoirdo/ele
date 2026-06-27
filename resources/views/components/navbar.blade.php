@@ -312,7 +312,7 @@
 
     {{-- Logo --}}
     <a href="{{ route('home') }}" class="nav-logo">
-        <img src="{{ asset('images/logo.png') }}" alt="Eledji logo" loading="lazy">
+        <img src="{{ setting('logo_navbar') ? Storage::url(setting('logo_navbar')) : asset('images/logo.png') }}" alt="Eledji logo" loading="lazy">
     </a>
 
     {{-- Hamburger (mobile) --}}

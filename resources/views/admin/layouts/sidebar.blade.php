@@ -60,10 +60,29 @@
         </a>
 
         <a href="{{ route('admin.settings.index') }}"
-           class="menu-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+           class="menu-item {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}">
             <i class="fas fa-cog"></i>
             Paramètres
         </a>
+
+        {{-- Sous-menu Parametres etendu --}}
+        <div class="submenu-items" style="padding-left: 20px; font-size: 12px;">
+            <a href="{{ route('admin.settings.content') }}"
+               class="menu-item submenu-item {{ request()->routeIs('admin.settings.content*') ? 'active' : '' }}">
+                <i class="fas fa-align-left"></i>
+                Contenu du site
+            </a>
+            <a href="{{ route('admin.settings.logos') }}"
+               class="menu-item submenu-item {{ request()->routeIs('admin.settings.logos*') ? 'active' : '' }}">
+                <i class="fas fa-image"></i>
+                Logos et images
+            </a>
+            <a href="{{ route('admin.settings.admins') }}"
+               class="menu-item submenu-item {{ request()->routeIs('admin.settings.admins*') ? 'active' : '' }}">
+                <i class="fas fa-users-cog"></i>
+                Administrateurs
+            </a>
+        </div>
 
         <form action="{{ route('admin.logout') }}" method="POST" style="margin-top: 20px; padding: 0 20px;">
             @csrf

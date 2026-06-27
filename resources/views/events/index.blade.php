@@ -8,8 +8,8 @@
 <section class="events-hero">
     <div class="events-hero-content">
         <h1 class="events-hero-title">
-            DECOUVREZ DES EXPERIENCES INOUBLIABLES ET DES
-            <span>EVENEMENTS SPECTACULAIRES</span>
+            {{ setting('events_list_title', 'Tous les evenements') }}
+            <span>{{ setting('home_hero_subtitle', 'EVENEMENTS SPECTACULAIRES') }}</span>
         </h1>
         <div class="events-search">
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -24,7 +24,7 @@
 <section class="events-section">
     <div class="events-container">
         <div class="events-header">
-            <h2>Nouvelle Evenements a <span>Lome</span></h2>
+            <h2>{{ setting('events_list_intro', 'Nouvelle Evenements a Lome') }}</h2>
         </div>
 
         {{-- Filter Tabs --}}

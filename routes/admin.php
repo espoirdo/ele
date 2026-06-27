@@ -10,6 +10,9 @@ use App\Http\Controllers\Admin\AdminPaymentController;
 use App\Http\Controllers\Admin\AdminCommentController;
 use App\Http\Controllers\Admin\AdminSettingController;
 use App\Http\Controllers\Admin\AdminBookingController;
+use App\Http\Controllers\Admin\Settings\ContentController;
+use App\Http\Controllers\Admin\Settings\LogoController;
+use App\Http\Controllers\Admin\Settings\AdminController;
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AdminAuthController::class,'showLogin'])->name('login');
@@ -35,5 +38,22 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::patch('comments/{comment}/approve',[AdminCommentController::class,'approve'])->name('comments.approve');
         Route::get('settings',[AdminSettingController::class,'index'])->name('settings.index');
         Route::post('settings',[AdminSettingController::class,'update'])->name('settings.update');
+
+        // Parametres etendus - necessite parametres.manage
+        Route::middleware(['permission:parametres.manage'])->group(function () {
+            // Parametres - Contenu du site
+            Route::get('parametres/contenu', [ContentController::class, 'index'])->name('settings.content');
+            Route::post('parametres/contenu', [ContentController::class, 'update'])->name('settings.content.update');
+
+            // Parametres - Logos et images
+            Route::get('parametres/logos', [LogoController::class, 'index'])->name('settings.logos');
+            Route::post('parametres/logos', [LogoController::class, 'update'])->name('settings.logos.update');
+
+            // Parametres - Administrateurs
+            Route::get('parametres/administrateurs', [AdminController::class, 'index'])->name('settings.admins');
+            Route::post('parametres/administrateurs', [AdminController::class, 'store'])->name('settings.admins.store');
+            Route::patch('parametres/administrateurs/{user}/toggle', [AdminController::class, 'toggle'])->name('settings.admins.toggle');
+            Route::delete('parametres/administrateurs/{user}', [AdminController::class, 'destroy'])->name('settings.admins.destroy');
+        });
     });
 });

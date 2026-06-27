@@ -76,6 +76,11 @@ class Event extends Model
         if ($this->image_couverture) {
             return Storage::url($this->image_couverture);
         }
+        // Utiliser l'image par defaut configuree dans les parametres
+        $defaultImage = setting('image_evenement_defaut');
+        if ($defaultImage) {
+            return Storage::url($defaultImage);
+        }
         return 'https://picsum.photos/seed/' . $this->id . '/800/450';
     }
 
