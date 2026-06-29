@@ -154,8 +154,23 @@
     align-items: start;
 }
 @media (max-width: 900px) {
-    .detail-grid { grid-template-columns: 1fr; }
-    .detail-sticky { position: static !important; }
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+    .detail-sticky {
+        position: static !important;
+    }
+}
+@media (max-width: 600px) {
+    .detail-grid {
+        display: flex;
+        flex-direction: column;
+    }
+    .detail-sticky {
+        width: 100%;
+        order: -1;
+        margin-bottom: 24px;
+    }
 }
 
 .detail-card {
@@ -359,6 +374,13 @@
     text-align: left;
     outline: none;
     -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
+}
+@media (max-width: 600px) {
+    .ticket-btn {
+        padding: 16px;
+        min-height: 52px;
+    }
 }
 .ticket-btn:hover {
     border-color: rgba(204, 0, 0, 0.3);
@@ -414,6 +436,13 @@
     cursor: pointer;
     transition: all 0.25s ease;
     display: flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 52px;
+}
+@media (max-width: 600px) {
+    .btn-acheter {
+        padding: 18px;
+        font-size: 16px;
+    }
 }
 .btn-acheter.active {
     background: linear-gradient(135deg, var(--rouge), var(--rouge-dark));
@@ -507,6 +536,80 @@
 .section-title-sm {
     font-size: 18px; font-weight: 800;
     color: var(--texte); margin: 0 0 20px;
+}
+
+/* Google Maps Lieu link */
+.event-lieu-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #333333;
+    font-size: 14px;
+    font-family: var(--poppins);
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+.event-lieu-link:hover {
+    color: #CC0000;
+    text-decoration: underline;
+}
+.event-lieu-link svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* Google Maps embedded map */
+.event-map-container {
+    position: relative;
+    width: 100%;
+}
+.event-map-iframe {
+    width: 100%;
+    height: 240px;
+    border: none;
+    border-radius: 12px;
+    display: block;
+}
+.event-map-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 32px 20px;
+    background: var(--gris-bg);
+    border-radius: 12px;
+}
+.event-map-fallback p {
+    font-size: 13px;
+    color: var(--texte-doux);
+    margin: 0;
+    text-align: center;
+}
+.btn-view-maps {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #CC0000;
+    color: white;
+    border: none;
+    border-radius: 40px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--poppins);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+.btn-view-maps:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(204, 0, 0, 0.35);
+    color: white;
+}
+@media (max-width: 600px) {
+    .event-map-iframe { height: 180px; }
 }
 </style>
 @endpush
@@ -620,7 +723,14 @@
                                 </div>
                                 <div>
                                     <span class="event-meta-label">Lieu</span>
-                                    <span class="event-meta-value">{{ Str::limit($event->lieu, 22) }}</span>
+                                    <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($event->lieu) }}"
+                                       target="_blank" rel="noopener noreferrer"
+                                       class="event-lieu-link">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#CC0000">
+                                            <path d="M12 0C7.58 0 4 3.58 4 8c0 5.5 8 13 8 13s8-7.5 8-13c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
+                                        </svg>
+                                        {{ Str::limit($event->lieu, 22) }}
+                                    </a>
                                 </div>
                             </div>
                             <div class="event-meta-item">
@@ -660,18 +770,42 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
                         </div>
-                        <h3 class="detail-card-title">Localisation - {{ $event->lieu }}</h3>
+                        <h3 class="detail-card-title">Localisation</h3>
                     </div>
-                    @if($event->latitude && $event->longitude)
-                        <div id="detail-map"></div>
-                    @else
-                        <div class="map-placeholder">
-                            <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <div class="detail-card-body">
+                        {{-- Lien cliquable vers Google Maps --}}
+                        <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($event->lieu) }}"
+                           target="_blank" rel="noopener noreferrer"
+                           class="event-lieu-link" style="margin-bottom: 16px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#CC0000">
+                                <path d="M12 0C7.58 0 4 3.58 4 8c0 5.5 8 13 8 13s8-7.5 8-13c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
                             </svg>
-                            <span>Carte interactive</span>
+                            {{ $event->lieu }}
+                        </a>
+
+                        {{-- Carte Google Maps embarquée ou fallback --}}
+                        <div class="event-map-container">
+                            <iframe
+                                class="event-map-iframe"
+                                src="https://www.google.com/maps?q={{ urlencode($event->lieu) }}&output=embed"
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"
+                                title="Carte Google Maps - {{ $event->lieu }}"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            </iframe>
+                            <div class="event-map-fallback" style="display: none;">
+                                <p>La carte n'a pas pu être chargée.</p>
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($event->lieu) }}"
+                                   target="_blank" rel="noopener noreferrer"
+                                   class="btn-view-maps">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 0C7.58 0 4 3.58 4 8c0 5.5 8 13 8 13s8-7.5 8-13c0-4.42-3.58-8-8-8zm0 11c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
+                                    </svg>
+                                    Voir sur Google Maps
+                                </a>
+                            </div>
                         </div>
-                    @endif
+                    </div>
                 </div>
 
                 <div class="detail-card" data-gsap="fade-up">
@@ -900,7 +1034,11 @@
                                                  01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                     </svg>
                                 </div>
-                                {{ $event->lieu }}
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($event->lieu) }}"
+                                   target="_blank" rel="noopener noreferrer"
+                                   class="event-lieu-link" style="font-size: 13px;">
+                                    {{ $event->lieu }}
+                                </a>
                             </div>
                         </div>
                     </div>

@@ -229,12 +229,58 @@
 }
 
 @media (max-width: 600px) {
+    .create-event-page {
+        padding: 100px 16px 40px;
+    }
+
     .form-card {
-        padding: 24px 20px;
+        padding: 20px 16px;
+    }
+
+    .create-event-header {
+        margin-bottom: 28px;
     }
 
     .create-event-header h1 {
-        font-size: 22px;
+        font-size: 20px;
+    }
+
+    .create-event-header p {
+        font-size: 13px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        font-size: 13px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 14px 14px;
+        font-size: 15px;
+    }
+
+    .form-group textarea {
+        min-height: 140px;
+    }
+
+    .form-navigation {
+        margin-top: 8px;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 16px;
+        min-height: 52px;
+        font-size: 15px;
+    }
+
+    .btn-next {
+        width: 100%;
     }
 }
 </style>

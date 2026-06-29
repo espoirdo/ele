@@ -267,28 +267,28 @@
 /* Mobile Dropdown Menu */
 .nav-mobile-menu {
     display: none;
-    position: absolute;
-    top: calc(100% + 12px);
-    left: 0;
-    right: 0;
-    background: rgba(204, 0, 0, 0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    position: fixed;
+    top: 80px;
+    left: 16px;
+    right: 16px;
+    background: rgba(204, 0, 0, 0.92);
     border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-    padding: 16px 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    padding: 8px 0;
     z-index: 9998;
     animation: dropIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 .nav-mobile-menu.show { display: block; }
 .nav-mobile-link {
-    display: block;
+    display: flex;
+    align-items: center;
     color: #FFFFFF;
     font-weight: 600; font-size: 15px;
     text-decoration: none;
     padding: 14px 24px;
     transition: all 0.25s ease;
     letter-spacing: 0.3px;
+    min-height: 44px;
 }
 .nav-mobile-link:hover {
     background: rgba(255, 255, 255, 0.1);

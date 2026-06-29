@@ -181,7 +181,7 @@
 }
 
 .filter-tab {
-    padding: 10px 20px;
+    padding: 12px 20px;
     border-radius: 40px;
     font-size: 13px;
     font-weight: 600;
@@ -193,6 +193,7 @@
     color: #555;
     outline: none;
     -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
 }
 
 .filter-tab:hover {

@@ -9,7 +9,7 @@
     --rouge-dark: #910000;
     --vert-doux: #2E7D32;
     --vert-bg: #E8F5E9;
-    --gris-bg: #F9F9F9;
+    --gris-bg: #F7D6D3;
     --gris-border: #E0E0E0;
     --texte: #1a1a1a;
     --texte-doux: #666;

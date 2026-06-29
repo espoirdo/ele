@@ -130,7 +130,7 @@
 .footer-links {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 4px;
     padding-top: 24px;
 }
 
@@ -140,6 +140,10 @@
     font-weight: 500;
     text-decoration: none;
     transition: all 0.25s ease;
+    padding: 10px 8px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
 }
 
 .footer-link:hover {
@@ -275,9 +279,13 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+    .eledji-footer {
+        padding: 48px 20px 20px;
+    }
+
     .footer-columns {
         grid-template-columns: 1fr;
-        gap: 40px;
+        gap: 32px;
     }
 
     .footer-left {
@@ -295,10 +303,13 @@
     .footer-links {
         align-items: center;
         padding-top: 16px;
+        gap: 8px;
     }
 
     .footer-link {
         font-size: 14px;
+        width: 100%;
+        justify-content: center;
     }
 
     .newsletter-title {
@@ -319,16 +330,28 @@
     .newsletter-input {
         padding: 14px 20px;
         text-align: center;
+        min-height: 48px;
     }
 
     .newsletter-btn {
         padding: 14px 24px;
         border-radius: 40px;
         margin: 0 8px 8px 8px;
+        min-height: 48px;
+        width: 100%;
     }
 
     .footer-right {
         justify-content: center;
+    }
+
+    .footer-social {
+        gap: 12px;
+    }
+
+    .social-icon {
+        width: 48px;
+        height: 48px;
     }
 }
 </style>

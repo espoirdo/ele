@@ -488,25 +488,37 @@
 }
 
 @media (max-width: 600px) {
+    .create-event-page {
+        padding: 100px 16px 40px;
+    }
+
     .form-card {
-        padding: 24px 20px;
+        padding: 20px 16px;
     }
 
     .publish-options {
         grid-template-columns: 1fr;
     }
 
+    .create-event-header {
+        margin-bottom: 28px;
+    }
+
     .create-event-header h1 {
-        font-size: 22px;
+        font-size: 20px;
     }
 
     .form-navigation {
         flex-direction: column-reverse;
         gap: 12px;
+        margin-top: 8px;
     }
 
     .btn {
         width: 100%;
+        padding: 16px;
+        min-height: 52px;
+        font-size: 15px;
     }
 
     .btn-publish {

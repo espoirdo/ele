@@ -102,20 +102,48 @@
     background: #CC0000;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+    .progress-bar-container {
+        margin-bottom: 28px;
+    }
+
+    .progress-bar {
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+
+    .step-label {
+        font-size: 10px;
+    }
+
+    .progress-line {
+        min-width: 30px;
+    }
+
+    .step-circle {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
     .step-label {
         display: none;
     }
 
     .progress-line {
-        min-width: 40px;
-        margin-top: 18px;
+        min-width: 20px;
     }
 
     .step-circle {
-        width: 36px;
-        height: 36px;
-        font-size: 13px;
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+
+    .progress-line {
+        margin-top: 14px;
     }
 }
 </style>

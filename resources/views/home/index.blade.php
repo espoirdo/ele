@@ -571,7 +571,7 @@ body { margin: 0; padding: 0; font-family: var(--poppins); overflow-x: hidden; }
     margin-bottom: 32px;
 }
 .filtre-btn {
-    padding: 9px 20px;
+    padding: 12px 20px;
     border-radius: 40px;
     font-size: 13px;
     font-weight: 600;
@@ -581,6 +581,7 @@ body { margin: 0; padding: 0; font-family: var(--poppins); overflow-x: hidden; }
     border: 1.5px solid #e0e0e0;
     background: white;
     color: #555;
+    min-height: 44px;
 }
 .filtre-btn:hover { background: #f5f5f5; }
 .filtre-actif {
@@ -743,7 +744,7 @@ body { margin: 0; padding: 0; font-family: var(--poppins); overflow-x: hidden; }
     max-width: 800px;
     margin: 0 auto;
 }
-@media (max-width: 500px) { .cat-grid { grid-template-columns: 1fr; max-width: 100%; } }
+@media (max-width: 768px) { .cat-grid { grid-template-columns: 1fr; max-width: 100%; } }
 .cat-card {
     display: block;
     border-radius: 12px;

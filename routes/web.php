@@ -27,15 +27,15 @@ Route::get('/register', [RegisterController::class, 'showForm'])->name('register
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// Profile routes
-Route::middleware('auth')->group(function () {
+// Profile routes (requires verified email)
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Authentifié
-Route::middleware(['auth', 'check.blocked'])->group(function () {
+// Authentifié (requires verified email)
+Route::middleware(['auth', 'verified', 'check.blocked'])->group(function () {
     // Ancien chemin (redirect vers etape 1)
     // Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
 
