@@ -1,28 +1,25 @@
-<nav id="main-navbar" x-data="{ authOpen: false, scrolled: false, mobileMenuOpen: false }"
-     x-init="window.addEventListener('scroll', () => { scrolled = window.scrollY > 50 })"
-     :class="scrolled ? 'nav-scrolled' : ''">
+<nav id="main-navbar">
+<span hidden>{{ $scrolled = false }}</span>
 
 <style>
 #main-navbar {
     position: fixed;
     top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 16px;
+    right: 16px;
     z-index: 9999;
     background: rgba(204, 0, 0, 0.92);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    padding: 12px 0;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, padding 0.3s ease;
+    padding: 10px 16px;
     font-family: 'Poppins', sans-serif;
     border-radius: 50px;
-    max-width: 1200px;
-    width: calc(100% - 32px);
-    box-shadow: 0 8px 32px rgba(204, 0, 0, 0.2);
+    box-shadow: 0 8px 32px rgba(204, 0, 0, 0.18);
 }
 #main-navbar.nav-scrolled {
     background: rgba(204, 0, 0, 0.75);
-    padding: 10px 0;
+    padding: 8px 16px;
     border-radius: 50px;
     box-shadow: 0 4px 20px rgba(204, 0, 0, 0.15);
     backdrop-filter: blur(12px);
@@ -31,7 +28,6 @@
 .nav-inner {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -82,7 +78,7 @@
 .nav-link.nav-active::after { width: 100%; }
 .nav-link:hover { color: rgba(255, 255, 255, 0.85); }
 
-/* ===== AUTH ZONE ===== */
+/* ===== AUTH ZONE (DESKTOP) ===== */
 .nav-auth { position: relative; }
 .nav-auth-btn {
     display: flex; align-items: center;
@@ -247,14 +243,13 @@
     font-size: 12px; color: #666; margin-top: 3px; line-height: 1.4;
 }
 
-/* ===== HAMBURGER MENU ===== */
+/* ===== HAMBURGER MENU (MOBILE) ===== */
 .nav-hamburger {
     display: none;
     background: transparent;
     border: none;
     cursor: pointer;
     padding: 8px;
-    margin-right: 8px;
     outline: none;
     -webkit-tap-highlight-color: transparent;
 }
@@ -262,49 +257,113 @@
     width: 24px;
     height: 24px;
     color: white;
+    display: block;
 }
 
-/* Mobile Dropdown Menu */
-.nav-mobile-menu {
+/* Mobile Panel */
+.nav-mobile-panel {
     display: none;
     position: fixed;
-    top: 80px;
+    top: calc(48px + 16px + 8px);
     left: 16px;
     right: 16px;
-    background: rgba(204, 0, 0, 0.92);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-    padding: 8px 0;
+    background: rgba(204, 0, 0, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(204, 0, 0, 0.18);
+    padding: 16px;
     z-index: 9998;
-    animation: dropIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
-.nav-mobile-menu.show { display: block; }
-.nav-mobile-link {
+.nav-mobile-panel.open {
+    display: block;
+    animation: panelIn 0.25s ease both;
+}
+@keyframes panelIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile Account Section */
+.mobile-account {
     display: flex;
     align-items: center;
+    gap: 12px;
+    padding: 12px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+}
+.mobile-account:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+.mobile-account-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #CC0000, #910000);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 14px;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+}
+.mobile-account-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.mobile-account-name {
+    font-weight: 600; font-size: 15px;
+}
+.mobile-account-name.guest {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* Mobile Links */
+.mobile-nav-link {
+    display: block;
     color: #FFFFFF;
     font-weight: 600; font-size: 15px;
     text-decoration: none;
-    padding: 14px 24px;
+    padding: 12px 8px;
     transition: all 0.25s ease;
     letter-spacing: 0.3px;
-    min-height: 44px;
 }
-.nav-mobile-link:hover {
+.mobile-nav-link:hover {
     background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
 }
-.nav-mobile-link.nav-active {
-    background: rgba(255, 255, 255, 0.15);
+.mobile-nav-link.nav-active {
     text-decoration: underline;
     text-underline-offset: 5px;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
+/* Mobile Logout */
+.mobile-logout {
+    display: block;
+    color: #FFB3B3;
+    font-weight: 600; font-size: 15px;
+    padding: 12px 8px;
+    margin-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+.mobile-logout:hover {
+    background: rgba(255, 179, 179, 0.15);
+    border-radius: 8px;
+}
+
+/* Responsive - MOBILE FIRST (below 1024px) */
+@media (max-width: 1023px) {
     .nav-links { display: none; }
     .nav-hamburger { display: block; }
-    .nav-auth-name { display: none; }
-    .nav-auth-btn { padding: 6px; }
+    .nav-auth { display: none; }
+}
+
+@media (min-width: 1024px) {
+    .nav-hamburger { display: none !important; }
+    .nav-mobile-panel { display: none !important; }
+    .nav-auth { display: block !important; }
 }
 </style>
 
@@ -316,12 +375,9 @@
     </a>
 
     {{-- Hamburger (mobile) --}}
-    <button class="nav-hamburger" @click="mobileMenuOpen = !mobileMenuOpen" :aria-expanded="mobileMenuOpen">
-        <svg x-show="!mobileMenuOpen" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <button class="nav-hamburger" id="hamburger-btn" aria-label="Menu">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
-        <svg x-show="mobileMenuOpen" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display:none">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
     </button>
 
@@ -358,29 +414,56 @@
         @endguest
     </div>
 
-    {{-- Mobile Menu Dropdown --}}
-    <div class="nav-mobile-menu" :class="mobileMenuOpen ? 'show' : ''" x-show="mobileMenuOpen" style="display:none">
-        <a href="{{ route('home') }}" class="nav-mobile-link {{ request()->routeIs('home') ? 'nav-active' : '' }}">ACCUEIL</a>
-        <a href="{{ route('events.index') }}" class="nav-mobile-link {{ request()->routeIs('events.*') ? 'nav-active' : '' }}">EVENEMENTS</a>
-        <a href="{{ route('news') }}" class="nav-mobile-link {{ request()->routeIs('news') ? 'nav-active' : '' }}">NEWS</a>
-        <a href="{{ route('contact') }}" class="nav-mobile-link {{ request()->routeIs('contact') ? 'nav-active' : '' }}">CONTACT</a>
+    {{-- Mobile Panel (hamburger dropdown) --}}
+    <div class="nav-mobile-panel" id="mobile-panel">
+
+        {{-- Account Section (top) --}}
         @auth
-            <a href="{{ route('events.create') }}" class="nav-mobile-link {{ request()->routeIs('events.create') ? 'nav-active' : '' }}">CREER UN EVENEMENT</a>
+            <a href="{{ route('profile.edit') }}" class="mobile-account">
+                <div class="mobile-account-avatar">
+                    @if(auth()->user()->avatar)
+                        <img src="{{ Storage::url(auth()->user()->avatar) }}">
+                    @else
+                        {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                    @endif
+                </div>
+                <span class="mobile-account-name">{{ auth()->user()->name }}</span>
+            </a>
+        @else
+            <a href="{{ route('login') }}" class="mobile-account">
+                <div class="mobile-account-avatar" style="background: linear-gradient(135deg, #666, #444);">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                </div>
+                <span class="mobile-account-name guest">Compte</span>
+            </a>
         @endauth
-        @guest
-            <a href="{{ route('login') }}" class="nav-mobile-link">CREER UN EVENEMENT</a>
-        @endguest
+
+        {{-- Navigation Links --}}
+        <a href="{{ route('home') }}" class="mobile-nav-link {{ request()->routeIs('home') ? 'nav-active' : '' }}">ACCUEIL</a>
+        <a href="{{ route('events.index') }}" class="mobile-nav-link {{ request()->routeIs('events.*') ? 'nav-active' : '' }}">EVENEMENTS</a>
+        <a href="{{ route('news') }}" class="mobile-nav-link {{ request()->routeIs('news') ? 'nav-active' : '' }}">NEWS</a>
+        <a href="{{ route('contact') }}" class="mobile-nav-link {{ request()->routeIs('contact') ? 'nav-active' : '' }}">CONTACT</a>
+
+        @auth
+            <a href="{{ route('events.create') }}" class="mobile-nav-link {{ request()->routeIs('events.create') ? 'nav-active' : '' }}">CREER UN EVENEMENT</a>
+            <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
+                @csrf
+                <button type="submit" class="mobile-logout">Deconnexion</button>
+            </form>
+        @else
+            <a href="{{ route('login') }}" class="mobile-nav-link">CREER UN EVENEMENT</a>
+        @endauth
     </div>
 
     {{-- Auth --}}
-    <div class="nav-auth">
+    <div class="nav-auth" id="desktop-auth">
 
         @auth
             {{-- Bouton connecté --}}
             <button class="nav-auth-btn"
-                    @click="authOpen = !authOpen"
-                    @click.outside="authOpen = false"
-                    :aria-expanded="authOpen"
+                    id="auth-btn-connected"
                     style="outline: none;">
                 <div class="nav-auth-avatar">
                     @if(auth()->user()->avatar)
@@ -397,12 +480,7 @@
             </button>
 
             {{-- Dropdown connecté --}}
-            <div x-show="authOpen"
-                 x-transition:enter="transition duration-50"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 class="nav-dropdown"
-                 style="display:none">
+            <div class="nav-dropdown" id="dropdown-connected" style="display: none;">
 
                 {{-- Header utilisateur --}}
                 <div class="dd-header">
@@ -497,8 +575,7 @@
         @else
             {{-- Non connecté --}}
             <button class="nav-auth-btn"
-                    @click="authOpen = !authOpen"
-                    @click.outside="authOpen = false"
+                    id="auth-btn-guest"
                     style="outline: none;">
                 <div class="nav-auth-avatar" style="background: rgba(255, 255, 255, 0.25)">
                     <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
@@ -512,12 +589,7 @@
                 </svg>
             </button>
 
-            <div x-show="authOpen"
-                 x-transition:enter="transition duration-50"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 class="nav-dropdown"
-                 style="display:none">
+            <div class="nav-dropdown" id="dropdown-guest" style="display: none;">
 
                 <div class="dd-guest-header">
                     <div class="dd-guest-avatar">
@@ -561,3 +633,91 @@
     </div>
 </div>
 </nav>
+
+<script>
+(function() {
+    const navbar = document.getElementById('main-navbar');
+    const hamburger = document.getElementById('hamburger-btn');
+    const panel = document.getElementById('mobile-panel');
+    const authContainer = document.getElementById('desktop-auth');
+
+    // Scroll effect
+    window.addEventListener('scroll', function() {
+        if (navbar) {
+            if (window.scrollY > 50) {
+                navbar.classList.add('nav-scrolled');
+            } else {
+                navbar.classList.remove('nav-scrolled');
+            }
+        }
+    });
+
+    // Mobile hamburger toggle
+    if (hamburger && panel) {
+        hamburger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            panel.classList.toggle('open');
+        });
+
+        // Close mobile panel on outside click
+        document.addEventListener('click', function(e) {
+            if (!panel.contains(e.target) && !hamburger.contains(e.target)) {
+                panel.classList.remove('open');
+            }
+        });
+    }
+
+    // Desktop auth dropdown
+    const authBtnConnected = document.getElementById('auth-btn-connected');
+    const authBtnGuest = document.getElementById('auth-btn-guest');
+    const dropdownConnected = document.getElementById('dropdown-connected');
+    const dropdownGuest = document.getElementById('dropdown-guest');
+
+    function toggleDesktopDropdown(btn, dropdown) {
+        if (!btn || !dropdown) return;
+        const isHidden = dropdown.style.display === 'none';
+        dropdown.style.display = isHidden ? 'block' : 'none';
+        btn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+        return isHidden;
+    }
+
+    function closeDesktopDropdown() {
+        [dropdownConnected, dropdownGuest].forEach(function(dd) {
+            if (dd) dd.style.display = 'none';
+        });
+    }
+
+    if (authBtnConnected) {
+        authBtnConnected.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeDesktopDropdown();
+            toggleDesktopDropdown(authBtnConnected, dropdownConnected);
+        });
+    }
+
+    if (authBtnGuest) {
+        authBtnGuest.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeDesktopDropdown();
+            toggleDesktopDropdown(authBtnGuest, dropdownGuest);
+        });
+    }
+
+    // Close desktop dropdown on outside click
+    if (authContainer) {
+        document.addEventListener('click', function(e) {
+            if (!authContainer.contains(e.target)) {
+                closeDesktopDropdown();
+            }
+        });
+    }
+
+    // Close on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            if (panel) panel.classList.remove('open');
+            closeDesktopDropdown();
+        }
+    });
+})();
+</script>

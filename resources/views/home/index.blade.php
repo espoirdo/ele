@@ -60,7 +60,8 @@
         </div>
     </div>
 
-    <div class="swiper swiper-vedette">
+    {{-- Desktop: Swiper carousel --}}
+    <div class="swiper swiper-vedette desktop-carousel">
         <div class="swiper-wrapper">
             @forelse($top3 as $event)
                 <div class="swiper-slide vedette-slide">
@@ -97,6 +98,47 @@
                 </div>
             @endforelse
         </div>
+    </div>
+
+    {{-- Mobile: Custom carousel (below 768px) --}}
+    <div class="mobile-carousel-wrapper" id="mobile-vedette-carousel">
+        <div class="mobile-carousel-track" id="mobile-carousel-track">
+            @forelse($top3 as $event)
+                <div class="mobile-carousel-slide">
+                    <a href="{{ route('events.show', $event) }}" class="vedette-card">
+                        <img src="{{ $event->image_url }}" alt="{{ $event->titre }}" loading="lazy">
+                        <div class="vedette-overlay"></div>
+                        @if($event->premium_mise_en_avant)
+                            <span class="vedette-badge">Premium</span>
+                        @endif
+                        <div class="vedette-info">
+                            @if($event->category)
+                                <span class="vedette-cat">{{ $event->category->nom }}</span>
+                            @endif
+                            <h3>{{ $event->titre }}</h3>
+                            <p class="vedette-date">
+                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                                </svg>
+                                {{ $event->date->translatedFormat('l, d M Y') }} / {{ $event->heure }}
+                            </p>
+                            <p class="vedette-lieu">
+                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                                </svg>
+                                {{ $event->lieu }}
+                            </p>
+                        </div>
+                        <div class="vedette-hover-cta">Voir les details</div>
+                    </a>
+                </div>
+            @empty
+                <div class="mobile-carousel-slide">
+                    <div class="vedette-empty">Aucun evenement en vedette</div>
+                </div>
+            @endforelse
+        </div>
+        <div class="mobile-carousel-dots" id="mobile-carousel-dots"></div>
     </div>
 </section>
 
@@ -299,6 +341,14 @@ body { margin: 0; padding: 0; font-family: var(--poppins); overflow-x: hidden; }
     overflow: hidden;
     background: linear-gradient(135deg, #F7D6D3 0%, #E8C4C2 50%, #F7D6D3 100%);
     padding-top: 90px;
+    max-width: 100%;
+}
+
+/* Mobile hero */
+@media (max-width: 767px) {
+    .eledji-hero {
+        padding: 100px 20px 48px;
+    }
 }
 #particles-canvas {
     position: absolute;
@@ -314,6 +364,8 @@ body { margin: 0; padding: 0; font-family: var(--poppins); overflow-x: hidden; }
     padding: 0 24px;
     max-width: 860px;
     margin: 0 auto;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 .hero-badge {
     display: inline-flex;
@@ -341,23 +393,37 @@ body { margin: 0; padding: 0; font-family: var(--poppins); overflow-x: hidden; }
     50% { opacity: 0.5; transform: scale(1.3); }
 }
 .hero-content h1 {
-    font-size: clamp(24px, 4vw, 48px);
+    font-size: clamp(18px, 5vw, 36px);
     font-weight: 800;
     color: #1a1a1a;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     line-height: 1.15;
     margin: 0 0 8px 0;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 .hero-content h2 {
-    font-size: clamp(24px, 4vw, 48px);
+    font-size: clamp(18px, 5vw, 36px);
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--rouge);
     margin: 0 0 36px 0;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 .hero-search { width: 100%; max-width: 580px; margin: 0 auto; }
+
+/* Mobile search */
+@media (max-width: 767px) {
+    .hero-search {
+        width: 100%;
+        max-width: 100%;
+    }
+}
 .hero-search-box {
     display: flex;
     align-items: center;
@@ -404,6 +470,29 @@ body { margin: 0; padding: 0; font-family: var(--poppins); overflow-x: hidden; }
     gap: 64px;
     margin-top: 44px;
     padding: 48px 24px;
+}
+
+/* Mobile stats - empilement vertical */
+@media (max-width: 767px) {
+    .hero-stats {
+        flex-direction: column;
+        gap: 0;
+        padding: 24px 20px;
+    }
+    .hero-stat {
+        padding: 20px 0;
+        width: 100%;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .hero-stat:last-child {
+        border-bottom: none;
+    }
+    .hero-stat-divider {
+        display: none;
+    }
+    .hero-stat-num {
+        font-size: clamp(36px, 10vw, 56px);
+    }
 }
 .hero-stat { text-align: center; }
 .hero-stat-num {
@@ -561,6 +650,56 @@ body { margin: 0; padding: 0; font-family: var(--poppins); overflow-x: hidden; }
     justify-content: center;
     color: #999;
     font-size: 14px;
+}
+
+/* ===== MOBILE CAROUSEL (below 768px) ===== */
+.mobile-carousel-wrapper {
+    display: none;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding-bottom: 20px;
+}
+
+.mobile-carousel-track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    width: 100%;
+}
+
+.mobile-carousel-slide {
+    flex: 0 0 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
+}
+
+.mobile-carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.mobile-carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #E0E0E0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    padding: 0;
+}
+
+.mobile-carousel-dot.active {
+    background: #CC0000;
+    width: 24px;
+    border-radius: 4px;
+}
+
+@media (max-width: 767px) {
+    .desktop-carousel { display: none !important; }
+    .mobile-carousel-wrapper { display: block; }
 }
 
 /* ===== FILTRES ===== */
@@ -816,7 +955,121 @@ body { margin: 0; padding: 0; font-family: var(--poppins); overflow-x: hidden; }
 
 @push('scripts')
 <script>
-// Swiper vedette
+// Mobile Carousel for Vedette (below 768px)
+(function() {
+    const wrapper = document.getElementById('mobile-vedette-carousel');
+    if (!wrapper) return;
+
+    const track = document.getElementById('mobile-carousel-track');
+    const dotsContainer = document.getElementById('mobile-carousel-dots');
+    const slides = track.querySelectorAll('.mobile-carousel-slide');
+
+    if (slides.length === 0) return;
+
+    let currentIndex = 0;
+    let autoPlayInterval = null;
+    let isPaused = false;
+    const autoPlayDelay = 4000;
+    const pauseDuration = 3000;
+
+    // Create dots
+    slides.forEach((_, index) => {
+        const dot = document.createElement('button');
+        dot.className = 'mobile-carousel-dot' + (index === 0 ? ' active' : '');
+        dot.setAttribute('aria-label', 'Aller à la carte ' + (index + 1));
+        dot.addEventListener('click', () => goToSlide(index));
+        dotsContainer.appendChild(dot);
+    });
+
+    const dots = dotsContainer.querySelectorAll('.mobile-carousel-dot');
+
+    function updateCarousel() {
+        track.style.transform = 'translateX(-' + (currentIndex * 100) + '%)';
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentIndex);
+        });
+    }
+
+    function goToSlide(index) {
+        currentIndex = index;
+        if (currentIndex >= slides.length) currentIndex = 0;
+        if (currentIndex < 0) currentIndex = slides.length - 1;
+        updateCarousel();
+    }
+
+    function nextSlide() {
+        if (!isPaused) {
+            currentIndex++;
+            if (currentIndex >= slides.length) currentIndex = 0;
+            updateCarousel();
+        }
+    }
+
+    // Auto-play
+    function startAutoPlay() {
+        if (autoPlayInterval) clearInterval(autoPlayInterval);
+        autoPlayInterval = setInterval(nextSlide, autoPlayDelay);
+    }
+
+    function pauseAutoPlay() {
+        isPaused = true;
+        if (autoPlayInterval) {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = null;
+        }
+        setTimeout(() => {
+            isPaused = false;
+            startAutoPlay();
+        }, pauseDuration);
+    }
+
+    // Touch/Swipe support
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const minSwipeDistance = 50;
+
+    track.addEventListener('touchstart', function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    track.addEventListener('touchend', function(e) {
+        touchEndX = e.changedTouches[0].screenX;
+        const swipeDistance = touchEndX - touchStartX;
+
+        if (Math.abs(swipeDistance) > minSwipeDistance) {
+            if (swipeDistance > 0) {
+                // Swipe right - go to previous
+                currentIndex--;
+                if (currentIndex < 0) currentIndex = slides.length - 1;
+            } else {
+                // Swipe left - go to next
+                currentIndex++;
+                if (currentIndex >= slides.length) currentIndex = 0;
+            }
+            updateCarousel();
+            pauseAutoPlay();
+        }
+    }, { passive: true });
+
+    // Check screen width and init
+    function checkScreenWidth() {
+        const isMobile = window.innerWidth < 768;
+        if (isMobile) {
+            startAutoPlay();
+        } else {
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+            }
+        }
+    }
+
+    // Init
+    checkScreenWidth();
+    window.addEventListener('resize', checkScreenWidth);
+})();
+
+// Swiper vedette (desktop only)
 new Swiper('.swiper-vedette', {
     slidesPerView: 'auto',
     spaceBetween: 20,
