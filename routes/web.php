@@ -85,6 +85,39 @@ Route::get('/contact', function () {
     return view('pages.contact');
 })->name('contact');
 
+// Hidden route for running migrations (only for admin)
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/run-migrations', function () {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            return response()->json([
+                'success' => true,
+                'output' => \Illuminate\Support\Facades\Artisan::output()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    });
+
+    Route::get('/run-seeders', function () {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true, '--class' => 'Database\\Seeders\\RolePermissionSeeder']);
+            return response()->json([
+                'success' => true,
+                'output' => \Illuminate\Support\Facades\Artisan::output()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    });
+});
+
 // Admin routes
 require __DIR__ . '/admin.php';
 // Auth scaffolding routes (password reset, email verification...)
