@@ -7,7 +7,12 @@
 {{-- =========================================== --}}
 {{-- HERO SECTION --}}
 {{-- =========================================== --}}
-<section class="eledji-hero" id="hero">
+@php
+    $heroType = setting('hero_background_type', 'couleur');
+    $heroImage = setting('hero_background_image');
+    $heroHasImage = $heroType === 'image' && $heroImage;
+@endphp
+<section class="eledji-hero{{ $heroHasImage ? ' hero-has-image' : '' }}" id="hero">
     <canvas id="particles-canvas"></canvas>
     <div class="hero-content">
         <div class="hero-badge" id="hero-badge">
@@ -339,9 +344,25 @@ body { margin: 0; padding: 0; font-family: var(--poppins); overflow-x: hidden; }
     justify-content: center;
     text-align: center;
     overflow: hidden;
-    background: linear-gradient(135deg, #F7D6D3 0%, #E8C4C2 50%, #F7D6D3 100%);
-    padding-top: 90px;
+    /* Le fond commence a top:0 (pas de padding externe) - le contenu est ajoute via .hero-content */
+@if(setting('hero_background_type') === 'image' && setting('hero_background_image'))
+    background-image: url('{{ Storage::url(setting('hero_background_image')) }}');
+    background-size: cover;
+    background-position: center;
+@else
+    background: linear-gradient(135deg, {{ setting('hero_background_color', '#F7D6D3') }} 0%, {{ setting('hero_background_color', '#F7D6D3') }} 50%, {{ setting('hero_background_color', '#F7D6D3') }} 100%);
+@endif
+    padding-top: 100px;
     max-width: 100%;
+}
+
+/* Overlay sombre pour lisibilite sur image de fond */
+.eledji-hero.hero-has-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0,0,0,0.15);
+    z-index: 1;
 }
 
 /* Mobile hero */

@@ -50,9 +50,44 @@ class LogoController extends Controller
             }
         }
 
+        // Gestion du fond hero
+        if ($request->has('hero_background_type')) {
+            Setting::set('hero_background_type', $request->hero_background_type);
+        }
+
+        if ($request->has('hero_background_color')) {
+            Setting::set('hero_background_color', $request->hero_background_color);
+        }
+
+        // Upload de l'image de fond hero
+        if ($request->hasFile('hero_background_image')) {
+            $request->validate([
+                'hero_background_image' => 'image|mimes:jpg,jpeg,png,webp|max:5120'
+            ]);
+
+            // Supprimer l'ancienne image si existe
+            $oldImage = setting('hero_background_image');
+            if ($oldImage && Storage::exists($oldImage)) {
+                Storage::delete($oldImage);
+            }
+
+            // Stocker la nouvelle image
+            $path = $request->file('hero_background_image')->store('settings/hero', 'public');
+            Setting::set('hero_background_image', $path);
+        }
+
+        // Supprimer l'image si demandé
+        if ($request->has('hero_background_image_delete')) {
+            $oldImage = setting('hero_background_image');
+            if ($oldImage && Storage::exists($oldImage)) {
+                Storage::delete($oldImage);
+            }
+            Setting::set('hero_background_image', null);
+        }
+
         clear_settings_cache();
 
-        return back()->with('success', 'Logos mis a jour avec succes');
+        return back()->with('success', 'Parametres mis a jour avec succes');
     }
 
     /**

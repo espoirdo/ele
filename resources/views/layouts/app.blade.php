@@ -22,12 +22,13 @@
     <style>
         body {
             padding-top: 0 !important;
+            margin: 0 !important;
             font-family: 'Poppins', sans-serif;
         }
 
-        /* Padding pour la navbar flottante */
+        /* Padding pour la navbar flottante - retire pour permettre au hero de commencer a top:0 */
         body > main {
-            padding-top: 100px;
+            padding-top: 0;
         }
 
         /* Styles globaux supplementaires */
