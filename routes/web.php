@@ -116,6 +116,22 @@ Route::middleware(['auth', 'admin'])->group(function () {
             ], 500);
         }
     });
+
+    // Refresh all migrations (use with caution)
+    Route::get('/migrate-fresh', function () {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true]);
+            return response()->json([
+                'success' => true,
+                'output' => \Illuminate\Support\Facades\Artisan::output()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    });
 });
 
 // Admin routes
