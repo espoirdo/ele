@@ -50,7 +50,7 @@ class AdminBookingController extends Controller
      */
     public function show(Booking $booking)
     {
-        $booking->load(['user', 'event', 'payments']);
+        $booking->load(['user', 'event', 'payment']);
 
         return view('admin.bookings.show', compact('booking'));
     }

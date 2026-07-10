@@ -5,7 +5,7 @@
 @section('content')
 <div class="page-header">
     <h1 class="page-title">Gestion des administrateurs</h1>
-    <button class="btn btn-primary" onclick="document.getElementById('addAdminModal').style.display='block'">
+    <button type="button" class="btn btn-primary" id="openAddAdminModal">
         <i class="fas fa-plus"></i> Ajouter un administrateur
     </button>
 </div>
@@ -80,11 +80,11 @@
 </div>
 
 {{-- Modal pour ajouter un administrateur --}}
-<div id="addAdminModal" class="modal" style="display: none;">
+<div id="addAdminModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
             <h3>Ajouter un administrateur</h3>
-            <button type="button" class="close" onclick="document.getElementById('addAdminModal').style.display='none'">&times;</button>
+            <button type="button" class="close" id="closeAddAdminModal">&times;</button>
         </div>
 
         <form method="POST" action="{{ route('admin.settings.admins.store') }}">
@@ -115,7 +115,7 @@
             </p>
 
             <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                <button type="button" class="btn btn-outline" onclick="document.getElementById('addAdminModal').style.display='none'">
+                <button type="button" class="btn btn-outline" id="cancelAddAdminModal">
                     Annuler
                 </button>
                 <button type="submit" class="btn btn-primary">
@@ -127,11 +127,11 @@
 </div>
 
 {{-- Modal pour confirmer la suppression --}}
-<div id="deleteModal" class="modal" style="display: none;">
+<div id="deleteModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
             <h3>Confirmer la suppression</h3>
-            <button type="button" class="close" onclick="document.getElementById('deleteModal').style.display='none'">&times;</button>
+            <button type="button" class="close" id="closeDeleteModal">&times;</button>
         </div>
 
         <p>Etes-vous sur de vouloir supprimer <strong id="deleteAdminName"></strong> ?</p>
@@ -149,7 +149,7 @@
             </div>
 
             <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                <button type="button" class="btn btn-outline" onclick="document.getElementById('deleteModal').style.display='none'">
+                <button type="button" class="btn btn-outline" id="cancelDeleteModal">
                     Annuler
                 </button>
                 <button type="submit" class="btn btn-danger">
@@ -170,9 +170,13 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
+}
+
+.modal.show {
+    display: flex;
 }
 
 .modal-content {
@@ -236,18 +240,73 @@
 
 @push('scripts')
 <script>
-function confirmDelete(userId, userName) {
-    document.getElementById('deleteAdminName').textContent = userName;
-    document.getElementById('deleteForm').action = '/admin/parametres/administrateurs/' + userId;
-    document.getElementById('deleteModal').style.display = 'block';
-}
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion du modal d'ajout d'admin
+    const addAdminModal = document.getElementById('addAdminModal');
+    const openBtn = document.getElementById('openAddAdminModal');
+    const closeBtn = document.getElementById('closeAddAdminModal');
+    const cancelBtn = document.getElementById('cancelAddAdminModal');
 
-// Fermer les modals en cliquant a l'exterieur
-window.onclick = function(event) {
-    if (event.target.classList.contains('modal')) {
-        event.target.style.display = 'none';
+    if (openBtn && addAdminModal) {
+        openBtn.addEventListener('click', function() {
+            addAdminModal.classList.add('show');
+        });
     }
-}
+
+    if (closeBtn && addAdminModal) {
+        closeBtn.addEventListener('click', function() {
+            addAdminModal.classList.remove('show');
+        });
+    }
+
+    if (cancelBtn && addAdminModal) {
+        cancelBtn.addEventListener('click', function() {
+            addAdminModal.classList.remove('show');
+        });
+    }
+
+    // Fermer le modal en cliquant à l'extérieur
+    if (addAdminModal) {
+        addAdminModal.addEventListener('click', function(e) {
+            if (e.target === addAdminModal) {
+                addAdminModal.classList.remove('show');
+            }
+        });
+    }
+
+    // Gestion du modal de suppression
+    const deleteModal = document.getElementById('deleteModal');
+    const closeDeleteBtn = document.getElementById('closeDeleteModal');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteModal');
+
+    window.confirmDelete = function(userId, userName) {
+        document.getElementById('deleteAdminName').textContent = userName;
+        document.getElementById('deleteForm').action = '/admin/parametres/administrateurs/' + userId;
+        deleteModal.classList.add('show');
+    };
+
+    if (closeDeleteBtn) {
+        closeDeleteBtn.addEventListener('click', function() {
+            deleteModal.classList.remove('show');
+        });
+    }
+
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', function() {
+            deleteModal.classList.remove('show');
+        });
+    }
+
+    // Fermer le modal de suppression en cliquant à l'extérieur
+    if (deleteModal) {
+        deleteModal.addEventListener('click', function(e) {
+            if (e.target === deleteModal) {
+                deleteModal.classList.remove('show');
+            }
+        });
+    }
+});
 </script>
 @endpush
+
 @endsection
