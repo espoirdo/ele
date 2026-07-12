@@ -39,6 +39,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('settings',[AdminSettingController::class,'index'])->name('settings.index');
         Route::post('settings',[AdminSettingController::class,'update'])->name('settings.update');
 
+        // VIP Management
+        Route::get('vip/members', [\App\Http\Controllers\Admin\AdminVipController::class, 'members'])->name('vip.members');
+        Route::get('vip/payments', [\App\Http\Controllers\Admin\AdminVipController::class, 'payments'])->name('vip.payments');
+        Route::patch('vip/{user}/activate', [\App\Http\Controllers\Admin\AdminVipController::class, 'activate'])->name('vip.activate');
+        Route::patch('vip/{user}/revoke', [\App\Http\Controllers\Admin\AdminVipController::class, 'revoke'])->name('vip.revoke');
+        Route::patch('vip/payments/{vipPayment}/confirm', [\App\Http\Controllers\Admin\AdminVipController::class, 'confirmPayment'])->name('vip.payments.confirm');
+
+        // Marketplace Management
+        Route::resource('marketplace', \App\Http\Controllers\Admin\AdminMarketplaceController::class)->except(['show']);
+
         // Parametres etendus - necessite parametres.manage
         Route::middleware(['permission:parametres.manage'])->group(function () {
             // Parametres - Contenu du site

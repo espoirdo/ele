@@ -58,6 +58,31 @@
             </div>
         </div>
 
+        {{-- VIP Settings --}}
+        <div class="card">
+            <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 20px;">Paramètres VIP</h3>
+
+            <div class="form-group">
+                <label class="form-label">Prix abonnement (FCFA)</label>
+                <input type="number" name="vip_price" class="form-input" value="{{ Setting::get('vip_price', 5000) }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Durée (jours)</label>
+                <input type="number" name="vip_duration_days" class="form-input" value="{{ Setting::get('vip_duration_days', 30) }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Titre page VIP</label>
+                <input type="text" name="vip_page_title" class="form-input" value="{{ Setting::get('vip_page_title', 'Devenez VIP Eledji') }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Texte avantages VIP</label>
+                <textarea name="vip_advantages_text" class="form-input" rows="3">{{ Setting::get('vip_advantages_text', 'Accédez à la Marketplace exclusive, obtenez un badge VIP et bien plus encore!') }}</textarea>
+            </div>
+        </div>
+
         {{-- API Keys --}}
         <div class="card" style="grid-column: 1 / -1;">
             <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 20px;">Clés API</h3>

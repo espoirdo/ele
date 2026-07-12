@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Booking;
+use App\Models\Event;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +14,34 @@ use Illuminate\View\View;
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Display the user's profile page.
+     */
+    public function show(Request $request): View
+    {
+        $user = $request->user();
+
+        // Get user's created events
+        $myEvents = Event::where('user_id', $user->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Get user's bookings (participations)
+        $myBookings = Booking::where('user_id', $user->id)
+            ->with('event')
+            ->latest()
+            ->take(10)
+            ->get();
+
+        // VIP settings
+        $vipPrice = (int) setting('vip_price', 5000);
+        $vipDuration = (int) setting('vip_duration_days', 30);
+
+        return view('profile.show', compact('user', 'myEvents', 'myBookings', 'vipPrice', 'vipDuration'));
+    }
+
+    /**
+     * Display the user's profile edit form.
      */
     public function edit(Request $request): View
     {

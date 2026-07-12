@@ -93,4 +93,29 @@ class User extends Authenticatable implements MustVerifyEmailContract
     {
         return $this->role === 'admin';
     }
+
+    // VIP Methods
+    public function isVip(): bool
+    {
+        return $this->is_vip && $this->vip_expires_at && $this->vip_expires_at->isFuture();
+    }
+
+    public function daysRemainingVip(): int
+    {
+        if (!$this->vip_expires_at || !$this->vip_expires_at->isFuture()) {
+            return 0;
+        }
+        return now()->diffInDays($this->vip_expires_at);
+    }
+
+    public function getVipStatusAttribute(): string
+    {
+        if ($this->isVip()) {
+            return 'Actif';
+        }
+        if ($this->is_vip && $this->vip_expires_at && $this->vip_expires_at->isPast()) {
+            return 'Expire';
+        }
+        return 'Membre';
+    }
 }

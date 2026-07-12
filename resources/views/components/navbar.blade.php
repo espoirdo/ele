@@ -428,6 +428,7 @@
                     @endif
                 </div>
                 <span class="mobile-account-name">{{ auth()->user()->name }}</span>
+                <span style="margin-left: auto; font-size: 12px; color: #999;">Voir le profil</span>
             </a>
         @else
             <a href="{{ route('login') }}" class="mobile-account">
@@ -531,7 +532,7 @@
                         </svg>
                     </a>
 
-                    <a href="#" class="dd-item">
+                    <a href="{{ route('profile.edit') }}" class="dd-item">
                         <div class="dd-item-icon" style="background: rgba(0, 122, 255, 0.1)">
                             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#007AFF" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -543,7 +544,7 @@
                         </svg>
                     </a>
 
-                    <a href="#" class="dd-item">
+                    <a href="{{ route('user.bookings') }}" class="dd-item">
                         <div class="dd-item-icon" style="background: rgba(255, 149, 0, 0.1)">
                             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#FF9500" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>

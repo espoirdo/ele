@@ -28,10 +28,23 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Profile routes (requires verified email)
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
+Route::middleware(['auth', 'verified', 'vip'])->group(function () {
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'show'])->name('user.profile');
+    Route::get('/profil', [\App\Http\Controllers\ProfileController::class, 'show'])->name('profile.edit');
+    Route::patch('/profil', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profil', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// VIP routes (requires verified email)
+Route::middleware(['auth', 'verified', 'vip'])->group(function () {
+    Route::get('/vip/souscrire', [\App\Http\Controllers\VipController::class, 'show'])->name('vip.subscribe.show');
+    Route::post('/vip/souscrire', [\App\Http\Controllers\VipController::class, 'process'])->name('vip.subscribe.process');
+    Route::get('/vip/callback', [\App\Http\Controllers\VipController::class, 'callback'])->name('vip.callback');
+});
+
+// Marketplace route (requires VIP)
+Route::middleware(['auth', 'verified', 'vip', 'require.vip'])->group(function () {
+    Route::get('/marketplace', [\App\Http\Controllers\MarketplaceController::class, 'index'])->name('marketplace.index');
 });
 
 // Authentifié (requires verified email)

@@ -59,6 +59,18 @@
             @endif
         </a>
 
+        <a href="{{ route('admin.vip.members') }}"
+           class="menu-item {{ request()->routeIs('admin.vip.*') ? 'active' : '' }}">
+            <i class="fas fa-crown"></i>
+            Membres VIP
+        </a>
+
+        <a href="{{ route('admin.marketplace.index') }}"
+           class="menu-item {{ request()->routeIs('admin.marketplace.*') ? 'active' : '' }}">
+            <i class="fas fa-store"></i>
+            Marketplace
+        </a>
+
         <a href="{{ route('admin.settings.index') }}"
            class="menu-item {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}">
             <i class="fas fa-cog"></i>

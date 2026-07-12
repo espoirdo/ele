@@ -23,15 +23,27 @@ class AdminSettingController extends Controller
             'premium_mise_en_avant_price' => 'required|numeric|min:0',
             'premium_newsletter_price' => 'required|numeric|min:0',
             'premium_reseaux_price' => 'required|numeric|min:0',
+            'vip_price' => 'nullable|numeric|min:0',
+            'vip_duration_days' => 'nullable|integer|min:1',
+            'vip_page_title' => 'nullable|string|max:255',
+            'vip_advantages_text' => 'nullable|string',
             'maintenance_mode' => 'boolean',
             'google_maps_key' => 'nullable|string',
             'cinetpay_api_key' => 'nullable|string',
             'cinetpay_site_id' => 'nullable|string',
         ]);
 
+        // Set defaults for VIP settings if not provided
+        $validated['vip_price'] = $validated['vip_price'] ?? 5000;
+        $validated['vip_duration_days'] = $validated['vip_duration_days'] ?? 30;
+        $validated['vip_page_title'] = $validated['vip_page_title'] ?? 'Devenez VIP Eledji';
+        $validated['vip_advantages_text'] = $validated['vip_advantages_text'] ?? 'Accédez à la Marketplace exclusive, ajoutez un badge VIP sur votre profil et bien plus encore!';
+
         foreach ($validated as $key => $value) {
             Setting::set($key, $value);
         }
+
+        clear_settings_cache();
 
         return back()->with('success', 'Paramètres enregistrés');
     }

@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'check.blocked' => \App\Http\Middleware\CheckUserBlocked::class,
             'permission' => \App\Http\Middleware\CheckPermission::class,
+            'vip' => \App\Http\Middleware\CheckVipExpiry::class,
+            'require.vip' => \App\Http\Middleware\RequireVip::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
