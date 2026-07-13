@@ -395,6 +395,10 @@
            class="nav-link {{ request()->routeIs('news') ? 'nav-active' : '' }}">
             NEWS
         </a>
+        <a href="{{ route('marketplace.index') }}"
+           class="nav-link {{ request()->routeIs('marketplace.*') ? 'nav-active' : '' }}">
+            MARKETPLACE
+        </a>
         <a href="{{ route('contact') }}"
            class="nav-link {{ request()->routeIs('contact') ? 'nav-active' : '' }}">
             CONTACT
@@ -445,6 +449,7 @@
         <a href="{{ route('home') }}" class="mobile-nav-link {{ request()->routeIs('home') ? 'nav-active' : '' }}">ACCUEIL</a>
         <a href="{{ route('events.index') }}" class="mobile-nav-link {{ request()->routeIs('events.*') ? 'nav-active' : '' }}">EVENEMENTS</a>
         <a href="{{ route('news') }}" class="mobile-nav-link {{ request()->routeIs('news') ? 'nav-active' : '' }}">NEWS</a>
+        <a href="{{ route('marketplace.index') }}" class="mobile-nav-link {{ request()->routeIs('marketplace.*') ? 'nav-active' : '' }}">MARKETPLACE</a>
         <a href="{{ route('contact') }}" class="mobile-nav-link {{ request()->routeIs('contact') ? 'nav-active' : '' }}">CONTACT</a>
 
         @auth
