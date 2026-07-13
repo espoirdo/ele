@@ -59,5 +59,60 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
     @stack('scripts')
+
+    {{-- Password Toggle Script --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Find all password inputs
+            const passwordInputs = document.querySelectorAll('input[type="password"]');
+
+            passwordInputs.forEach(function(input) {
+                // Check if already wrapped
+                if (input.parentNode.classList.contains('password-wrapper')) return;
+
+                // Create wrapper
+                const wrapper = document.createElement('div');
+                wrapper.className = 'password-wrapper';
+                wrapper.style.position = 'relative';
+                wrapper.style.display = 'block';
+
+                // Insert wrapper before input
+                input.parentNode.insertBefore(wrapper, input);
+                wrapper.appendChild(input);
+
+                // Style input to fit in wrapper
+                input.style.width = '100%';
+
+                // Create toggle button
+                const toggleBtn = document.createElement('button');
+                toggleBtn.type = 'button';
+                toggleBtn.className = 'password-toggle';
+                toggleBtn.innerHTML = '<i class="fa fa-eye"></i>';
+                toggleBtn.style.position = 'absolute';
+                toggleBtn.style.right = '12px';
+                toggleBtn.style.top = '50%';
+                toggleBtn.style.transform = 'translateY(-50%)';
+                toggleBtn.style.background = 'none';
+                toggleBtn.style.border = 'none';
+                toggleBtn.style.cursor = 'pointer';
+                toggleBtn.style.color = '#666';
+                toggleBtn.style.padding = '4px 8px';
+                toggleBtn.style.fontSize = '14px';
+
+                // Toggle click handler
+                toggleBtn.addEventListener('click', function() {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        toggleBtn.innerHTML = '<i class="fa fa-eye-slash"></i>';
+                    } else {
+                        input.type = 'password';
+                        toggleBtn.innerHTML = '<i class="fa fa-eye"></i>';
+                    }
+                });
+
+                wrapper.appendChild(toggleBtn);
+            });
+        });
+    </script>
 </body>
 </html>

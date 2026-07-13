@@ -237,5 +237,46 @@
         </div>
     </div>
     @stack('scripts')
+
+    {{-- Password Toggle Script --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInputs = document.querySelectorAll('input[type="password"]');
+            passwordInputs.forEach(function(input) {
+                if (input.parentNode.classList.contains('password-wrapper')) return;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'password-wrapper';
+                wrapper.style.position = 'relative';
+                wrapper.style.display = 'block';
+                input.parentNode.insertBefore(wrapper, input);
+                wrapper.appendChild(input);
+                input.style.width = '100%';
+                const toggleBtn = document.createElement('button');
+                toggleBtn.type = 'button';
+                toggleBtn.className = 'password-toggle';
+                toggleBtn.innerHTML = '<i class="fa fa-eye"></i>';
+                toggleBtn.style.position = 'absolute';
+                toggleBtn.style.right = '12px';
+                toggleBtn.style.top = '50%';
+                toggleBtn.style.transform = 'translateY(-50%)';
+                toggleBtn.style.background = 'none';
+                toggleBtn.style.border = 'none';
+                toggleBtn.style.cursor = 'pointer';
+                toggleBtn.style.color = '#666';
+                toggleBtn.style.padding = '4px 8px';
+                toggleBtn.style.fontSize = '14px';
+                toggleBtn.addEventListener('click', function() {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        toggleBtn.innerHTML = '<i class="fa fa-eye-slash"></i>';
+                    } else {
+                        input.type = 'password';
+                        toggleBtn.innerHTML = '<i class="fa fa-eye"></i>';
+                    }
+                });
+                wrapper.appendChild(toggleBtn);
+            });
+        });
+    </script>
 </body>
 </html>
