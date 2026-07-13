@@ -39,6 +39,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('settings',[AdminSettingController::class,'index'])->name('settings.index');
         Route::post('settings',[AdminSettingController::class,'update'])->name('settings.update');
 
+        Route::get('newsletter', [\App\Http\Controllers\NewsletterController::class, 'index'])->name('newsletter.index');
+        Route::post('newsletter/envoyer', [\App\Http\Controllers\NewsletterController::class, 'send'])->name('newsletter.send');
+        Route::get('newsletter/abonnes', [\App\Http\Controllers\NewsletterController::class, 'subscribers'])->name('newsletter.subscribers');
+        Route::get('newsletter/historique', [\App\Http\Controllers\NewsletterController::class, 'history'])->name('newsletter.history');
+        Route::delete('newsletter/abonnes/{id}', [\App\Http\Controllers\NewsletterController::class, 'destroy'])->name('newsletter.subscribers.destroy');
+
         // VIP Management
         Route::get('vip/members', [\App\Http\Controllers\Admin\AdminVipController::class, 'members'])->name('vip.members');
         Route::get('vip/payments', [\App\Http\Controllers\Admin\AdminVipController::class, 'payments'])->name('vip.payments');

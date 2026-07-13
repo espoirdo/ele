@@ -18,6 +18,7 @@ Route::get('/dashboard', function () {
 
 // Newsletter
 Route::post('/newsletter/inscription', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
+Route::get('/newsletter/desabonnement', [NewsletterController::class, 'unsubscribe'])->name('newsletter.unsubscribe');
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 
 // Auth

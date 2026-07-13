@@ -71,6 +71,12 @@
             Marketplace
         </a>
 
+        <a href="{{ route('admin.newsletter.index') }}"
+           class="menu-item {{ request()->routeIs('admin.newsletter.*') ? 'active' : '' }}">
+            <i class="fas fa-envelope"></i>
+            Newsletter
+        </a>
+
         <a href="{{ route('admin.settings.index') }}"
            class="menu-item {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}">
             <i class="fas fa-cog"></i>
