@@ -45,7 +45,7 @@ class AdminVipController extends Controller
             'simple' => User::where('is_vip', false)->count(),
         ];
 
-        return view('admin.vip.members', compact('vipMembers', 'stats'));
+        return view('admin.vip.members', compact('vipMembers', 'stats', 'request'));
     }
 
     /**
@@ -60,7 +60,7 @@ class AdminVipController extends Controller
             ->latest()
             ->paginate(20);
 
-        return view('admin.vip.payments', compact('payments'));
+        return view('admin.vip.payments', compact('payments', 'request'));
     }
 
     /**
