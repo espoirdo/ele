@@ -1114,24 +1114,33 @@
 
 @push('scripts')
 <script>
-gsap.registerPlugin(ScrollTrigger);
+// Détection mobile pour optimiser les performances
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
 
-document.querySelectorAll('[data-gsap="fade-up"]').forEach((el, i) => {
-    gsap.from(el, {
-        scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' },
-        y: 36, opacity: 0, duration: 0.7,
-        delay: i * 0.05,
-        ease: 'power2.out'
+// GSAP animations - désactivé sur mobile pour améliorer les performances de scroll
+if (!isMobile) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    document.querySelectorAll('[data-gsap="fade-up"]').forEach((el, i) => {
+        gsap.from(el, {
+            scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' },
+            y: 36, opacity: 0, duration: 0.7,
+            delay: i * 0.05,
+            ease: 'power2.out'
+        });
     });
-});
+}
 
-window.addEventListener('scroll', () => {
-    const hero = document.getElementById('hero-photo');
-    if (hero) {
-        const scroll = window.scrollY;
-        hero.style.transform = `translateY(${scroll * 0.25}px) scale(1.04)`;
-    }
-});
+// Scroll parallax - uniquement sur desktop pour éviter les lags sur mobile
+if (!isMobile) {
+    window.addEventListener('scroll', () => {
+        const hero = document.getElementById('hero-photo');
+        if (hero) {
+            const scroll = window.scrollY;
+            hero.style.transform = `translateY(${scroll * 0.25}px) scale(1.04)`;
+        }
+    });
+}
 
 const likeBtn = document.getElementById('like-btn');
 const likeIcon = document.getElementById('like-icon');

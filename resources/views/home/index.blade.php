@@ -976,6 +976,9 @@ body { margin: 0; padding: 0; font-family: var(--poppins); overflow-x: hidden; }
 
 @push('scripts')
 <script>
+// Détection mobile optimisée pour les performances
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+
 // Mobile Carousel for Vedette (below 768px)
 (function() {
     const wrapper = document.getElementById('mobile-vedette-carousel');
@@ -1044,7 +1047,7 @@ body { margin: 0; padding: 0; font-family: var(--poppins); overflow-x: hidden; }
         }, pauseDuration);
     }
 
-    // Touch/Swipe support
+    // Touch/Swipe support - optimisé pour mobile
     let touchStartX = 0;
     let touchEndX = 0;
     const minSwipeDistance = 50;
@@ -1090,23 +1093,25 @@ body { margin: 0; padding: 0; font-family: var(--poppins); overflow-x: hidden; }
     window.addEventListener('resize', checkScreenWidth);
 })();
 
-// Swiper vedette (desktop only)
-new Swiper('.swiper-vedette', {
-    slidesPerView: 'auto',
-    spaceBetween: 20,
-    loop: true,
-    speed: 4500,
-    autoplay: { delay: 0, disableOnInteraction: false },
-    freeMode: { enabled: true, momentum: false },
-    grabCursor: true,
-});
+// Swiper vedette (desktop only) - désactivé sur mobile pour les performances
+if (!isMobile) {
+    new Swiper('.swiper-vedette', {
+        slidesPerView: 'auto',
+        spaceBetween: 20,
+        loop: true,
+        speed: 4500,
+        autoplay: { delay: 0, disableOnInteraction: false },
+        freeMode: { enabled: true, momentum: false },
+        grabCursor: true,
+    });
+}
 
-// Swiper promo
+// Swiper promo - optimisé pour mobile
 new Swiper('.swiper-promo', {
     loop: true,
     effect: 'fade',
-    speed: 900,
-    autoplay: { delay: 5000, disableOnInteraction: false },
+    speed: isMobile ? 500 : 900,
+    autoplay: { delay: isMobile ? 3000 : 5000, disableOnInteraction: false },
     pagination: {
         el: '.swiper-promo-pagination',
         clickable: true,
@@ -1117,24 +1122,26 @@ new Swiper('.swiper-promo', {
     },
 });
 
-// GSAP animations
-gsap.registerPlugin(ScrollTrigger);
-gsap.from('#hero-badge',    { y: -30, opacity: 0, duration: 0.8, delay: 0.2, ease: 'power2.out' });
-gsap.from('#hero-title',    { y: 40, opacity: 0, duration: 0.9, delay: 0.4, ease: 'power2.out' });
-gsap.from('#hero-subtitle', { y: 40, opacity: 0, duration: 0.9, delay: 0.6, ease: 'power2.out' });
-gsap.from('#hero-search',   { y: 40, opacity: 0, duration: 0.9, delay: 0.8, ease: 'power2.out' });
-gsap.from('#hero-stats',    { y: 30, opacity: 0, duration: 0.9, delay: 1.0, ease: 'power2.out' });
+// GSAP animations - désactivé sur mobile pour améliorer les performances de scroll
+if (!isMobile) {
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.from('#hero-badge',    { y: -30, opacity: 0, duration: 0.8, delay: 0.2, ease: 'power2.out' });
+    gsap.from('#hero-title',    { y: 40, opacity: 0, duration: 0.9, delay: 0.4, ease: 'power2.out' });
+    gsap.from('#hero-subtitle', { y: 40, opacity: 0, duration: 0.9, delay: 0.6, ease: 'power2.out' });
+    gsap.from('#hero-search',   { y: 40, opacity: 0, duration: 0.9, delay: 0.8, ease: 'power2.out' });
+    gsap.from('#hero-stats',    { y: 30, opacity: 0, duration: 0.9, delay: 1.0, ease: 'power2.out' });
 
-['#section-vedette', '#section-recents', '#section-promo', '#section-categories'].forEach(id => {
-    gsap.from(id, {
-        scrollTrigger: { trigger: id, start: 'top 82%', toggleActions: 'play none none none' },
-        y: 50, opacity: 0, duration: 0.85, ease: 'power2.out'
+    ['#section-vedette', '#section-recents', '#section-promo', '#section-categories'].forEach(id => {
+        gsap.from(id, {
+            scrollTrigger: { trigger: id, start: 'top 82%', toggleActions: 'play none none none' },
+            y: 50, opacity: 0, duration: 0.85, ease: 'power2.out'
+        });
     });
-});
+}
 
-// Particules
+// Particules - désactivé sur mobile pour améliorer les performances
 const canvas = document.getElementById('particles-canvas');
-if (canvas) {
+if (canvas && !isMobile) {
     const ctx = canvas.getContext('2d');
     const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
     resize();
@@ -1161,6 +1168,9 @@ if (canvas) {
         });
         requestAnimationFrame(tick);
     })();
+} else if (canvas && isMobile) {
+    // Masquer le canvas sur mobile
+    canvas.style.display = 'none';
 }
 </script>
 @endpush

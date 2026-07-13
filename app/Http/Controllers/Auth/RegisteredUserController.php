@@ -57,8 +57,9 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        Auth::login($user);
+        // Ne PAS connecter l'utilisateur immédiatement - il doit d'abord vérifier son email
+        // L'email de vérification sera envoyé automatiquement grâce au trait MustVerifyEmail
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route('verification.notice')->with('message', 'Un lien de vérification a été envoyé à votre adresse email.');
     }
 }
