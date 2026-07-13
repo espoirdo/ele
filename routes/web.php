@@ -42,9 +42,13 @@ Route::middleware(['auth', 'verified', 'vip'])->group(function () {
     Route::get('/vip/callback', [\App\Http\Controllers\VipController::class, 'callback'])->name('vip.callback');
 });
 
-// Marketplace route (requires VIP)
-Route::middleware(['auth', 'verified', 'vip', 'require.vip'])->group(function () {
-    Route::get('/marketplace', [\App\Http\Controllers\MarketplaceController::class, 'index'])->name('marketplace.index');
+// Marketplace route (accessible to everyone)
+Route::get('/marketplace', [\App\Http\Controllers\MarketplaceController::class, 'index'])->name('marketplace.index');
+
+// Marketplace - publish (requires VIP)
+Route::middleware(['auth', 'verified', 'vip'])->group(function () {
+    Route::get('/marketplace/publier', [\App\Http\Controllers\MarketplaceController::class, 'create'])->name('marketplace.create');
+    Route::post('/marketplace', [\App\Http\Controllers\MarketplaceController::class, 'store'])->name('marketplace.store');
 });
 
 // Authentifié (requires verified email)

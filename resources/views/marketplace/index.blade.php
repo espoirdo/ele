@@ -18,6 +18,8 @@
     --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
     --or: #F5A623;
     --or-bg: #FFFBF0;
+    --vert-bg: #E8F5E9;
+    --vert: #22C55E;
 }
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -68,6 +70,66 @@
     font-size: 15px;
     color: rgba(255,255,255,0.85);
     margin: 8px 0 0;
+}
+
+/* VIP Banner */
+.vip-banner {
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.vip-banner-vip {
+    background: var(--vert-bg);
+    border: 1px solid var(--vert);
+}
+
+.vip-banner-non-vip {
+    background: var(--or-bg);
+    border: 1px solid var(--or);
+}
+
+.vip-banner-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--texte);
+}
+
+.vip-banner-text span {
+    font-weight: 700;
+}
+
+.btn-banner {
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-banner-vip {
+    background: var(--rouge);
+    color: white;
+    border: none;
+}
+
+.btn-banner-vip:hover {
+    background: var(--rouge-dark);
+}
+
+.btn-banner-non-vip {
+    background: var(--or);
+    color: white;
+    border: none;
+}
+
+.btn-banner-non-vip:hover {
+    background: #E09000;
 }
 
 /* Grid */
@@ -176,7 +238,7 @@
 .btn-contact {
     width: 100%;
     padding: 12px;
-    background: var(--or);
+    background: var(--rouge);
     color: white;
     border: none;
     border-radius: 30px;
@@ -190,7 +252,28 @@
 }
 
 .btn-contact:hover {
-    background: #E09000;
+    background: var(--rouge-dark);
+}
+
+.btn-contact-outline {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    color: var(--rouge);
+    border: 2px solid var(--rouge);
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+}
+
+.btn-contact-outline:hover {
+    background: var(--rouge);
+    color: white;
 }
 
 /* Empty state */
@@ -254,6 +337,11 @@
     .marketplace-grid {
         grid-template-columns: 1fr;
     }
+
+    .vip-banner {
+        flex-direction: column;
+        text-align: center;
+    }
 }
 </style>
 @endpush
@@ -274,6 +362,21 @@
                 <p class="marketplace-subtitle">Découvrez les services et produits exclusifs de nos organisateurs</p>
             </div>
         </div>
+
+        {{-- Bannières conditionnelles --}}
+        @auth
+            @if($isVip)
+                <div class="vip-banner vip-banner-vip">
+                    <span class="vip-banner-text">Vous êtes membre VIP — vous pouvez <strong>publier vos produits</strong> sur la Marketplace</span>
+                    <a href="{{ route('marketplace.create') }}" class="btn-banner btn-banner-vip">Publier un produit</a>
+                </div>
+            @else
+                <div class="vip-banner vip-banner-non-vip">
+                    <span class="vip-banner-text">Vous voulez vendre sur la Marketplace ? <strong>Devenez membre VIP Eledji</strong></span>
+                    <a href="{{ route('vip.subscribe.show') }}" class="btn-banner btn-banner-non-vip">Devenir VIP</a>
+                </div>
+            @endif
+        @endauth
 
         @if($listings->count() > 0)
             <div class="marketplace-grid">
@@ -302,9 +405,15 @@
                                 @endif
                                 <span class="seller-name">{{ $listing->user->name }}</span>
                             </div>
-                            <a href="mailto:{{ $listing->user->email }}?subject=Interest in {{ urlencode($listing->titre) }} - Marketplace Eledji" class="btn-contact">
-                                Contacter
-                            </a>
+                            @auth
+                                <a href="mailto:{{ $listing->user->email }}?subject=Interest in {{ urlencode($listing->titre) }} - Marketplace Eledji" class="btn-contact">
+                                    Contacter le vendeur
+                                </a>
+                            @else
+                                <a href="{{ route('login').'?redirect='.url()->current() }}" class="btn-contact-outline">
+                                    Connectez-vous pour contacter
+                                </a>
+                            @endauth
                         </div>
                     </div>
                 @endforeach
