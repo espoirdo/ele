@@ -56,6 +56,11 @@ class Event extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
+    }
+
     public function scopePublie($query)
     {
         return $query->where('statut', 'publie');
