@@ -1070,7 +1070,7 @@
         {{-- MAIN CONTENT --}}
         <main class="dashboard-content">
 
-            {{-- ===== DASHBOARD SECTION ===== }}
+            {{-- ===== DASHBOARD SECTION ===== --}}
             @if($section === 'dashboard')
                 {{-- Stats --}}
                 <div class="stats-grid">
@@ -1239,7 +1239,7 @@
                 </div>
             @endif
 
-            {{-- ===== PROFIL SECTION ===== }}
+            {{-- ===== PROFIL SECTION ===== --}}
             @if($section === 'profil')
                 <div class="content-section">
                     <div class="section-header">
@@ -1419,7 +1419,7 @@
                 </div>
             @endif
 
-            {{-- ===== VIP SECTION ===== }}
+            {{-- ===== VIP SECTION ===== --}}
             @if($section === 'vip')
                 @if($user->isVip())
                     <div class="vip-card">
