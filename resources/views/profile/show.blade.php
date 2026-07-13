@@ -1237,6 +1237,7 @@
                         </div>
                     @endif
                 </div>
+            @endif
 
             {{-- ===== PROFIL SECTION ===== }}
             @if($section === 'profil')
