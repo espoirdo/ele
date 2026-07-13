@@ -146,6 +146,22 @@ Route::middleware(['auth', 'admin'])->group(function () {
         }
     });
 
+    // Show migration status
+    Route::get('/migration-status', function () {
+        try {
+            $migrations = \Illuminate\Support\Facades\DB::table('migrations')->get();
+            return response()->json([
+                'success' => true,
+                'migrations' => $migrations
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    });
+
     // Clear config cache
     Route::get('/clear-cache', function () {
         try {
