@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Mon profil - ELEDJI')
+@section('title', 'Mon tableau de bord - ELEDJI')
 
 @push('styles')
 <style>
@@ -8,149 +8,235 @@
         --rouge: #CC0000;
         --rouge-dark: #910000;
         --rose: #F7D6D3;
-        --gris-bg: #F9F9F9;
+        --gris-bg: #F5F5F5;
         --gris-border: #E0E0E0;
         --texte: #1a1a1a;
-        --texte-doux: #666;
+        --texte-doux: #666666;
         --poppins: 'Poppins', sans-serif;
         --radius: 16px;
         --radius-sm: 12px;
-        --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        --shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+        --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.06);
         --or: #F5A623;
         --or-bg: #FFFBF0;
     }
     *, *::before, *::after { box-sizing: border-box; }
 
-    .profile-page {
+    .dashboard-page {
         min-height: calc(100vh - 80px);
-        padding: 40px 24px 60px;
+        padding: 100px 24px 48px;
         background: var(--gris-bg);
         font-family: var(--poppins);
     }
 
-    .profile-container {
-        max-width: 860px;
+    .dashboard-container {
+        max-width: 1100px;
         margin: 0 auto;
-    }
-
-    /* Section 1 - Carte d'identité */
-    .identity-card {
-        border-radius: var(--radius);
-        overflow: hidden;
-        margin-bottom: 24px;
-    }
-
-    .identity-top {
-        background: linear-gradient(135deg, var(--rouge), var(--rouge-dark));
-        padding: 32px;
-        display: flex;
-        align-items: center;
+        display: grid;
+        grid-template-columns: 280px 1fr;
         gap: 24px;
+        align-items: start;
     }
 
-    .identity-bottom {
+    /* ===== SIDEBAR ===== */
+    .dashboard-sidebar {
         background: white;
-        padding: 24px 32px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 32px 24px;
+        position: sticky;
+        top: 100px;
     }
 
-    .avatar {
+    .sidebar-avatar {
         width: 96px;
         height: 96px;
         border-radius: 50%;
-        border: 4px solid rgba(255,255,255,0.4);
-        flex-shrink: 0;
+        margin: 0 auto 16px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 32px;
         font-weight: 700;
         color: white;
-        background: rgba(255,255,255,0.2);
+        background: linear-gradient(135deg, var(--rouge), var(--rouge-dark));
+        overflow: hidden;
     }
 
-    .identity-info {
-        flex: 1;
+    .sidebar-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
-    .identity-name {
+    .sidebar-name {
         font-family: 'Eras Medium ITC', serif;
-        font-size: 24px;
+        font-size: 18px;
         font-weight: 700;
-        color: white;
-        margin: 0 0 8px;
+        color: var(--texte);
+        text-align: center;
+        margin-bottom: 8px;
     }
 
-    .identity-meta {
+    .sidebar-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin: 0 auto 12px;
+        display: block;
+        text-align: center;
+        width: fit-content;
+    }
+
+    .sidebar-badge.vip {
+        background: var(--or-bg);
+        color: var(--or);
+    }
+
+    .sidebar-badge.membre {
+        background: #F1F5F9;
+        color: var(--texte-doux);
+    }
+
+    .sidebar-email {
+        font-size: 13px;
+        color: var(--texte-doux);
+        text-align: center;
+        margin-bottom: 4px;
+    }
+
+    .sidebar-date {
+        font-size: 12px;
+        color: #999;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .sidebar-divider {
+        border-top: 1px solid #F0F0F0;
+        margin: 20px 0;
+    }
+
+    .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 14px;
+        color: #444444;
+        text-decoration: none;
+        transition: all 0.25s ease;
+    }
+
+    .sidebar-link:hover {
+        background: #F9F9F9;
+    }
+
+    .sidebar-link.active {
+        background: #FFF0F0;
+        color: var(--rouge);
+        font-weight: 600;
+    }
+
+    .sidebar-link svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+    }
+
+    .sidebar-link.logout {
+        color: var(--rouge);
+        margin-top: 8px;
+        border-top: 1px solid #F0F0F0;
+        padding-top: 16px;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .dashboard-content {
+        min-width: 0;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-sm);
+        padding: 20px;
         display: flex;
         align-items: center;
         gap: 16px;
-        flex-wrap: wrap;
     }
 
-    .badge-vip {
-        display: inline-flex;
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
         align-items: center;
-        gap: 6px;
-        background: var(--or);
-        color: white;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
+        justify-content: center;
+        flex-shrink: 0;
     }
 
-    .badge-membre {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(255,255,255,0.2);
-        color: white;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
+    .stat-icon.red {
+        background: rgba(204, 0, 0, 0.1);
     }
 
-    .status-connected {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        color: #4ADE80;
-        font-size: 13px;
-        font-weight: 500;
-    }
-
-    .status-connected::before {
-        content: '';
-        width: 8px;
-        height: 8px;
-        background: #4ADE80;
-        border-radius: 50%;
-    }
-
-    .btn-edit-profile {
-        background: transparent;
-        border: 1.5px solid white;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 30px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.25s ease;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-edit-profile:hover {
-        background: white;
+    .stat-icon.red svg {
         color: var(--rouge);
     }
 
-    /* Section Cards */
-    .section-card {
+    .stat-icon.gold {
+        background: rgba(245, 166, 35, 0.1);
+    }
+
+    .stat-icon.gold svg {
+        color: var(--or);
+    }
+
+    .stat-icon.gray {
+        background: rgba(102, 102, 102, 0.1);
+    }
+
+    .stat-icon.gray svg {
+        color: var(--texte-doux);
+    }
+
+    .stat-info {
+        flex: 1;
+    }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--texte);
+        line-height: 1.2;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: var(--texte-doux);
+    }
+
+    /* Sections */
+    .content-section {
         background: white;
         border-radius: var(--radius);
         box-shadow: var(--shadow);
@@ -158,12 +244,19 @@
         margin-bottom: 24px;
     }
 
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
     .section-title {
         font-family: 'Eras Medium ITC', serif;
         font-size: 18px;
         font-weight: 700;
         color: var(--texte);
-        margin: 0 0 20px;
+        margin: 0;
         display: flex;
         align-items: center;
         gap: 10px;
@@ -174,101 +267,44 @@
         height: 22px;
     }
 
-    /* Info list */
-    .info-list {
-        display: grid;
-        gap: 16px;
-    }
-
-    .info-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 16px;
-        border-bottom: 1px solid var(--gris-border);
-    }
-
-    .info-row:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-    }
-
-    .info-label {
+    .section-link {
         font-size: 13px;
-        color: var(--texte-doux);
-    }
-
-    .info-value {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--texte);
-        text-align: right;
-    }
-
-    .verified-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13px;
-    }
-
-    .verified-badge.verified {
-        color: #22C55E;
-    }
-
-    .verified-badge.unverified {
-        color: #F59E0B;
-    }
-
-    .btn-modify {
-        background: transparent;
-        border: 1.5px solid var(--rouge);
         color: var(--rouge);
-        padding: 8px 16px;
-        border-radius: 30px;
-        font-size: 13px;
         font-weight: 600;
-        cursor: pointer;
-        transition: all 0.25s ease;
         text-decoration: none;
     }
 
-    .btn-modify:hover {
-        background: var(--rouge);
-        color: white;
+    .section-link:hover {
+        text-decoration: underline;
     }
 
-    /* Event list */
-    .event-mini-list {
+    /* Activity List */
+    .activity-list {
         display: grid;
-        gap: 16px;
+        gap: 12px;
     }
 
-    .event-mini-item {
+    .activity-item {
         display: flex;
+        align-items: center;
         gap: 16px;
         padding: 12px;
         background: var(--gris-bg);
         border-radius: var(--radius-sm);
-        transition: all 0.25s ease;
     }
 
-    .event-mini-item:hover {
-        transform: translateX(4px);
-    }
-
-    .event-mini-img {
-        width: 80px;
-        height: 60px;
-        border-radius: 8px;
+    .activity-img {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
         object-fit: cover;
         flex-shrink: 0;
     }
 
-    .event-mini-img-placeholder {
-        width: 80px;
-        height: 60px;
-        border-radius: 8px;
+    .activity-img-placeholder {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
         background: linear-gradient(135deg, var(--rouge), var(--rouge-dark));
         display: flex;
         align-items: center;
@@ -276,87 +312,175 @@
         flex-shrink: 0;
     }
 
-    .event-mini-img-placeholder svg {
-        width: 24px;
-        height: 24px;
+    .activity-img-placeholder svg {
+        width: 20px;
+        height: 20px;
         color: white;
     }
 
-    .event-mini-info {
+    .activity-info {
         flex: 1;
         min-width: 0;
     }
 
-    .event-mini-title {
+    .activity-title {
         font-size: 14px;
-        font-weight: 700;
+        font-weight: 600;
         color: var(--texte);
-        margin: 0 0 4px;
+        margin-bottom: 2px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .event-mini-meta {
+    .activity-meta {
         font-size: 12px;
         color: var(--texte-doux);
         display: flex;
-        gap: 12px;
+        align-items: center;
+        gap: 8px;
     }
 
-    .event-status {
+    .activity-status {
         font-size: 11px;
         font-weight: 600;
         padding: 3px 8px;
         border-radius: 12px;
     }
 
-    .event-status.publie {
+    .activity-status.publie {
         background: #DCFCE7;
         color: #16A34A;
     }
 
-    .event-status.brouillon {
+    .activity-status.brouillon {
         background: #FEF3C7;
         color: #D97706;
     }
 
-    .btn-view {
-        font-size: 12px;
-        color: var(--rouge);
+    .activity-status.confirmee {
+        background: #DCFCE7;
+        color: #16A34A;
+    }
+
+    .activity-status.en_attente {
+        background: #FEF3C7;
+        color: #D97706;
+    }
+
+    /* VIP Banner */
+    .vip-banner {
+        background: linear-gradient(135deg, var(--or-bg), #FFF);
+        border-left: 4px solid var(--or);
+        border-radius: var(--radius-sm);
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .vip-banner-text h3 {
+        font-family: 'Eras Medium ITC', serif;
+        font-size: 18px;
+        color: var(--texte);
+        margin: 0 0 4px;
+    }
+
+    .vip-banner-text p {
+        font-size: 13px;
+        color: var(--texte-doux);
+        margin: 0;
+    }
+
+    .btn-vip {
+        padding: 10px 20px;
+        border-radius: 40px;
+        font-size: 14px;
         font-weight: 600;
         text-decoration: none;
+        transition: all 0.25s ease;
+        border: none;
+        cursor: pointer;
     }
 
-    .btn-view:hover {
-        text-decoration: underline;
+    .btn-vip.primary {
+        background: var(--or);
+        color: white;
     }
 
-    /* Booking list */
-    .booking-mini-list {
+    .btn-vip.primary:hover {
+        background: #E09000;
+    }
+
+    /* Profile View */
+    .profile-grid {
         display: grid;
+        grid-template-columns: repeat(2, 1fr);
         gap: 16px;
     }
 
-    .booking-mini-item {
+    .profile-field {
         display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .profile-label {
+        font-size: 12px;
+        color: var(--texte-doux);
+    }
+
+    .profile-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--texte);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .verified-icon {
+        width: 16px;
+        height: 16px;
+    }
+
+    .verified-icon.verified {
+        color: #22C55E;
+    }
+
+    .verified-icon.unverified {
+        color: #F59E0B;
+    }
+
+    /* Events List */
+    .events-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .event-row {
+        display: flex;
+        align-items: center;
         gap: 16px;
         padding: 12px;
         background: var(--gris-bg);
         border-radius: var(--radius-sm);
     }
 
-    .booking-mini-img {
-        width: 80px;
-        height: 60px;
+    .event-thumb {
+        width: 64px;
+        height: 64px;
         border-radius: 8px;
         object-fit: cover;
         flex-shrink: 0;
     }
 
-    .booking-mini-img-placeholder {
-        width: 80px;
-        height: 60px;
+    .event-thumb-placeholder {
+        width: 64px;
+        height: 64px;
         border-radius: 8px;
         background: linear-gradient(135deg, var(--rouge), var(--rouge-dark));
         display: flex;
@@ -365,78 +489,396 @@
         flex-shrink: 0;
     }
 
-    .booking-mini-img-placeholder svg {
+    .event-thumb-placeholder svg {
         width: 24px;
         height: 24px;
         color: white;
     }
 
-    .booking-mini-info {
+    .event-details {
         flex: 1;
         min-width: 0;
     }
 
-    .booking-mini-title {
-        font-size: 14px;
+    .event-title {
+        font-size: 15px;
         font-weight: 700;
         color: var(--texte);
-        margin: 0 0 4px;
+        margin-bottom: 4px;
     }
 
-    .booking-mini-meta {
+    .event-meta {
         font-size: 12px;
         color: var(--texte-doux);
         display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 6px;
+        align-items: center;
+        gap: 12px;
     }
 
-    .booking-status {
+    .event-badge {
         font-size: 11px;
         font-weight: 600;
         padding: 3px 8px;
         border-radius: 12px;
     }
 
-    .booking-status.confirmee {
+    .event-badge.publie {
         background: #DCFCE7;
         color: #16A34A;
     }
 
-    .booking-status.en_attente {
+    .event-badge.brouillon {
         background: #FEF3C7;
         color: #D97706;
     }
 
-    .booking-status.annulee {
-        background: #F1F5F9;
-        color: #64748B;
+    .event-badge.complet {
+        background: #FEE2E2;
+        color: var(--rouge);
     }
 
-    .booking-number {
-        font-size: 11px;
+    .event-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-action.view {
+        background: transparent;
+        border: 1px solid var(--gris-border);
         color: var(--texte-doux);
     }
 
-    .btn-ticket {
-        font-size: 12px;
+    .btn-action.view:hover {
+        border-color: var(--rouge);
         color: var(--rouge);
+    }
+
+    .btn-action.edit {
+        background: var(--rouge);
+        color: white;
+    }
+
+    .btn-action.edit:hover {
+        background: var(--rouge-dark);
+    }
+
+    .btn-create {
+        padding: 12px 24px;
+        background: var(--rouge);
+        color: white;
+        border: none;
+        border-radius: 40px;
+        font-size: 14px;
         font-weight: 600;
         text-decoration: none;
+        transition: all 0.25s ease;
+    }
+
+    .btn-create:hover {
+        background: var(--rouge-dark);
+    }
+
+    /* Tickets List */
+    .ticket-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: var(--gris-bg);
+        border-radius: var(--radius-sm);
+        position: relative;
+    }
+
+    .ticket-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 6px;
+        background: var(--rouge);
+        border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    }
+
+    .ticket-card.cancelled {
+        opacity: 0.6;
+    }
+
+    .ticket-img {
+        width: 80px;
+        height: 80px;
+        border-radius: 8px;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .ticket-img-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--rouge), var(--rouge-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .ticket-img-placeholder svg {
+        width: 28px;
+        height: 28px;
+        color: white;
+    }
+
+    .ticket-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ticket-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--texte);
+        margin-bottom: 4px;
+    }
+
+    .ticket-meta {
+        font-size: 12px;
+        color: var(--texte-doux);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 6px;
+    }
+
+    .ticket-number {
+        font-family: monospace;
+        font-weight: 700;
+        font-size: 12px;
+    }
+
+    .ticket-status {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 12px;
+    }
+
+    .ticket-status.confirmee {
+        background: #DCFCE7;
+        color: #16A34A;
+    }
+
+    .ticket-status.en_attente {
+        background: #FEF3C7;
+        color: #D97706;
+    }
+
+    .ticket-status.annulee {
+        background: #FEE2E2;
+        color: var(--rouge);
+    }
+
+    .btn-ticket {
+        padding: 10px 20px;
+        background: var(--rouge);
+        color: white;
+        border: none;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        white-space: nowrap;
     }
 
     .btn-ticket:hover {
-        text-decoration: underline;
+        background: var(--rouge-dark);
     }
 
-    /* Empty states */
+    /* VIP Subscription View */
+    .vip-card {
+        background: linear-gradient(135deg, var(--or-bg), #FFF9E6);
+        border: 2px solid var(--or);
+        border-radius: var(--radius);
+        padding: 32px;
+        text-align: center;
+    }
+
+    .vip-card-header {
+        margin-bottom: 24px;
+    }
+
+    .vip-badge-large {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--or);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 24px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .vip-card h2 {
+        font-family: 'Eras Medium ITC', serif;
+        font-size: 24px;
+        color: var(--texte);
+        margin: 16px 0 8px;
+    }
+
+    .vip-card .vip-date {
+        font-size: 14px;
+        color: var(--texte-doux);
+    }
+
+    .vip-days {
+        font-size: 48px;
+        font-weight: 800;
+        color: var(--rouge);
+        margin: 24px 0;
+    }
+
+    .vip-days span {
+        font-size: 18px;
+        font-weight: 500;
+        color: var(--texte-doux);
+    }
+
+    .vip-progress {
+        height: 8px;
+        background: #E0E0E0;
+        border-radius: 4px;
+        margin: 24px 0;
+        overflow: hidden;
+    }
+
+    .vip-progress-bar {
+        height: 100%;
+        background: var(--rouge);
+        border-radius: 4px;
+    }
+
+    .btn-renew {
+        padding: 14px 32px;
+        background: var(--rouge);
+        color: white;
+        border: none;
+        border-radius: 40px;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.25s ease;
+    }
+
+    .btn-renew:hover {
+        background: var(--rouge-dark);
+    }
+
+    /* Non-VIP subscription page */
+    .sub-advantages {
+        display: grid;
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .advantage-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background: var(--gris-bg);
+        border-radius: var(--radius-sm);
+    }
+
+    .advantage-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: var(--or-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .advantage-icon svg {
+        width: 20px;
+        height: 20px;
+        color: var(--or);
+    }
+
+    .advantage-text {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--texte);
+    }
+
+    .sub-price {
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--rouge);
+        margin-bottom: 8px;
+    }
+
+    .sub-price span {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--texte-doux);
+    }
+
+    .payment-methods {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .payment-card {
+        padding: 16px;
+        background: white;
+        border: 2px solid var(--gris-border);
+        border-radius: var(--radius-sm);
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .payment-card:hover {
+        border-color: var(--rouge);
+    }
+
+    .payment-card.selected {
+        border-color: var(--rouge);
+        background: #FFF5F5;
+    }
+
+    .payment-card img {
+        height: 32px;
+        margin-bottom: 8px;
+    }
+
+    .payment-card span {
+        font-size: 12px;
+        color: var(--texte-doux);
+    }
+
+    /* Empty State */
     .empty-state {
         text-align: center;
-        padding: 32px 16px;
+        padding: 40px 16px;
     }
 
-    .empty-state-icon {
+    .empty-icon {
         width: 64px;
         height: 64px;
         margin: 0 auto 16px;
@@ -447,161 +889,89 @@
         justify-content: center;
     }
 
-    .empty-state-icon svg {
+    .empty-icon svg {
         width: 28px;
         height: 28px;
         color: var(--rouge);
     }
 
-    .empty-state-title {
+    .empty-title {
         font-size: 15px;
         font-weight: 600;
         color: var(--texte);
-        margin: 0 0 8px;
+        margin-bottom: 8px;
     }
 
-    .empty-state-desc {
+    .empty-desc {
         font-size: 13px;
         color: var(--texte-doux);
-        margin: 0 0 16px;
-    }
-
-    /* VIP Section */
-    .vip-section {
-        border-radius: var(--radius);
-        padding: 24px;
-        margin-bottom: 24px;
-    }
-
-    .vip-section.not-vip {
-        background: var(--or-bg);
-        border: 2px solid var(--or);
-    }
-
-    .vip-section.is-vip {
-        background: linear-gradient(135deg, #FFFBF0, #FFF5E6);
-        border: 2px solid var(--or);
-    }
-
-    .vip-title {
-        font-family: 'Eras Medium ITC', serif;
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--texte);
-        margin: 0 0 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .vip-title svg {
-        width: 22px;
-        height: 22px;
-        color: var(--or);
-    }
-
-    .vip-desc {
-        font-size: 14px;
-        color: var(--texte-doux);
-        margin: 0 0 16px;
-        line-height: 1.6;
-    }
-
-    .vip-price {
-        font-size: 28px;
-        font-weight: 800;
-        color: var(--rouge);
         margin-bottom: 16px;
     }
 
-    .vip-price span {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--texte-doux);
-    }
-
-    .btn-vip {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 14px 28px;
-        border-radius: 30px;
-        font-size: 15px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.25s ease;
-        cursor: pointer;
-        border: none;
-    }
-
-    .btn-vip.primary {
-        background: var(--rouge);
-        color: white;
-    }
-
-    .btn-vip.primary:hover {
-        background: var(--rouge-dark);
-        transform: translateY(-2px);
-    }
-
-    .btn-vip.gold {
-        background: var(--or);
-        color: white;
-    }
-
-    .btn-vip.gold:hover {
-        background: #E09000;
-        transform: translateY(-2px);
-    }
-
-    .vip-active-info {
+    /* Pagination */
+    .pagination {
+        margin-top: 24px;
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 12px;
+        justify-content: center;
     }
 
-    .vip-expiry {
-        font-size: 14px;
-        color: var(--texte-doux);
-    }
+    /* Responsive */
+    @media (max-width: 900px) {
+        .dashboard-container {
+            grid-template-columns: 1fr;
+        }
 
-    .vip-expiry strong {
-        color: var(--texte);
+        .dashboard-sidebar {
+            position: static;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .payment-methods {
+            grid-template-columns: 1fr;
+        }
     }
 
     @media (max-width: 640px) {
-        .identity-top {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .vip-banner {
             flex-direction: column;
             text-align: center;
-            padding: 24px;
         }
 
-        .identity-meta {
-            justify-content: center;
-        }
-
-        .identity-bottom {
-            padding: 20px 24px;
-        }
-
-        .info-row {
+        .event-row {
             flex-direction: column;
             align-items: flex-start;
-            gap: 4px;
         }
 
-        .info-value {
-            text-align: left;
+        .event-thumb, .event-thumb-placeholder {
+            width: 100%;
+            height: 120px;
         }
 
-        .event-mini-item, .booking-mini-item {
+        .event-actions {
+            width: 100%;
+        }
+
+        .btn-action {
+            flex: 1;
+            text-align: center;
+        }
+
+        .ticket-card {
             flex-direction: column;
         }
 
-        .event-mini-img, .event-mini-img-placeholder,
-        .booking-mini-img, .booking-mini-img-placeholder {
+        .ticket-img, .ticket-img-placeholder {
             width: 100%;
             height: 120px;
         }
@@ -610,241 +980,516 @@
 @endpush
 
 @section('content')
-<div class="profile-page">
-    <div class="profile-container">
+<div class="dashboard-page">
+    <div class="dashboard-container">
 
-        {{-- Section 1: Carte d'identité --}}
-        <div class="identity-card">
-            <div class="identity-top">
-                @if($user->avatar)
-                    <img src="{{ $user->avatarUrl }}" alt="{{ $user->name }}" class="avatar">
-                @else
-                    <div class="avatar">
-                        {{ implode('', array_map(fn($n) => $n[0], explode(' ', $user->name))) }}
-                    </div>
-                @endif
-                <div class="identity-info">
-                    <h1 class="identity-name">{{ $user->name }}</h1>
-                    <div class="identity-meta">
-                        @if($user->isVip())
-                            <span class="badge-vip">
-                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                                </svg>
-                                VIP
-                            </span>
-                        @else
-                            <span class="badge-membre">Membre</span>
-                        @endif
-                        <span class="status-connected">Connecté</span>
-                    </div>
+        {{-- SIDEBAR --}}
+        <aside class="dashboard-sidebar">
+            {{-- Avatar & Info --}}
+            @if($user->avatar)
+                <img src="{{ $user->avatarUrl }}" alt="{{ $user->name }}" class="sidebar-avatar">
+            @else
+                <div class="sidebar-avatar">
+                    {{ implode('', array_map(fn($n) => $n[0], explode(' ', $user->name))) }}
                 </div>
-                <a href="{{ route('profile.edit') }}" class="btn-edit-profile">
-                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                    </svg>
-                    Modifier
-                </a>
-            </div>
-        </div>
+            @endif
 
-        {{-- Section 5: VIP Status --}}
-        <div class="vip-section {{ $user->isVip() ? 'is-vip' : 'not-vip' }}">
-            @if(!$user->isVip())
-                <h2 class="vip-title">
-                    <svg fill="currentColor" viewBox="0 0 24 24">
+            <h2 class="sidebar-name">{{ $user->name }}</h2>
+
+            @if($user->isVip())
+                <span class="sidebar-badge vip">
+                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
-                    Passez en VIP
-                </h2>
-                <p class="vip-desc">
-                    Accédez à la Marketplace exclusive, obt的双子一个 badge VIP visible sur votre profil, et bien plus encore!
-                </p>
-                <p class="vip-price">{{ number_format($vipPrice, 0, ',', ' ') }} XOF <span>/ {{ $vipDuration }} jours</span></p>
-                <a href="{{ route('vip.subscribe.show') }}" class="btn-vip primary">
-                    Devenir VIP
-                </a>
+                    Membre VIP
+                </span>
             @else
-                <div class="vip-active-info">
-                    <div>
-                        <h2 class="vip-title">
-                            <svg fill="currentColor" viewBox="0 0 24 24">
+                <span class="sidebar-badge membre">Membre</span>
+            @endif
+
+            <p class="sidebar-email">{{ $user->email }}</p>
+            <p class="sidebar-date">Membre depuis {{ $user->created_at->translatedFormat('F Y') }}</p>
+
+            <div class="sidebar-divider"></div>
+
+            {{-- Navigation --}}
+            <nav class="sidebar-nav">
+                <a href="{{ route('user.profile', ['section' => 'dashboard']) }}" class="sidebar-link {{ $section === 'dashboard' ? 'active' : '' }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    Tableau de bord
+                </a>
+
+                <a href="{{ route('user.profile', ['section' => 'profil']) }}" class="sidebar-link {{ $section === 'profil' ? 'active' : '' }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    Mon profil
+                </a>
+
+                <a href="{{ route('user.profile', ['section' => 'events']) }}" class="sidebar-link {{ $section === 'events' ? 'active' : '' }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    Mes evenements
+                </a>
+
+                <a href="{{ route('user.profile', ['section' => 'tickets']) }}" class="sidebar-link {{ $section === 'tickets' ? 'active' : '' }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+                    </svg>
+                    Mes billets
+                </a>
+
+                <a href="{{ route('user.profile', ['section' => 'vip']) }}" class="sidebar-link {{ $section === 'vip' ? 'active' : '' }}">
+                    @if($user->isVip())
+                        <svg fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                    @else
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                        </svg>
+                    @endif
+                    Abonnement VIP
+                </a>
+
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="sidebar-link logout" style="width: 100%; border: none; background: transparent; cursor: pointer;">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        Deconnexion
+                    </button>
+                </form>
+            </nav>
+        </aside>
+
+        {{-- MAIN CONTENT --}}
+        <main class="dashboard-content">
+
+            {{-- ===== DASHBOARD SECTION ===== }}
+            @if($section === 'dashboard')
+                {{-- Stats --}}
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon red">
+                            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">{{ $stats['events_created'] }}</div>
+                            <div class="stat-label">Evenements créés</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon red">
+                            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">{{ $stats['participations'] }}</div>
+                            <div class="stat-label">Participations</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon red">
+                            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value">{{ $stats['tickets_sold'] }}</div>
+                            <div class="stat-label">Billets vendus</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon {{ $user->isVip() ? 'gold' : 'gray' }}">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                             </svg>
-                            VIP actif
-                        </h2>
-                        <p class="vip-expiry">Votre abonnement expire le <strong>{{ $user->vip_expires_at->translatedFormat('d M Y') }}</strong></p>
-                    </div>
-                    <a href="{{ route('marketplace.index') }}" class="btn-vip gold">
-                        Accéder à la Marketplace
-                    </a>
-                </div>
-            @endif
-        </div>
-
-        {{-- Section 2: Informations personnelles --}}
-        <div class="section-card">
-            <h2 class="section-title">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                </svg>
-                Informations personnelles
-            </h2>
-            <div class="info-list">
-                <div class="info-row">
-                    <span class="info-label">Nom complet</span>
-                    <span class="info-value">{{ $user->name }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Email</span>
-                    <span class="info-value">{{ $user->email }}</span>
-                </div>
-                @if($user->phone)
-                <div class="info-row">
-                    <span class="info-label">Téléphone</span>
-                    <span class="info-value">{{ $user->phone }}</span>
-                </div>
-                @endif
-                @if($user->country)
-                <div class="info-row">
-                    <span class="info-label">Pays</span>
-                    <span class="info-value">{{ $user->country }}</span>
-                </div>
-                @endif
-                <div class="info-row">
-                    <span class="info-label">Membre depuis</span>
-                    <span class="info-value">{{ $user->created_at->translatedFormat('d M Y') }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Email vérifié</span>
-                    <span class="info-value">
-                        @if($user->email_verified_at)
-                            <span class="verified-badge verified">
-                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                Vérifié
-                            </span>
-                        @else
-                            <span class="verified-badge unverified">
-                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                </svg>
-                                Non vérifié
-                            </span>
-                        @endif
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        {{-- Section 3: Mes événements créés --}}
-        <div class="section-card">
-            <h2 class="section-title">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                Mes événements créés
-            </h2>
-            @if($myEvents->count() > 0)
-                <div class="event-mini-list">
-                    @foreach($myEvents as $event)
-                        <div class="event-mini-item">
-                            @if($event->image_couverture)
-                                <img src="{{ Storage::url($event->image_couverture) }}" alt="{{ $event->titre }}" class="event-mini-img">
-                            @else
-                                <div class="event-mini-img-placeholder">
-                                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                </div>
-                            @endif
-                            <div class="event-mini-info">
-                                <h3 class="event-mini-title">{{ $event->titre }}</h3>
-                                <div class="event-mini-meta">
-                                    <span>{{ $event->date->translatedFormat('d M Y') }}</span>
-                                    <span class="event-status {{ $event->statut === 'publie' ? 'publie' : 'brouillon' }}">
-                                        {{ $event->statut === 'publie' ? 'Publié' : 'Brouillon' }}
-                                    </span>
-                                </div>
-                            </div>
-                            <a href="{{ route('events.show', $event->slug) }}" class="btn-view">Voir</a>
                         </div>
-                    @endforeach
-                </div>
-            @else
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                        </svg>
+                        <div class="stat-info">
+                            <div class="stat-value">{{ $user->isVip() ? 'VIP Actif' : 'Non VIP' }}</div>
+                            <div class="stat-label">{{ $user->isVip() ? $vipDaysRemaining . ' jours restants' : 'Statut abonnement' }}</div>
+                        </div>
                     </div>
-                    <p class="empty-state-title">Vous n'avez pas encore créé d'événement</p>
-                    <p class="empty-state-desc">Partagez vos événements avec la communauté Eledji</p>
-                    <a href="{{ route('events.create') }}" class="btn-vip primary">Créer mon premier événement</a>
                 </div>
-            @endif
-        </div>
 
-        {{-- Section 4: Mes participations --}}
-        <div class="section-card">
-            <h2 class="section-title">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
-                </svg>
-                Mes participations
-            </h2>
-            @if($myBookings->count() > 0)
-                <div class="booking-mini-list">
-                    @foreach($myBookings as $booking)
-                        <div class="booking-mini-item">
-                            @if($booking->event && $booking->event->image_couverture)
-                                <img src="{{ Storage::url($booking->event->image_couverture) }}" alt="{{ $booking->event->titre }}" class="booking-mini-img">
-                            @else
-                                <div class="booking-mini-img-placeholder">
-                                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
-                                    </svg>
+                {{-- VIP Banner (if not VIP) --}}
+                @if(!$user->isVip())
+                    <div class="vip-banner">
+                        <div class="vip-banner-text">
+                            <h3>Debloquez la Marketplace</h3>
+                            <p>Publiez vos produits et services, et plus encore!</p>
+                        </div>
+                        <a href="{{ route('vip.subscribe.show') }}" class="btn-vip primary">Devenir VIP</a>
+                    </div>
+                @endif
+
+                {{-- Recent Activity --}}
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Activite recente
+                        </h2>
+                        <a href="{{ route('user.profile', ['section' => 'events']) }}" class="section-link">Voir tout</a>
+                    </div>
+
+                    @if($myEvents->count() > 0)
+                        <div class="activity-list">
+                            @foreach($myEvents->take(3) as $event)
+                                <div class="activity-item">
+                                    @if($event->image_couverture)
+                                        <img src="{{ Storage::url($event->image_couverture) }}" alt="{{ $event->titre }}" class="activity-img">
+                                    @else
+                                        <div class="activity-img-placeholder">
+                                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                        </div>
+                                    @endif
+                                    <div class="activity-info">
+                                        <h3 class="activity-title">{{ $event->titre }}</h3>
+                                        <div class="activity-meta">
+                                            <span>{{ $event->date->translatedFormat('d M Y') }}</span>
+                                            <span class="activity-status {{ $event->statut }}">
+                                                {{ $event->statut === 'publie' ? 'Publie' : 'Brouillon' }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                            @endif
-                            <div class="booking-mini-info">
-                                @if($booking->event)
-                                    <h3 class="booking-mini-title">{{ $booking->event->titre }}</h3>
-                                    <div class="booking-mini-meta">
-                                        <span>{{ $booking->event->date->translatedFormat('d M Y') }}</span>
-                                        @if($booking->event->lieu)
-                                            <span>{{ $booking->event->lieu }}</span>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <p class="empty-title">Aucun evenement cree recemment</p>
+                            <a href="{{ route('events.create') }}" class="btn-vip primary">Creer un evenement</a>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+                            </svg>
+                            Mes reservations recentes
+                        </h2>
+                        <a href="{{ route('user.profile', ['section' => 'tickets']) }}" class="section-link">Voir tout</a>
+                    </div>
+
+                    @if($myBookings->count() > 0)
+                        <div class="activity-list">
+                            @foreach($myBookings->take(3) as $booking)
+                                <div class="activity-item">
+                                    @if($booking->event && $booking->event->image_couverture)
+                                        <img src="{{ Storage::url($booking->event->image_couverture) }}" alt="{{ $booking->event->titre }}" class="activity-img">
+                                    @else
+                                        <div class="activity-img-placeholder">
+                                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+                                            </svg>
+                                        </div>
+                                    @endif
+                                    <div class="activity-info">
+                                        @if($booking->event)
+                                            <h3 class="activity-title">{{ $booking->event->titre }}</h3>
+                                            <div class="activity-meta">
+                                                <span>{{ $booking->event->date->translatedFormat('d M Y') }}</span>
+                                                <span class="activity-status {{ $booking->status }}">
+                                                    @if($booking->status === 'confirmee') Confirme
+                                                    @elseif($booking->status === 'en_attente') En attente
+                                                    @else Annule
+                                                    @endif
+                                                </span>
+                                            </div>
                                         @endif
                                     </div>
-                                @endif
-                                <span class="booking-number">{{ $booking->numero_reservation }}</span>
-                                <span class="booking-status {{ $booking->status }}">
-                                    @if($booking->status === 'confirmee') Confirmé
-                                    @elseif($booking->status === 'en_attente') En attente
-                                    @else Annulé
-                                    @endif
-                                </span>
-                                @if($booking->status === 'confirmee')
-                                    <a href="{{ route('booking.success', $booking) }}" class="btn-ticket">Voir mon billet</a>
-                                @endif
-                            </div>
+                                </div>
+                            @endforeach
                         </div>
-                    @endforeach
-                </div>
-            @else
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                    </div>
-                    <p class="empty-state-title">Vous n'avez encore participé à aucun événement</p>
-                    <p class="empty-state-desc">Découvrez les événements près de chez vous</p>
-                    <a href="{{ route('events.index') }}" class="btn-vip primary">Découvrir les événements</a>
+                    @else
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                            </div>
+                            <p class="empty-title">Aucune reservation recente</p>
+                            <a href="{{ route('events.index') }}" class="btn-vip primary">Decouvrir les evenements</a>
+                        </div>
+                    @endif
                 </div>
             @endif
-        </div>
 
+            {{-- ===== PROFIL SECTION ===== }}
+            @if($section === 'profil')
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Informations personnelles</h2>
+                        <a href="{{ route('profile.edit') }}" class="btn-modify">Modifier</a>
+                    </div>
+
+                    <div class="profile-grid">
+                        <div class="profile-field">
+                            <span class="profile-label">Nom complet</span>
+                            <span class="profile-value">{{ $user->name }}</span>
+                        </div>
+
+                        <div class="profile-field">
+                            <span class="profile-label">Email</span>
+                            <span class="profile-value">
+                                {{ $user->email }}
+                                @if($user->email_verified_at)
+                                    <svg class="verified-icon verified" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                @else
+                                    <svg class="verified-icon unverified" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                @endif
+                            </span>
+                        </div>
+
+                        <div class="profile-field">
+                            <span class="profile-label">Telephone</span>
+                            <span class="profile-value">{{ $user->phone ?? 'Non renseigne' }}</span>
+                        </div>
+
+                        <div class="profile-field">
+                            <span class="profile-label">Pays</span>
+                            <span class="profile-value">{{ $user->country ?? 'Non renseigne' }}</span>
+                        </div>
+
+                        <div class="profile-field">
+                            <span class="profile-label">Membre depuis</span>
+                            <span class="profile-value">{{ $user->created_at->translatedFormat('F Y') }}</span>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- ===== EVENTS SECTION ===== }}
+            @if($section === 'events')
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Mes evenements</h2>
+                        <a href="{{ route('events.create') }}" class="btn-create">Creer un evenement</a>
+                    </div>
+
+                    @if($allMyEvents->count() > 0)
+                        <div class="events-list">
+                            @foreach($allMyEvents as $event)
+                                <div class="event-row">
+                                    @if($event->image_couverture)
+                                        <img src="{{ Storage::url($event->image_couverture) }}" alt="{{ $event->titre }}" class="event-thumb">
+                                    @else
+                                        <div class="event-thumb-placeholder">
+                                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                        </div>
+                                    @endif
+
+                                    <div class="event-details">
+                                        <h3 class="event-title">{{ $event->titre }}</h3>
+                                        <div class="event-meta">
+                                            <span>{{ $event->date->translatedFormat('d M Y') }}</span>
+                                            @if($event->category)
+                                                <span class="event-badge" style="background: var(--rose); color: var(--rouge);">
+                                                    {{ $event->category->nom }}
+                                                </span>
+                                            @endif
+                                            <span>{{ $event->bookings_count }} reservation(s)</span>
+                                            <span class="event-badge {{ $event->statut }}">
+                                                @if($event->statut === 'publie') Publie
+                                                @elseif($event->statut === 'brouillon') Brouillon
+                                                @else Complet
+                                                @endif
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="event-actions">
+                                        <a href="{{ route('events.show', $event->slug) }}" class="btn-action view">Voir</a>
+                                        <a href="#" class="btn-action edit">Modifier</a>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="pagination">
+                            {{ $allMyEvents->links() }}
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <p class="empty-title">Vous n'avez pas encore cree d'evenement</p>
+                            <p class="empty-desc">Partagez vos evenements avec la communaute Eledji</p>
+                            <a href="{{ route('events.create') }}" class="btn-vip primary">Creer mon premier evenement</a>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
+            {{-- ===== TICKETS SECTION ===== }}
+            @if($section === 'tickets')
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Mes billets</h2>
+                    </div>
+
+                    @if($allMyBookings->count() > 0)
+                        <div class="activity-list">
+                            @foreach($allMyBookings as $booking)
+                                <div class="ticket-card {{ $booking->status === 'annulee' ? 'cancelled' : '' }}">
+                                    @if($booking->event && $booking->event->image_couverture)
+                                        <img src="{{ Storage::url($booking->event->image_couverture) }}" alt="{{ $booking->event->titre }}" class="ticket-img">
+                                    @else
+                                        <div class="ticket-img-placeholder">
+                                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+                                            </svg>
+                                        </div>
+                                    @endif
+
+                                    <div class="ticket-info">
+                                        @if($booking->event)
+                                            <h3 class="ticket-title">{{ $booking->event->titre }}</h3>
+                                            <div class="ticket-meta">
+                                                <span>{{ $booking->event->date->translatedFormat('d M Y') }}</span>
+                                                @if($booking->event->lieu)
+                                                    <span>{{ $booking->event->lieu }}</span>
+                                                @endif
+                                            </div>
+                                        @endif
+                                        <span class="ticket-number">{{ $booking->numero_reservation }}</span>
+                                        <span class="ticket-status {{ $booking->status }}">
+                                            @if($booking->status === 'confirmee') Confirme
+                                            @elseif($booking->status === 'en_attente') En attente
+                                            @else Annule
+                                            @endif
+                                        </span>
+                                    </div>
+
+                                    @if($booking->status === 'confirmee')
+                                        <a href="{{ route('booking.success', $booking) }}" class="btn-ticket">Voir le billet</a>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="pagination">
+                            {{ $allMyBookings->links() }}
+                        </div>
+                    @else
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+                                </svg>
+                            </div>
+                            <p class="empty-title">Vous n'avez encore participe a aucun evenement</p>
+                            <p class="empty-desc">Decouvrez les evenements pres de chez vous</p>
+                            <a href="{{ route('events.index') }}" class="btn-vip primary">Decouvrir les evenements</a>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
+            {{-- ===== VIP SECTION ===== }}
+            @if($section === 'vip')
+                @if($user->isVip())
+                    <div class="vip-card">
+                        <div class="vip-card-header">
+                            <span class="vip-badge-large">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                                VIP Actif
+                            </span>
+                            <h2>Marketplace VIP Eledji</h2>
+                            <p class="vip-date">Active depuis {{ $user->vip_subscribed_at->translatedFormat('d M Y') }}</p>
+                            <p class="vip-date">Expire le {{ $user->vip_expires_at->translatedFormat('d M Y') }}</p>
+                        </div>
+
+                        <div class="vip-days">
+                            {{ $vipDaysRemaining }} <span>jours restants</span>
+                        </div>
+
+                        <div class="vip-progress">
+                            @php
+                                $progress = 100 - ($vipDaysRemaining / $vipDuration * 100);
+                                $progress = max(0, min(100, $progress));
+                            @endphp
+                            <div class="vip-progress-bar" style="width: {{ $progress }}%"></div>
+                        </div>
+
+                        <a href="{{ route('vip.subscribe.show') }}" class="btn-renew">Renouveler</a>
+                    </div>
+                @else
+                    <div class="content-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Abonnement VIP</h2>
+                        </div>
+
+                        <div class="sub-advantages">
+                            <div class="advantage-item">
+                                <div class="advantage-icon">
+                                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </div>
+                                <span class="advantage-text">Publiez vos produits sur la Marketplace</span>
+                            </div>
+                            <div class="advantage-item">
+                                <div class="advantage-icon">
+                                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </div>
+                                <span class="advantage-text">Badge VIP visible sur votre profil</span>
+                            </div>
+                            <div class="advantage-item">
+                                <div class="advantage-icon">
+                                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </div>
+                                <span class="advantage-text">Acces aux evenements VIP</span>
+                            </div>
+                        </div>
+
+                        <p class="sub-price">{{ number_format($vipPrice, 0, ',', ' ') }} XOF <span>/ {{ $vipDuration }} jours</span></p>
+
+                        <a href="{{ route('vip.subscribe.show') }}" class="btn-vip primary" style="display: block; text-align: center; max-width: 300px; margin: 0 auto;">Devenir VIP</a>
+                    </div>
+                @endif
+            @endif
+
+        </main>
     </div>
 </div>
 @endsection
