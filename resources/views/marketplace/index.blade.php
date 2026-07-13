@@ -25,7 +25,7 @@
 
 .marketplace-page {
     min-height: calc(100vh - 80px);
-    padding: 84px 24px 60px;
+    padding: 110px 24px 60px;
     background: var(--gris-bg);
     font-family: var(--poppins);
 }
@@ -328,7 +328,7 @@
         flex-direction: column;
         text-align: center;
         padding: 24px;
-        margin-top: 16px;
+        margin-top: 24px;
     }
 
     .marketplace-title {
