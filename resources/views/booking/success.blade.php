@@ -310,8 +310,16 @@
                             </svg>
                         </div>
                         <div class="ticket-detail-info">
-                            <div class="ticket-detail-label">Places reservees</div>
-                            <div class="ticket-detail-value">{{ $booking->nb_places }} place(s)</div>
+                            <div class="ticket-detail-label">Type de billet</div>
+                            <div class="ticket-detail-value">
+                                @if($booking->type_billet)
+                                    <span class="ticket-type-badge" style="background: {{ $booking->type_billet_info['couleur'] }}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600;">
+                                        {{ $booking->type_billet_info['nom'] }}
+                                    </span>
+                                @else
+                                    Standard
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>

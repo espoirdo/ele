@@ -21,37 +21,31 @@ class PaymentController extends Controller
      */
     public function show(Request $request, Event $event)
     {
-        // If free event AND no tickets, redirect to booking (free participation)
-        // But if event has tickets, allow payment even if main price is 0
-        if ($event->est_gratuit && $event->tickets->count() === 0 && $event->prix == 0) {
+        // Get ticket types from event
+        $ticketsActifs = $event->tickets_actifs;
+
+        // If free event AND no active ticket types, redirect to booking (free participation)
+        if ($event->est_gratuit && empty($ticketsActifs)) {
             return redirect()->route('booking.confirm.show', $event->slug);
         }
 
-        // Get ticket_id from query string if provided
-        $ticketId = $request->query('ticket_id');
+        // Get type_billet from query string if provided
+        $typeBillet = $request->query('type_billet');
         $selectedTicket = null;
-
-        if ($ticketId) {
-            $selectedTicket = $event->tickets->find($ticketId);
-        }
-
-        // Calculate price based on selected ticket or event price
         $price = 0;
-        if ($selectedTicket) {
-            $price = $selectedTicket->prix;
-        } elseif ($event->tickets->count() > 0) {
-            // Use the first ticket's price as default
-            $price = $event->tickets->first()->prix ?? ($event->prix ?? 0);
-        } else {
-            $price = $event->prix ?? 0;
+
+        if ($typeBillet && in_array($typeBillet, ['classique', 'vip', 'vvip'])) {
+            if ($event->{"billet_{$typeBillet}_actif"}) {
+                $price = $event->{"billet_{$typeBillet}_prix"} ?? 0;
+            }
         }
 
-        // If still free and no tickets, redirect to booking
-        if ($price == 0 && $event->tickets->count() === 0) {
+        // If still free, redirect to booking
+        if ($price == 0 && empty($ticketsActifs)) {
             return redirect()->route('booking.confirm.show', $event->slug);
         }
 
-        return view('payment.show', compact('event', 'price', 'selectedTicket'));
+        return view('payment.show', compact('event', 'price', 'typeBillet', 'ticketsActifs'));
     }
 
     /**
@@ -59,11 +53,20 @@ class PaymentController extends Controller
      */
     public function process(Request $request, Event $event, CinetPayService $cinetPayService)
     {
+        // Get active tickets
+        $ticketsActifs = $event->tickets_actifs;
+
         // Validate input
-        $validated = $request->validate([
+        $rules = [
             'methode' => 'required|in:tmoney,flooz,carte',
-            'nb_places' => 'nullable|integer|min:1|max:5',
-        ]);
+        ];
+
+        // If there are active tickets, require type_billet
+        if (!empty($ticketsActifs)) {
+            $rules['type_billet'] = 'required|in:classique,vip,vvip';
+        }
+
+        $validated = $request->validate($rules);
 
         // Validate based on payment method
         if ($validated['methode'] === 'carte') {
@@ -84,17 +87,16 @@ class PaymentController extends Controller
             return redirect()->route('login');
         }
 
-        // Calculate price
-        $nbPlaces = $validated['nb_places'] ?? 1;
-        $totalPrice = ($event->prix ?? 0) * $nbPlaces;
+        // Calculate price based on ticket type
+        $typeBillet = $validated['type_billet'] ?? null;
+        $totalPrice = 0;
+
+        if ($typeBillet && $event->{"billet_{$typeBillet}_actif"}) {
+            $totalPrice = $event->{"billet_{$typeBillet}_prix"} ?? 0;
+        }
 
         if ($totalPrice <= 0) {
             return redirect()->route('booking.confirm.show', $event->slug);
-        }
-
-        // Check available places
-        if ($event->nb_places < $nbPlaces) {
-            return back()->with('error', 'Il ne reste que ' . $event->nb_places . ' places disponibles.');
         }
 
         // Check if user already has a booking for this event
@@ -104,7 +106,7 @@ class PaymentController extends Controller
             ->first();
 
         if ($existingBooking) {
-            return back()->with('error', 'Vous avez déjà une réservation pour cet événement.');
+            return back()->with('error', 'Vous avez deja une reservation pour cet evenement.');
         }
 
         // Generate transaction ID and reservation number
@@ -115,14 +117,11 @@ class PaymentController extends Controller
         $booking = Booking::create([
             'user_id' => Auth::id(),
             'event_id' => $event->id,
-            'nb_places' => $nbPlaces,
+            'type_billet' => $typeBillet,
             'total' => $totalPrice,
             'status' => 'en_attente',
             'numero_reservation' => $numeroReservation,
         ]);
-
-        // Decrement available places
-        $event->decrement('nb_places', $nbPlaces);
 
         // Create payment record
         $payment = Payment::create([
@@ -163,10 +162,9 @@ class PaymentController extends Controller
 
         // Fallback: Mark as failed and show error
         $payment->update(['statut' => 'failed']);
-        $event->increment('nb_places', $nbPlaces);
         $booking->delete();
 
-        return back()->with('error', 'Erreur lors de l\'initialisation du paiement. Veuillez réessayer.');
+        return back()->with('error', 'Erreur lors de l\'initialisation du paiement. Veuillez reessayer.');
     }
 
     /**
@@ -183,7 +181,7 @@ class PaymentController extends Controller
         $payment = Payment::where('transaction_id', $transactionId)->first();
 
         if (!$payment) {
-            return redirect()->route('home')->with('error', 'Paiement non trouvé.');
+            return redirect()->route('home')->with('error', 'Paiement non trouve.');
         }
 
         $booking = $payment->booking;
@@ -206,18 +204,15 @@ class PaymentController extends Controller
             Mail::to($booking->user->email)->send(new PaymentSuccessMail($payment));
 
             return redirect()->route('booking.success', $booking)
-                ->with('success', 'Paiement réussi! Votre ticket a été généré.');
+                ->with('success', 'Paiement reussi! Votre ticket a ete genere.');
         }
 
         // Payment failed
         $payment->update(['statut' => 'failed']);
         $booking->update(['status' => 'annulee']);
 
-        // Restore available places
-        $booking->event->increment('nb_places', $booking->nb_places);
-
         return redirect()->route('events.show', $booking->event)
-            ->with('error', 'Le paiement a échoué. Votre réservation a été annulée.');
+            ->with('error', 'Le paiement a echoue. Votre reservation a ete annulee.');
     }
 
     /**
@@ -252,7 +247,7 @@ class PaymentController extends Controller
         // Only download confirmed bookings
         if ($booking->status !== 'confirmee') {
             return redirect()->route('booking.success', $booking)
-                ->with('error', 'Vous ne pouvez télécharger le ticket qu\'une fois la réservation confirmée.');
+                ->with('error', 'Vous ne pouvez telecharger le ticket qu\'une fois la reservation confirmee.');
         }
 
         $ticketPath = $ticketGenerator->getTicketPath($booking);

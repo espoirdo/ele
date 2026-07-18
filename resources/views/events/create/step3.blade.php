@@ -11,7 +11,7 @@
         {{-- Header --}}
         <div class="create-event-header">
             <h1>Creer un evenement - Etape 3 sur 4</h1>
-            <p>Billetterie et tarification</p>
+            <p>Types de billets</p>
         </div>
 
         {{-- Form --}}
@@ -19,118 +19,98 @@
             @csrf
 
             <div class="form-card">
-                <h3 class="card-title">Type d'acces</h3>
+                <h3 class="card-title">Selectionnez les types de billets</h3>
+                <p class="card-subtitle">Activez au moins un type de billet pour votre evenement</p>
 
-                <div class="pricing-options">
-                    <button type="button"
-                            class="pricing-card"
-                            :class="isGratuit ? 'selected' : ''"
-                            @click="setGratuit(true)">
-                        <div class="pricing-icon">
-                            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
+                {{-- Error message for no ticket type selected --}}
+                @error('billet_classique_actif')
+                    <div class="error-alert">{{ $message }}</div>
+                @enderror
+
+                <div class="ticket-types-grid">
+                    {{-- Classique --}}
+                    <div class="ticket-type-card" :class="classiqueActive ? 'active' : ''" style="--accent-color: #333333;">
+                        <div class="ticket-type-header">
+                            <div class="ticket-type-badge" style="background: #333333;">Classique</div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="billet_classique_actif" x-model="classiqueActive">
+                                <span class="toggle-slider"></span>
+                            </label>
                         </div>
-                        <div class="pricing-info">
-                            <span class="pricing-name">Gratuit</span>
-                            <span class="pricing-desc">Entree libre sans billet</span>
-                        </div>
-                        <input type="radio" name="est_gratuit" value="1" x-model="estGratuit">
-                    </button>
-
-                    <button type="button"
-                            class="pricing-card"
-                            :class="!isGratuit ? 'selected' : ''"
-                            @click="setGratuit(false)">
-                        <div class="pricing-icon">
-                            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
-                            </svg>
-                        </div>
-                        <div class="pricing-info">
-                            <span class="pricing-name">Payant</span>
-                            <span class="pricing-desc">Vente de billets</span>
-                        </div>
-                        <input type="radio" name="est_gratuit" value="0" x-model="estGratuit">
-                    </button>
-                </div>
-
-                <div class="form-group" x-show="!isGratuit" x-transition>
-                    <label for="prix">Prix d'entree (FCFA)</label>
-                    <input type="number"
-                           id="prix"
-                           name="prix"
-                           value="{{ old('prix', $data['prix'] ?? '') }}"
-                           min="0"
-                           step="100"
-                           placeholder="0">
-                    <small class="form-hint">Laissez 0 pour tarif minimal</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="nombre_places">Nombre de places</label>
-                    <input type="number"
-                           id="nombre_places"
-                           name="nombre_places"
-                           value="{{ old('nombre_places', $data['nombre_places'] ?? '') }}"
-                           required
-                           min="1"
-                           placeholder="Nombre de places disponibles">
-                </div>
-
-                <div class="form-group" x-show="!isGratuit" x-transition>
-                    <div class="tickets-header">
-                        <label>Types de billets</label>
-                        <button type="button"
-                                class="add-ticket-btn"
-                                @click="addTicket()"
-                                x-show="tickets.length < 5"
-                                :disabled="tickets.length >= 5">
-                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            Ajouter
-                        </button>
-                    </div>
-
-                    <template x-for="(ticket, index) in tickets" :key="index">
-                        <div class="ticket-item">
-                            <div class="ticket-field">
-                                <input type="text"
-                                       :name="`tickets[${index}][nom]`"
-                                       x-model="ticket.nom"
-                                       placeholder="Nom du billet"
-                                       required>
-                            </div>
-                            <div class="ticket-field">
+                        <div class="ticket-type-body" x-show="classiqueActive" x-transition>
+                            <div class="form-group">
+                                <label for="billet_classique_prix">Prix (FCFA)</label>
                                 <input type="number"
-                                       :name="`tickets[${index}][prix]`"
-                                       x-model="ticket.prix"
+                                       id="billet_classique_prix"
+                                       name="billet_classique_prix"
+                                       value="{{ old('billet_classique_prix', $data['billet_classique_prix'] ?? '') }}"
                                        min="0"
                                        step="100"
-                                       placeholder="Prix (FCFA)"
-                                       required>
+                                       placeholder="Prix en FCFA">
+                                <small class="form-hint">Laissez 0 ou vide pour un billet gratuit</small>
+                                <div class="gratuit-badge" x-show="parseFloat(classiquePrix) === 0 || classiquePrix === ''" x-transition>
+                                    Gratuit
+                                </div>
                             </div>
-                            <div class="ticket-field">
-                                <input type="number"
-                                       :name="`tickets[${index}][quantite]`"
-                                       x-model="ticket.quantite"
-                                       min="1"
-                                       placeholder="Qte"
-                                       required>
-                            </div>
-                            <button type="button"
-                                    class="remove-ticket-btn"
-                                    @click="removeTicket(index)"
-                                    x-show="tickets.length > 1">
-                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                            </button>
                         </div>
-                    </template>
-                    <small class="form-hint">Maximum 5 types de billets</small>
+                    </div>
+
+                    {{-- VIP --}}
+                    <div class="ticket-type-card" :class="vipActive ? 'active' : ''" style="--accent-color: #CC0000;">
+                        <div class="ticket-type-header">
+                            <div class="ticket-type-badge" style="background: #CC0000;">VIP</div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="billet_vip_actif" x-model="vipActive">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="ticket-type-body" x-show="vipActive" x-transition>
+                            <div class="form-group">
+                                <label for="billet_vip_prix">Prix (FCFA)</label>
+                                <input type="number"
+                                       id="billet_vip_prix"
+                                       name="billet_vip_prix"
+                                       value="{{ old('billet_vip_prix', $data['billet_vip_prix'] ?? '') }}"
+                                       min="0"
+                                       step="100"
+                                       placeholder="Prix en FCFA">
+                                <small class="form-hint">Laissez 0 ou vide pour un billet gratuit</small>
+                                <div class="gratuit-badge" x-show="parseFloat(vipPrix) === 0 || vipPrix === ''" x-transition>
+                                    Gratuit
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- VVIP --}}
+                    <div class="ticket-type-card" :class="vvipActive ? 'active' : ''" style="--accent-color: #F5A623;">
+                        <div class="ticket-type-header">
+                            <div class="ticket-type-badge" style="background: #F5A623;">VVIP</div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="billet_vvip_actif" x-model="vvipActive">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="ticket-type-body" x-show="vvipActive" x-transition>
+                            <div class="form-group">
+                                <label for="billet_vvip_prix">Prix (FCFA)</label>
+                                <input type="number"
+                                       id="billet_vvip_prix"
+                                       name="billet_vvip_prix"
+                                       value="{{ old('billet_vvip_prix', $data['billet_vvip_prix'] ?? '') }}"
+                                       min="0"
+                                       step="100"
+                                       placeholder="Prix en FCFA">
+                                <small class="form-hint">Laissez 0 ou vide pour un billet gratuit</small>
+                                <div class="gratuit-badge" x-show="parseFloat(vvipPrix) === 0 || vvipPrix === ''" x-transition>
+                                    Gratuit
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <input type="hidden" name="est_gratuit" x-model="estGratuit">
             </div>
 
             {{-- Navigation --}}
@@ -161,7 +141,7 @@
 }
 
 .create-event-container {
-    max-width: 720px;
+    max-width: 900px;
     margin: 0 auto;
 }
 
@@ -195,82 +175,108 @@
     font-size: 16px;
     font-weight: 600;
     color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.card-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 24px;
+}
+
+.error-alert {
+    background: #FEE2E2;
+    color: #CC0000;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.ticket-types-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.ticket-type-card {
+    border: 2px solid #E0E0E0;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.25s ease;
+}
+
+.ticket-type-card.active {
+    border-color: var(--accent-color);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.ticket-type-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 16px;
 }
 
-.pricing-options {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.pricing-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    border: 2px solid #E0E0E0;
-    border-radius: 12px;
-    background: white;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    text-align: left;
-    position: relative;
-}
-
-.pricing-card:hover {
-    border-color: #CC0000;
-}
-
-.pricing-card.selected {
-    border-color: #CC0000;
-    background: rgba(204, 0, 0, 0.05);
-}
-
-.pricing-card input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-}
-
-.pricing-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    background: #F5F5F5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-}
-
-.pricing-card.selected .pricing-icon {
-    background: #CC0000;
+.ticket-type-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
     color: white;
-}
-
-.pricing-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.pricing-name {
     font-weight: 600;
-    font-size: 14px;
-    color: #1a1a1a;
+    font-size: 13px;
 }
 
-.pricing-desc {
-    font-size: 12px;
-    color: #666;
+.toggle-switch {
+    position: relative;
+    width: 48px;
+    height: 26px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: var(--accent-color);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(22px);
+}
+
+.ticket-type-body {
+    padding-top: 16px;
+    border-top: 1px solid #E0E0E0;
 }
 
 .form-group {
-    margin-bottom: 24px;
-}
-
-.form-group:last-child {
-    margin-bottom: 0;
+    margin-bottom: 16px;
 }
 
 .form-group label {
@@ -282,9 +288,7 @@
     margin-bottom: 6px;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+.form-group input {
     width: 100%;
     padding: 12px 16px;
     border: 1.5px solid #E0E0E0;
@@ -297,15 +301,9 @@
     outline: none;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    border-color: #CC0000;
+.form-group input:focus {
+    border-color: var(--accent-color);
     box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.08);
-}
-
-.form-group input::placeholder {
-    color: #999;
 }
 
 .form-hint {
@@ -315,81 +313,15 @@
     margin-top: 4px;
 }
 
-.tickets-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.add-ticket-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: rgba(204, 0, 0, 0.1);
-    color: #CC0000;
-    border: none;
-    border-radius: 20px;
+.gratuit-badge {
+    display: inline-block;
+    background: #22C55E;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
     font-size: 12px;
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-}
-
-.add-ticket-btn:hover {
-    background: rgba(204, 0, 0, 0.2);
-}
-
-.ticket-item {
-    display: grid;
-    grid-template-columns: 1fr 100px 80px 40px;
-    gap: 10px;
-    margin-bottom: 10px;
-    padding: 12px;
-    background: #F9F9F9;
-    border-radius: 8px;
-}
-
-.ticket-field input {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1.5px solid #E0E0E0;
-    border-radius: 8px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 13px;
-    outline: none;
-    transition: all 0.25s ease;
-}
-
-.ticket-field input:focus {
-    border-color: #CC0000;
-}
-
-.remove-ticket-btn {
-    width: 40px;
-    height: 40px;
-    border: none;
-    background: #FEE2E2;
-    color: #CC0000;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.25s ease;
-}
-
-.remove-ticket-btn:hover {
-    background: #CC0000;
-    color: white;
-}
-
-.error-message {
-    display: block;
-    font-size: 12px;
-    color: #CC0000;
-    margin-top: 6px;
+    margin-top: 8px;
 }
 
 .form-navigation {
@@ -436,15 +368,11 @@
     background: #F5F5F5;
 }
 
-.btn-prev {
-    min-width: 140px;
-}
+@media (max-width: 768px) {
+    .ticket-types-grid {
+        grid-template-columns: 1fr;
+    }
 
-.btn-next {
-    min-width: 160px;
-}
-
-@media (max-width: 600px) {
     .create-event-page {
         padding: 100px 16px 40px;
     }
@@ -453,42 +381,13 @@
         padding: 20px 16px;
     }
 
-    .pricing-options {
-        grid-template-columns: 1fr;
-    }
-
-    .pricing-card {
-        min-height: 64px;
-    }
-
-    .ticket-item {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-
-    .remove-ticket-btn {
-        width: 100%;
-    }
-
-    .create-event-header {
-        margin-bottom: 28px;
-    }
-
-    .create-event-header h1 {
-        font-size: 20px;
-    }
-
     .form-navigation {
         flex-direction: column-reverse;
         gap: 12px;
-        margin-top: 8px;
     }
 
     .btn {
         width: 100%;
-        padding: 16px;
-        min-height: 52px;
-        font-size: 15px;
     }
 }
 </style>
@@ -497,31 +396,25 @@
 @push('scripts')
 <script>
 function ticketManager() {
-    var defaultTickets = [{nom: 'Entree generale', prix: 0, quantite: 50}];
-    var savedTickets = {{ json_encode(old('tickets', $data['tickets'] ?? [])) }};
-
     return {
-        estGratuit: '{{ old('est_gratuit', $data['est_gratuit'] ?? '1') }}',
-        tickets: savedTickets.length > 0 ? savedTickets : defaultTickets,
+        classiqueActive: {{ old('billet_classique_actif', $data['billet_classique_actif'] ?? 'false') === '1' || old('billet_classique_actif', $data['billet_classique_actif'] ?? false) === true ? 'true' : 'false' }},
+        classiquePrix: '{{ old('billet_classique_prix', $data['billet_classique_prix'] ?? '') }}',
+        vipActive: {{ old('billet_vip_actif', $data['billet_vip_actif'] ?? 'false') === '1' || old('billet_vip_actif', $data['billet_vip_actif'] ?? false) === true ? 'true' : 'false' }},
+        vipPrix: '{{ old('billet_vip_prix', $data['billet_vip_prix'] ?? '') }}',
+        vvipActive: {{ old('billet_vvip_actif', $data['billet_vvip_actif'] ?? 'false') === '1' || old('billet_vvip_actif', $data['billet_vvip_actif'] ?? false) === true ? 'true' : 'false' }},
+        vvipPrix: '{{ old('billet_vvip_prix', $data['billet_vvip_prix'] ?? '') }}',
 
-        get isGratuit() {
-            return this.estGratuit === '1' || this.estGratuit === true;
-        },
+        get estGratuit() {
+            const classiqueIsFree = this.classiqueActive && (parseFloat(this.classiquePrix) === 0 || this.classiquePrix === '');
+            const vipIsFree = this.vipActive && (parseFloat(this.vipPrix) === 0 || this.vipPrix === '');
+            const vvipIsFree = this.vvipActive && (parseFloat(this.vvipPrix) === 0 || this.vvipPrix === '');
 
-        setGratuit(value) {
-            this.estGratuit = value ? '1' : '0';
-        },
+            const hasActive = this.classiqueActive || this.vipActive || this.vvipActive;
+            const allActiveAreFree = (!this.classiqueActive || classiqueIsFree) &&
+                                       (!this.vipActive || vipIsFree) &&
+                                       (!this.vvipActive || vvipIsFree);
 
-        addTicket() {
-            if (this.tickets.length < 5) {
-                this.tickets.push({ nom: '', prix: 0, quantite: 1 });
-            }
-        },
-
-        removeTicket(index) {
-            if (this.tickets.length > 1) {
-                this.tickets.splice(index, 1);
-            }
+            return hasActive && allActiveAreFree ? '1' : '0';
         }
     };
 }

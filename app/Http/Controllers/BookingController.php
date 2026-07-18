@@ -13,49 +13,6 @@ use Illuminate\Support\Facades\Mail;
 class BookingController extends Controller
 {
     /**
-     * Store a new booking for a free event (legacy method)
-     */
-    public function store(Request $request, Event $event)
-    {
-        // Check if user is authenticated
-        if (!Auth::check()) {
-            return redirect()->route('login');
-        }
-
-        // Check if user already has a booking for this event
-        $existingBooking = Booking::where('user_id', Auth::id())
-            ->where('event_id', $event->id)
-            ->whereIn('status', ['confirmee', 'en_attente'])
-            ->first();
-
-        if ($existingBooking) {
-            return redirect()->route('events.show', ['event' => $event->slug])
-                ->with('error', 'Vous avez deja une reservation pour cet evenement.');
-        }
-
-        // Check if there are available places
-        if ($event->nb_places <= 0) {
-            return redirect()->route('events.show', ['event' => $event->slug])
-                ->with('error', 'Cet evenement est complet.');
-        }
-
-        // Create the booking
-        $booking = Booking::create([
-            'user_id' => Auth::id(),
-            'event_id' => $event->id,
-            'nb_places' => 1,
-            'total' => 0,
-            'status' => 'confirmee',
-        ]);
-
-        // Decrement the number of available places
-        $event->decrement('nb_places');
-
-        return redirect()->route('booking.success', $booking)
-            ->with('success', 'Votre place est confirmee! Votre ticket est pret a telecharger.');
-    }
-
-    /**
      * Show confirmation page for free event participation
      */
     public function confirmShow(Request $request, Event $event)
@@ -71,13 +28,16 @@ class BookingController extends Controller
                 ->with('info', 'Vous participez deja a cet evenement.');
         }
 
-        // Check if there are available places
-        if ($event->nb_places <= 0) {
-            return redirect()->route('events.show', ['event' => $event->slug])
-                ->with('error', 'Cet evenement est complet.');
+        // Get active tickets for the event
+        $ticketsActifs = $event->tickets_actifs;
+
+        // If no tickets are active, it's a free event
+        if (empty($ticketsActifs)) {
+            return view('booking.confirm', compact('event'));
         }
 
-        return view('booking.confirm', compact('event'));
+        // Show ticket selection
+        return view('booking.confirm', compact('event', 'ticketsActifs'));
     }
 
     /**
@@ -85,10 +45,24 @@ class BookingController extends Controller
      */
     public function confirmStore(Request $request, Event $event, TicketGeneratorService $ticketGenerator)
     {
-        // Validate the request
-        $validated = $request->validate([
-            'nb_places' => 'required|integer|min:1|max:5',
-        ]);
+        // Get active tickets
+        $ticketsActifs = $event->tickets_actifs;
+
+        // If no tickets are active, validate as free event
+        if (empty($ticketsActifs)) {
+            $validated = $request->validate([]);
+        } else {
+            // Validate ticket type selection
+            $validated = $request->validate([
+                'type_billet' => 'required|in:classique,vip,vvip',
+            ]);
+
+            // Verify the selected ticket type is active for this event
+            $type = $validated['type_billet'];
+            if (!$event->{"billet_{$type}_actif"}) {
+                return back()->with('error', 'Ce type de billet n\'est pas disponible pour cet evenement.');
+            }
+        }
 
         // Check if user already has a booking for this event
         $existingBooking = Booking::where('user_id', Auth::id())
@@ -101,33 +75,35 @@ class BookingController extends Controller
                 ->with('error', 'Vous avez deja une reservation pour cet evenement.');
         }
 
-        // Check if there are enough available places
-        if ($event->nb_places < $validated['nb_places']) {
-            return back()->with('error', 'Il ne reste que ' . $event->nb_places . ' places disponibles.');
-        }
-
         // Generate unique reservation number
         $numeroReservation = 'ELD-' . strtoupper(uniqid());
+
+        // Determine total based on ticket type
+        $typeBillet = $validated['type_billet'] ?? null;
+        $total = 0;
+
+        if ($typeBillet && $event->{"billet_{$typeBillet}_actif"}) {
+            $total = $event->{"billet_{$typeBillet}_prix"} ?? 0;
+        }
 
         // Create the booking
         $booking = Booking::create([
             'user_id' => Auth::id(),
             'event_id' => $event->id,
-            'nb_places' => $validated['nb_places'],
-            'total' => 0,
+            'type_billet' => $typeBillet,
+            'total' => $total,
             'status' => 'confirmee',
             'numero_reservation' => $numeroReservation,
         ]);
 
-        // Decrement the number of available places
-        $event->decrement('nb_places', $validated['nb_places']);
-
         // Generate ticket PDF for free events
-        $ticketGenerator->generateTicket($booking);
+        if ($total == 0) {
+            $ticketGenerator->generateTicket($booking);
 
-        // Send confirmation email
-        $user = Auth::user();
-        Mail::to($user->email)->send(new ParticipationConfirmee($booking));
+            // Send confirmation email
+            $user = Auth::user();
+            Mail::to($user->email)->send(new ParticipationConfirmee($booking));
+        }
 
         // Redirect to success page
         return redirect()->route('booking.success', $booking)

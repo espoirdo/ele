@@ -82,7 +82,15 @@
                 </td>
                 <td>{{ $booking->user->name ?? 'N/A' }}</td>
                 <td>{{ $booking->event->titre ?? 'N/A' }}</td>
-                <td>{{ $booking->nb_places }}</td>
+                <td>
+                    @if($booking->type_billet)
+                        <span style="background: {{ $booking->type_billet_info['couleur'] }}; color: white; padding: 3px 8px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                            {{ $booking->type_billet_info['nom'] }}
+                        </span>
+                    @else
+                        -
+                    @endif
+                </td>
                 <td style="font-weight: 600;">{{ number_format($booking->total, 0, ',', ' ') }} XOF</td>
                 <td>
                     @switch($booking->status)

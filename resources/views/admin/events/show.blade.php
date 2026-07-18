@@ -116,45 +116,41 @@
     </div>
 
     <div>
-        {{-- Places Management --}}
+        {{-- Ticket Types Management --}}
         <div class="card" style="margin-bottom: 24px;">
-            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 20px;">Gestion des places</h3>
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 20px;">Types de billets</h3>
 
-            <div style="text-align: center; padding: 20px 0;">
-                <div style="font-size: 48px; font-weight: 800; color: #CC0000;">{{ $event->nb_places }}</div>
-                <div style="font-size: 14px; color: #6B7280;">places restantes</div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                @forelse($event->tickets_actifs as $ticket)
+                    <div style="padding: 12px; background: #F9FAFB; border-radius: 8px; border-left: 4px solid {{ $ticket['couleur'] }};">
+                        <div style="font-weight: 600; margin-bottom: 4px; color: {{ $ticket['couleur'] }};">{{ $ticket['nom'] }}</div>
+                        <div style="font-size: 13px; color: #6B7280;">
+                            {{ $ticket['est_gratuit'] ? 'Gratuit' : number_format($ticket['prix'], 0, ',', ' ') . ' XOF' }}
+                        </div>
+                    </div>
+                @empty
+                    <div style="text-align: center; padding: 20px; color: #6B7280;">
+                        Aucun type de billet actif
+                    </div>
+                @endforelse
             </div>
 
-            <form action="{{ route('admin.events.updatePlaces', $event) }}" method="POST">
-                @csrf
-                @method('PATCH')
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-size: 12px; font-weight: 600; color: #6B7280; margin-bottom: 4px;">
-                        Ajuster le nombre de places
-                    </label>
-                    <input type="number" name="nb_places" class="form-input" value="{{ $event->nb_places }}" min="0" required>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    Mettre a jour
-                </button>
-            </form>
-
             <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #E5E7EB;">
-                <div style="font-size: 12px; color: #6B7280; margin-bottom: 8px;">Historique</div>
+                <div style="font-size: 12px; color: #6B7280; margin-bottom: 8px;">Statistiques</div>
                 <div style="font-size: 13px; color: #374151;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                        <span>Reservations totales:</span>
-                        <span style="font-weight: 600;">{{ $event->bookings()->where('status', 'confirmee')->sum('nb_places') }}</span>
+                        <span>Reservations confirmees:</span>
+                        <span style="font-weight: 600;">{{ $event->bookings()->where('status', 'confirmee')->count() }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span>Reservations en attente:</span>
-                        <span style="font-weight: 600;">{{ $event->bookings()->where('status', 'en_attente')->sum('nb_places') }}</span>
+                        <span style="font-weight: 600;">{{ $event->bookings()->where('status', 'en_attente')->count() }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Tickets --}}
+        {{-- Tickets (legacy) --}}
         @if($event->tickets->count() > 0)
         <div class="card" style="margin-bottom: 24px;">
             <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 20px;">Billets</h3>

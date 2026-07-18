@@ -898,8 +898,19 @@
 
             <div class="detail-sticky"
                  x-data="{
-                     selectedTicket: null,
-                     get total() { return this.selectedTicket ? this.selectedTicket.prix : 0; }
+                     selectedType: null,
+                     get total() {
+                         if (!this.selectedType) return 0;
+                         const prices = {
+                             'classique': {{ $event->billet_classique_prix ?? 0 }},
+                             'vip': {{ $event->billet_vip_prix ?? 0 }},
+                             'vvip': {{ $event->billet_vvip_prix ?? 0 }}
+                         };
+                         return prices[this.selectedType] || 0;
+                     },
+                     get hasPayable() {
+                         return {{ ($event->billet_classique_prix > 0 && $event->billet_classique_actif) || ($event->billet_vip_prix > 0 && $event->billet_vip_actif) || ($event->billet_vvip_prix > 0 && $event->billet_vvip_actif) ? 'true' : 'false' }};
+                     }
                  }">
 
                 <div class="reservation-card" data-gsap="fade-up">
@@ -911,18 +922,18 @@
 
                     <div class="reservation-body">
 
-                        @forelse($event->tickets as $ticket)
+                        @forelse($event->tickets_actifs as $ticket)
                             <button class="ticket-btn"
-                                    :class="selectedTicket?.id === {{ $ticket->id }} ? 'selected' : ''"
-                                    @click="selectedTicket = {{ $ticket->toJson() }}">
+                                    :class="selectedType === '{{ $ticket['type'] }}' ? 'selected' : ''"
+                                    @click="selectedType = '{{ $ticket['type'] }}'"
+                                    style="border-left: 4px solid {{ $ticket['couleur'] }};">
                                 <div>
-                                    <div class="ticket-name">{{ $ticket->nom }}</div>
-                                    <div class="ticket-dispo">
-                                        {{ max(0, $ticket->quantite_totale - $ticket->quantite_vendue) }} places restantes
-                                    </div>
+                                    <div class="ticket-name" style="color: {{ $ticket['couleur'] }}; font-weight: 600;">{{ $ticket['nom'] }}</div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:10px">
-                                    <span class="ticket-price">{{ number_format($ticket->prix, 0, ',', ' ') }} XOF</span>
+                                    <span class="ticket-price">
+                                        {{ $ticket['prix'] == 0 ? 'Gratuit' : number_format($ticket['prix'], 0, ',', ' ') . ' XOF' }}
+                                    </span>
                                     <div class="ticket-check">
                                         <svg width="10" height="10" fill="none" viewBox="0 0 24 24"
                                              stroke="currentColor" stroke-width="3">
@@ -937,65 +948,47 @@
                             </div>
                         @endforelse
 
-                        @if($event->tickets->count() > 0)
+                        @if(count($event->tickets_actifs) > 0)
                             <div class="reservation-total">
                                 <span class="reservation-total-label">Total</span>
                                 <span class="reservation-total-amount"
                                       x-text="total > 0
                                           ? total.toLocaleString('fr-FR') + ' XOF'
-                                          : '-'">
+                                          : 'Gratuit'">
                                     -
                                 </span>
                             </div>
                         @endif
 
                         @auth
-                            @if($event->nb_places > 0)
-                                @if(($event->est_gratuit || $event->prix == 0) && $event->tickets->count() === 0)
-                                    {{-- Evenement gratuit SANS tickets - Bouton Participer --}}
-                                    <a href="{{ route('booking.confirm.show', $event->slug) }}" class="btn-acheter active">
-                                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
-                                             stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                  d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0
-                                                     110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0
-                                                     110-4V7a2 2 0 00-2-2H5z"/>
-                                        </svg>
-                                        Participer
-                                    </a>
-                                @else
-                                    {{-- Evenement payable - Bouton Acheter maintenant --}}
-                                    <a href="#"
-                                       @click.prevent="if(selectedTicket || {{ $event->tickets->count() }} === 0) { const ticketId = selectedTicket?.id || ''; const url = '{{ route('payment.show', $event->slug) }}' + (ticketId ? '?ticket_id=' + ticketId : ''); window.location.href = url; }"
-                                       class="btn-acheter"
-                                       :class="(selectedTicket || {{ $event->tickets->count() }} === 0)
-                                           ? 'active' : 'disabled'"
-                                       :style="(!selectedTicket && {{ $event->tickets->count() }} > 0) ? 'pointer-events:none;opacity:0.6' : ''">
-                                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
-                                                 stroke="currentColor" stroke-width="2.5">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                      d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0
-                                                         110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0
-                                                         110-4V7a2 2 0 00-2-2H5z"/>
-                                            </svg>
-                                            {{ setting('event_buy_now_label', 'Acheter maintenant') }}
-                                    </a>
-                                @endif
-                                <div class="places-restantes" style="text-align:center;margin-top:8px;font-size:13px;color:#888">
-                                    @if($event->nb_places < 10)
-                                        <span style="color:#CC0000">{{ $event->nb_places }} places restantes</span>
-                                    @else
-                                        {{ $event->nb_places }} places restantes
-                                    @endif
-                                </div>
+                            @if(count($event->tickets_actifs) > 0)
+                                {{-- Evenement avec types de billets - Bouton selon selection --}}
+                                <a href="#"
+                                   @click.prevent="if(selectedType) { const url = '{{ route('booking.confirm.show', $event->slug) }}' + '?type_billet=' + selectedType; window.location.href = url; }"
+                                   class="btn-acheter"
+                                   :class="selectedType ? 'active' : 'disabled'"
+                                   :style="!selectedType ? 'pointer-events:none;opacity:0.6' : ''">
+                                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
+                                         stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0
+                                                 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0
+                                                 110-4V7a2 2 0 00-2-2H5z"/>
+                                    </svg>
+                                    <span x-text="hasPayable && total > 0 ? '{{ setting('event_buy_now_label', 'Acheter maintenant') }}' : 'Participer'">Participer</span>
+                                </a>
                             @else
-                                {{-- Evenement complet --}}
-                                <div class="btn-acheter disabled" style="cursor:not-allowed">
-                                    {{ setting('event_complete_label', 'Evenement complet') }}
-                                </div>
-                                <div class="places-restantes" style="text-align:center;margin-top:8px;font-size:13px;color:#CC0000">
-                                    {{ setting('event_full_label', 'Complet') }}
-                                </div>
+                                {{-- Evenement gratuit sans type de billet - Bouton Participer --}}
+                                <a href="{{ route('booking.confirm.show', $event->slug) }}" class="btn-acheter active">
+                                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
+                                         stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0
+                                                 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0
+                                                 110-4V7a2 2 0 00-2-2H5z"/>
+                                    </svg>
+                                    Participer
+                                </a>
                             @endif
                         @else
                             <a href="{{ route('login') }}" class="btn-acheter login">

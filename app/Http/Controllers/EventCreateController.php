@@ -59,7 +59,7 @@ class EventCreateController extends Controller
     public function postStep2(Request $request)
     {
         if (!session()->has('event_step1')) {
-            return redirect()->route('events.create.step1');
+            return redirect()->route('events.create.step2');
         }
 
         $validated = $request->validate([
@@ -99,25 +99,49 @@ class EventCreateController extends Controller
             return redirect()->route('events.create.step2');
         }
 
-        // Base validation
-        $rules = [
+        // Validate that at least one ticket type is active
+        $validated = $request->validate([
             'est_gratuit' => 'required|boolean',
-            'nombre_places' => 'required|integer|min:1',
-        ];
+            'billet_classique_actif' => 'nullable|boolean',
+            'billet_classique_prix' => 'nullable|numeric|min:0',
+            'billet_vip_actif' => 'nullable|boolean',
+            'billet_vip_prix' => 'nullable|numeric|min:0',
+            'billet_vvip_actif' => 'nullable|boolean',
+            'billet_vvip_prix' => 'nullable|numeric|min:0',
+        ]);
 
-        // Add price validation only if not free
-        $isFree = filter_var($request->input('est_gratuit'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true;
-        if (!$isFree) {
-            $rules['prix'] = 'required|numeric|min:0';
-            $rules['tickets'] = 'nullable|array|max:5';
-            $rules['tickets.*.nom'] = 'required|string|max:100';
-            $rules['tickets.*.prix'] = 'required|numeric|min:0';
-            $rules['tickets.*.quantite'] = 'required|integer|min:1';
-        } else {
-            $rules['prix'] = 'nullable|numeric|min:0';
+        // Check if at least one ticket type is active
+        $hasClassique = filter_var($validated['billet_classique_actif'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $hasVip = filter_var($validated['billet_vip_actif'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $hasVvip = filter_var($validated['billet_vvip_actif'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        if (!$hasClassique && !$hasVip && !$hasVvip) {
+            return back()->withErrors(['billet_classique_actif' => 'Vous devez activer au moins un type de billet.']);
         }
 
-        $validated = $request->validate($rules);
+        // Validate prices for active ticket types
+        if ($hasClassique && ($validated['billet_classique_prix'] ?? 0) < 0) {
+            return back()->withErrors(['billet_classique_prix' => 'Le prix doit être positif ou nul.']);
+        }
+        if ($hasVip && ($validated['billet_vip_prix'] ?? 0) < 0) {
+            return back()->withErrors(['billet_vip_prix' => 'Le prix doit être positif ou nul.']);
+        }
+        if ($hasVvip && ($validated['billet_vvip_prix'] ?? 0) < 0) {
+            return back()->withErrors(['billet_vvip_prix' => 'Le prix doit être positif ou nul.']);
+        }
+
+        // Convert string booleans to actual booleans
+        $validated['billet_classique_actif'] = $hasClassique;
+        $validated['billet_vip_actif'] = $hasVip;
+        $validated['billet_vvip_actif'] = $hasVvip;
+
+        // Determine if event is free (all active tickets are free)
+        $isFree = true;
+        if ($hasClassique && ($validated['billet_classique_prix'] ?? 0) > 0) $isFree = false;
+        if ($hasVip && ($validated['billet_vip_prix'] ?? 0) > 0) $isFree = false;
+        if ($hasVvip && ($validated['billet_vvip_prix'] ?? 0) > 0) $isFree = false;
+
+        $validated['est_gratuit'] = $isFree;
 
         session(['event_step3' => $validated]);
 
@@ -167,11 +191,6 @@ class EventCreateController extends Controller
         $eventData['user_id'] = Auth::id();
         $eventData['slug'] = Str::slug($eventData['titre']);
 
-        // Map nombre_places to nb_places for the events table
-        if (isset($eventData['nombre_places'])) {
-            $eventData['nb_places'] = $eventData['nombre_places'];
-        }
-
         // Handle image upload
         if ($request->hasFile('image_couverture')) {
             $eventData['image_couverture'] = $request->file('image_couverture')->store('events', 'public');
@@ -179,29 +198,6 @@ class EventCreateController extends Controller
 
         // Create the event
         $event = \App\Models\Event::create($eventData);
-
-        // Determine if event is free (handle both string and boolean)
-        $isFree = filter_var($eventData['est_gratuit'], FILTER_VALIDATE_BOOLEAN);
-
-        // Create tickets if not free event
-        if (!$isFree && !empty($eventData['tickets'])) {
-            foreach ($eventData['tickets'] as $ticketPayload) {
-                $event->tickets()->create([
-                    'nom' => $ticketPayload['nom'],
-                    'prix' => $ticketPayload['prix'],
-                    'quantite_totale' => $ticketPayload['quantite'],
-                    'quantite_vendue' => 0,
-                ]);
-            }
-        } elseif ($isFree) {
-            // Create a free ticket
-            $event->tickets()->create([
-                'nom' => 'Entrée gratuite',
-                'prix' => 0,
-                'quantite_totale' => $eventData['nombre_places'],
-                'quantite_vendue' => 0,
-            ]);
-        }
 
         // Attach premium options if any
         $premiumOptions = [];

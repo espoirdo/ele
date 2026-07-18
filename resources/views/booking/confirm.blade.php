@@ -266,34 +266,32 @@
 
             <h1 class="confirm-title">Confirmer votre participation</h1>
 
-            <form action="{{ route('booking.confirm.store', $event->slug) }}" method="POST">
+            <form action="{{ route('booking.confirm.store', $event->slug) }}" method="POST" x-data="{ selectedType: '{{ request('type_billet', '') }}' }">
                 @csrf
 
-                <div class="places-selector">
-                    <button type="button"
-                            class="places-btn"
-                            @click="if(nbPlaces > 1) nbPlaces--">
-                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4"/>
-                        </svg>
-                    </button>
-
-                    <input type="hidden" name="nb_places" x-model="nbPlaces">
-                    <span class="places-count" x-text="nbPlaces">1</span>
-
-                    <button type="button"
-                            class="places-btn"
-                            @click="if(nbPlaces < 5) nbPlaces++"
-                            :disabled="nbPlaces >= 5">
-                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <p class="places-info">
-                    Il reste <span>{{ $event->nb_places }}</span> places disponibles pour cet evenement
-                </p>
+                @if(isset($ticketsActifs) && count($ticketsActifs) > 0)
+                    <div class="ticket-type-selector" style="margin-bottom: 20px;">
+                        <p style="text-align: center; margin-bottom: 12px; font-size: 14px; color: #666;">Selectionnez votre type de billet</p>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            @foreach($ticketsActifs as $ticket)
+                                <label class="ticket-type-option"
+                                       :class="selectedType === '{{ $ticket['type'] }}' ? 'selected' : ''"
+                                       style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border: 2px solid #E0E0E0; border-radius: 10px; cursor: pointer; transition: all 0.2s;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <input type="radio" name="type_billet" value="{{ $ticket['type'] }}" x-model="selectedType" style="display: none;">
+                                        <span class="ticket-badge" style="background: {{ $ticket['couleur'] }}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">{{ $ticket['nom'] }}</span>
+                                        <span style="font-size: 14px; color: #333;">{{ $ticket['est_gratuit'] ? 'Gratuit' : number_format($ticket['prix'], 0, ',', ' ') . ' XOF' }}</span>
+                                    </div>
+                                    <div class="check-icon" style="width: 20px; height: 20px; border: 2px solid #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <svg x-show="selectedType === '{{ $ticket['type'] }}'" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="{{ $ticket['couleur'] }}" stroke-width="3">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
 
                 <div class="confirm-actions">
                     <a href="{{ route('events.show', $event->slug) }}" class="btn-annuler">

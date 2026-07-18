@@ -15,7 +15,11 @@ class Event extends Model
         'user_id', 'category_id', 'titre', 'description', 'image_couverture',
         'date', 'heure', 'lieu', 'latitude', 'longitude', 'statut',
         'premium_mise_en_avant', 'premium_newsletter', 'premium_reseaux',
-        'est_gratuit', 'nb_places', 'raison_rejet'
+        'est_gratuit', 'raison_rejet',
+        // Ticket types
+        'billet_classique_actif', 'billet_classique_prix',
+        'billet_vip_actif', 'billet_vip_prix',
+        'billet_vvip_actif', 'billet_vvip_prix',
     ];
 
     protected $casts = [
@@ -24,6 +28,13 @@ class Event extends Model
         'premium_mise_en_avant' => 'boolean',
         'premium_newsletter' => 'boolean',
         'premium_reseaux' => 'boolean',
+        // Ticket types casts
+        'billet_classique_actif' => 'boolean',
+        'billet_classique_prix' => 'decimal:2',
+        'billet_vip_actif' => 'boolean',
+        'billet_vip_prix' => 'decimal:2',
+        'billet_vvip_actif' => 'boolean',
+        'billet_vvip_prix' => 'decimal:2',
     ];
 
     public function user(): BelongsTo
@@ -102,6 +113,37 @@ class Event extends Model
 
         $time = $this->heure ?: '00:00:00';
         return Carbon::parse(sprintf('%s %s', $this->date->format('Y-m-d'), $time));
+    }
+
+    /**
+     * Get active ticket types with their prices
+     */
+    public function getTicketsActifsAttribute(): array
+    {
+        $tickets = [];
+
+        $types = [
+            'classique' => ['nom' => 'Classique', 'couleur' => '#333333'],
+            'vip' => ['nom' => 'VIP', 'couleur' => '#CC0000'],
+            'vvip' => ['nom' => 'VVIP', 'couleur' => '#F5A623'],
+        ];
+
+        foreach ($types as $key => $type) {
+            $actif = $this->{"billet_{$key}_actif"};
+            $prix = $this->{"billet_{$key}_prix"};
+
+            if ($actif) {
+                $tickets[] = [
+                    'type' => $key,
+                    'nom' => $type['nom'],
+                    'couleur' => $type['couleur'],
+                    'prix' => $prix ?? 0,
+                    'est_gratuit' => $prix == 0 || $prix === null,
+                ];
+            }
+        }
+
+        return $tickets;
     }
 
     public function getSlugAttribute(): string

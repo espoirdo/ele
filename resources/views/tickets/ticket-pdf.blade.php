@@ -175,8 +175,16 @@
                     <span class="detail-value">{{ $user_phone }}</span>
                 </div>
                 <div class="detail-item">
-                    <span class="detail-label">Places</span>
-                    <span class="detail-value">{{ $nb_places }}</span>
+                    <span class="detail-label">Type de billet</span>
+                    <span class="detail-value">
+                        @if(isset($type_billet_couleur))
+                            <span style="background: {{ $type_billet_couleur }}; color: white; padding: 4px 12px; border-radius: 12px; font-weight: 600; font-size: 13px;">
+                                {{ $ticket_type }}
+                            </span>
+                        @else
+                            {{ $ticket_type }}
+                        @endif
+                    </span>
                 </div>
             </div>
 

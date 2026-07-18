@@ -27,7 +27,7 @@ class ProfileController extends Controller
             'participations' => Booking::where('user_id', $user->id)->where('status', 'confirmee')->count(),
             'tickets_sold' => Booking::whereHas('event', function ($query) use ($user) {
                 $query->where('user_id', $user->id);
-            })->where('status', 'confirmee')->sum('nb_places'),
+            })->where('status', 'confirmee')->count(),
         ];
 
         // Get user's created events

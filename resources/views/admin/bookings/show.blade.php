@@ -31,8 +31,16 @@
                     </a>
                 </div>
                 <div>
-                    <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">Nombre de places</div>
-                    <div style="font-weight: 600;">{{ $booking->nb_places }}</div>
+                    <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">Type de billet</div>
+                    <div style="font-weight: 600;">
+                        @if($booking->type_billet)
+                            <span style="background: {{ $booking->type_billet_info['couleur'] }}; color: white; padding: 3px 10px; border-radius: 10px; font-size: 12px; font-weight: 600;">
+                                {{ $booking->type_billet_info['nom'] }}
+                            </span>
+                        @else
+                            Standard
+                        @endif
+                    </div>
                 </div>
                 <div>
                     <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">Total</div>
@@ -117,8 +125,16 @@
             <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 20px;">Evenement</h3>
 
             <div style="margin-bottom: 12px;">
-                <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">Places restantes</div>
-                <div style="font-weight: 600; font-size: 18px;">{{ $booking->event->nb_places }}</div>
+                <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">Types de billets actifs</div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    @forelse($booking->event->tickets_actifs as $ticket)
+                        <span style="background: {{ $ticket['couleur'] }}; color: white; padding: 3px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; display: inline-block; width: fit-content;">
+                            {{ $ticket['nom'] }}
+                        </span>
+                    @empty
+                        <span style="color: #6B7280;">Aucun</span>
+                    @endforelse
+                </div>
             </div>
 
             <a href="{{ route('admin.events.show', $booking->event) }}" class="btn btn-outline" style="width: 100%; text-align: center;">

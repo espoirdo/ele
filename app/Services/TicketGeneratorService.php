@@ -15,7 +15,6 @@ class TicketGeneratorService
     {
         $user = $booking->user;
         $event = $booking->event;
-        $ticket = $booking->ticket;
 
         // Generate unique ticket number if not exists
         if (!$booking->numero_reservation) {
@@ -24,6 +23,8 @@ class TicketGeneratorService
         }
 
         // Prepare data for ticket
+        $typeBilletInfo = $booking->type_billet_info;
+
         $data = [
             'ticket_number' => $booking->numero_reservation,
             'user_name' => $user->name,
@@ -33,9 +34,10 @@ class TicketGeneratorService
             'event_date' => $event->date?->format('d/m/Y') ?? 'À déterminer',
             'event_time' => $event->heure ?? 'N/A',
             'event_location' => $event->lieu ?? 'Lieu à confirmer',
-            'ticket_type' => $ticket?->nom ?? 'Entrée générale',
+            'ticket_type' => $typeBilletInfo['nom'] ?? 'Entrée générale',
             'ticket_price' => $booking->total,
-            'nb_places' => $booking->nb_places,
+            'type_billet' => $booking->type_billet,
+            'type_billet_couleur' => $typeBilletInfo['couleur'] ?? '#666666',
             'booking_date' => $booking->created_at->format('d/m/Y H:i'),
             'status' => $booking->status,
         ];

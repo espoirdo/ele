@@ -15,11 +15,6 @@ class EventService
         $data['statut'] = $request->input('statut', 'brouillon');
         $data['is_featured'] = $request->boolean('is_featured');
 
-        // Default nb_places if not provided
-        if (!isset($data['nb_places'])) {
-            $data['nb_places'] = 100;
-        }
-
         if ($request->hasFile('image_couverture')) {
             $data['image_couverture'] = $request->file('image_couverture')->store('events', 'public');
         }

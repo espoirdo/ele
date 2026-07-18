@@ -102,15 +102,4 @@ class AdminEventController extends Controller
 
         return back()->with('success', 'Événement rejeté');
     }
-
-    public function updatePlaces(Request $request, Event $event)
-    {
-        $validated = $request->validate([
-            'nb_places' => 'required|integer|min:0',
-        ]);
-
-        $event->update(['nb_places' => $validated['nb_places']]);
-
-        return back()->with('success', 'Nombre de places mis a jour');
-    }
 }

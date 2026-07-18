@@ -64,20 +64,7 @@ class AdminBookingController extends Controller
             'status' => 'required|in:confirmee,en_attente,annulee',
         ]);
 
-        $oldStatus = $booking->status;
-        $newStatus = $validated['status'];
-
-        $booking->update(['status' => $newStatus]);
-
-        // If changing from confirmee to annulee, increment places back
-        if ($oldStatus === 'confirmee' && $newStatus === 'annulee') {
-            $booking->event->increment('nb_places', $booking->nb_places);
-        }
-
-        // If changing from annulee to confirmee, decrement places
-        if ($oldStatus === 'annulee' && $newStatus === 'confirmee') {
-            $booking->event->decrement('nb_places', $booking->nb_places);
-        }
+        $booking->update(['status' => $validated['status']]);
 
         return redirect()->route('admin.bookings.index')
             ->with('success', 'Statut de la reservation mis a jour.');

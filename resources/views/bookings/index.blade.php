@@ -371,9 +371,15 @@
                                 </div>
                                 <div class="booking-meta-item">
                                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
                                     </svg>
-                                    {{ $booking->nb_places }} place(s)
+                                    @if($booking->type_billet)
+                                        <span style="background: {{ $booking->type_billet_info['couleur'] }}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600;">
+                                            {{ $booking->type_billet_info['nom'] }}
+                                        </span>
+                                    @else
+                                        Standard
+                                    @endif
                                 </div>
                             </div>
 

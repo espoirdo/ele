@@ -196,7 +196,16 @@
                     <div class="participant-avatar">C</div>
                     <div class="participant-avatar">+</div>
                 </div>
-                <p class="participants-text">Rejoignez {{ $booking->nb_places }} participant(s) pour cet evenement</p>
+                <p class="participants-text">
+                    Type de billet:
+                    @if($booking->type_billet)
+                        <span style="background: {{ $booking->type_billet_info['couleur'] }}; color: white; padding: 3px 10px; border-radius: 10px; font-size: 12px; font-weight: 600;">
+                            {{ $booking->type_billet_info['nom'] }}
+                        </span>
+                    @else
+                        Standard
+                    @endif
+                </p>
             </div>
 
             <div class="event-summary">
