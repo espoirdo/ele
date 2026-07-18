@@ -964,10 +964,10 @@
                         @auth
                             @if(count($event->tickets_actifs) > 0)
                                 {{-- Evenement avec types de billets - Bouton selon selection --}}
-                                <a href="javascript:void(0)"
-                                   onclick="var selectedType = this.getAttribute('data-selected'); if(selectedType) { window.location.href = '{{ route('booking.confirm.show', $event->slug) }}' + '?type_billet=' + selectedType; }"
+                                <a href="{{ route('payment.show', $event->slug) }}"
                                    class="btn-acheter disabled"
                                    id="btn-participer"
+                                   data-route="{{ route('payment.show', $event->slug) }}"
                                    data-selected="">
                                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
                                          stroke="currentColor" stroke-width="2.5">
@@ -1210,14 +1210,30 @@ function initDetailMap() {
 @if(count($event->tickets_actifs) > 0)
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Find all ticket buttons
     const ticketBtns = document.querySelectorAll('.ticket-btn');
     const btnParticiper = document.getElementById('btn-participer');
 
+    if (!btnParticiper) {
+        return;
+    }
+
+    const defaultRoute = btnParticiper.getAttribute('data-route') || btnParticiper.getAttribute('href');
+
+    btnParticiper.addEventListener('click', function(event) {
+        const selectedType = this.getAttribute('data-selected');
+
+        if (!selectedType) {
+            event.preventDefault();
+            return;
+        }
+
+        this.setAttribute('href', defaultRoute + '?type_billet=' + encodeURIComponent(selectedType));
+    });
+
     ticketBtns.forEach(function(btn) {
         btn.addEventListener('click', function() {
-            // Get the type from data attribute
             const selectedType = this.getAttribute('data-type');
+
             if (selectedType && btnParticiper) {
                 btnParticiper.setAttribute('data-selected', selectedType);
                 btnParticiper.classList.remove('disabled');
