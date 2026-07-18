@@ -926,6 +926,7 @@
                             <button class="ticket-btn"
                                     :class="selectedType === '{{ $ticket['type'] }}' ? 'selected' : ''"
                                     @click="selectedType = '{{ $ticket['type'] }}'"
+                                    data-type="{{ $ticket['type'] }}"
                                     style="border-left: 4px solid {{ $ticket['couleur'] }};">
                                 <div>
                                     <div class="ticket-name" style="color: {{ $ticket['couleur'] }}; font-weight: 600;">{{ $ticket['nom'] }}</div>
@@ -963,11 +964,11 @@
                         @auth
                             @if(count($event->tickets_actifs) > 0)
                                 {{-- Evenement avec types de billets - Bouton selon selection --}}
-                                <a href="#"
-                                   @click.prevent="if(selectedType) { const url = '{{ route('booking.confirm.show', $event->slug) }}' + '?type_billet=' + selectedType; window.location.href = url; }"
-                                   class="btn-acheter"
-                                   :class="selectedType ? 'active' : 'disabled'"
-                                   :style="!selectedType ? 'pointer-events:none;opacity:0.6' : ''">
+                                <a href="javascript:void(0)"
+                                   onclick="var selectedType = this.getAttribute('data-selected'); if(selectedType) { window.location.href = '{{ route('booking.confirm.show', $event->slug) }}' + '?type_billet=' + selectedType; }"
+                                   class="btn-acheter disabled"
+                                   id="btn-participer"
+                                   data-selected="">
                                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
                                          stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -975,7 +976,7 @@
                                                  110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0
                                                  110-4V7a2 2 0 00-2-2H5z"/>
                                     </svg>
-                                    <span x-text="hasPayable && total > 0 ? '{{ setting('event_buy_now_label', 'Acheter maintenant') }}' : 'Participer'">Participer</span>
+                                    <span>Participer</span>
                                 </a>
                             @else
                                 {{-- Evenement gratuit sans type de billet - Bouton Participer --}}
@@ -1203,5 +1204,28 @@ function initDetailMap() {
 
 @if($event->latitude && $event->longitude)
     <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_key') }}&callback=initDetailMap" async defer></script>
+@endif
+
+{{-- Script pour gerer la selection du type de billet --}}
+@if(count($event->tickets_actifs) > 0)
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Find all ticket buttons
+    const ticketBtns = document.querySelectorAll('.ticket-btn');
+    const btnParticiper = document.getElementById('btn-participer');
+
+    ticketBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            // Get the type from data attribute
+            const selectedType = this.getAttribute('data-type');
+            if (selectedType && btnParticiper) {
+                btnParticiper.setAttribute('data-selected', selectedType);
+                btnParticiper.classList.remove('disabled');
+                btnParticiper.classList.add('active');
+            }
+        });
+    });
+});
+</script>
 @endif
 @endsection
