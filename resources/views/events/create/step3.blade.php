@@ -3,7 +3,19 @@
 @section('title', 'Creer un evenement - Etape 3 sur 4 - ELEDJI')
 
 @section('content')
-<div class="create-event-page" x-data="ticketManager()">
+@php
+$step3 = session('event_step3', []);
+@endphp
+
+<div class="create-event-page" x-data="{
+    typeEvenement: '{{ $step3['type_evenement'] ?? '' }}',
+    classiqueActive: {{ isset($step3['billet_classique_actif']) && $step3['billet_classique_actif'] ? 'true' : 'false' }},
+    classiquePrix: '{{ $step3['billet_classique_prix'] ?? '' }}',
+    vipActive: {{ isset($step3['billet_vip_actif']) && $step3['billet_vip_actif'] ? 'true' : 'false' }},
+    vipPrix: '{{ $step3['billet_vip_prix'] ?? '' }}',
+    vvipActive: {{ isset($step3['billet_vvip_actif']) && $step3['billet_vvip_actif'] ? 'true' : 'false' }},
+    vvipPrix: '{{ $step3['billet_vvip_prix'] ?? '' }}'
+}">
     <div class="create-event-container">
         {{-- Progress Bar --}}
         @include('events.create.progress-bar', ['currentStep' => 3])
@@ -11,20 +23,60 @@
         {{-- Header --}}
         <div class="create-event-header">
             <h1>Creer un evenement - Etape 3 sur 4</h1>
-            <p>Types de billets</p>
+            <p>Type d'entree</p>
         </div>
 
         {{-- Form --}}
         <form action="{{ route('events.create.step3.post') }}" method="POST" class="create-event-form">
             @csrf
 
+            {{-- Section 1: Gratuit ou Payant --}}
             <div class="form-card">
-                <h3 class="card-title">Selectionnez les types de billets</h3>
+                <h3 class="card-title">Type d'entree</h3>
+                <p class="card-subtitle">Votre evenement est-il gratuit ou payant ?</p>
+
+                @error('type_evenement')
+                    <p class="error-text">{{ $message }}</p>
+                @enderror
+
+                <div class="type-cards-grid">
+                    {{-- Gratuit --}}
+                    <div class="type-card"
+                         :class="typeEvenement === 'gratuit' ? 'selected' : ''"
+                         @click="typeEvenement = 'gratuit'">
+                        <div class="type-card-icon">
+                            <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <h4 class="type-card-title">Gratuit</h4>
+                        <p class="type-card-desc">Entree libre sans billet</p>
+                    </div>
+
+                    {{-- Payant --}}
+                    <div class="type-card"
+                         :class="typeEvenement === 'payant' ? 'selected' : ''"
+                         @click="typeEvenement = 'payant'">
+                        <div class="type-card-icon">
+                            <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+                            </svg>
+                        </div>
+                        <h4 class="type-card-title">Payant</h4>
+                        <p class="type-card-desc">Billet d'entree requis</p>
+                    </div>
+                </div>
+
+                <input type="hidden" name="type_evenement" :value="typeEvenement">
+            </div>
+
+            {{-- Section 2: Types de billets (visible si Payant) --}}
+            <div class="form-card" x-show="typeEvenement === 'payant'" x-transition>
+                <h3 class="card-title">Types de billets</h3>
                 <p class="card-subtitle">Activez au moins un type de billet pour votre evenement</p>
 
-                {{-- Error message for no ticket type selected --}}
-                @error('billet_classique_actif')
-                    <div class="error-alert">{{ $message }}</div>
+                @error('billets')
+                    <p class="error-text">{{ $message }}</p>
                 @enderror
 
                 <div class="ticket-types-grid">
@@ -33,7 +85,7 @@
                         <div class="ticket-type-header">
                             <div class="ticket-type-badge" style="background: #333333;">Classique</div>
                             <label class="toggle-switch">
-                                <input type="checkbox" name="billet_classique_actif" x-model="classiqueActive">
+                                <input type="checkbox" name="billet_classique_actif" value="1" x-model="classiqueActive">
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
@@ -43,11 +95,10 @@
                                 <input type="number"
                                        id="billet_classique_prix"
                                        name="billet_classique_prix"
-                                       value="{{ old('billet_classique_prix', $data['billet_classique_prix'] ?? '') }}"
+                                       value="{{ old('billet_classique_prix', $step3['billet_classique_prix'] ?? '') }}"
                                        min="0"
                                        step="100"
                                        placeholder="Prix en FCFA">
-                                <small class="form-hint">Laissez 0 ou vide pour un billet gratuit</small>
                                 <div class="gratuit-badge" x-show="parseFloat(classiquePrix) === 0 || classiquePrix === ''" x-transition>
                                     Gratuit
                                 </div>
@@ -60,7 +111,7 @@
                         <div class="ticket-type-header">
                             <div class="ticket-type-badge" style="background: #CC0000;">VIP</div>
                             <label class="toggle-switch">
-                                <input type="checkbox" name="billet_vip_actif" x-model="vipActive">
+                                <input type="checkbox" name="billet_vip_actif" value="1" x-model="vipActive">
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
@@ -70,11 +121,10 @@
                                 <input type="number"
                                        id="billet_vip_prix"
                                        name="billet_vip_prix"
-                                       value="{{ old('billet_vip_prix', $data['billet_vip_prix'] ?? '') }}"
+                                       value="{{ old('billet_vip_prix', $step3['billet_vip_prix'] ?? '') }}"
                                        min="0"
                                        step="100"
                                        placeholder="Prix en FCFA">
-                                <small class="form-hint">Laissez 0 ou vide pour un billet gratuit</small>
                                 <div class="gratuit-badge" x-show="parseFloat(vipPrix) === 0 || vipPrix === ''" x-transition>
                                     Gratuit
                                 </div>
@@ -87,7 +137,7 @@
                         <div class="ticket-type-header">
                             <div class="ticket-type-badge" style="background: #F5A623;">VVIP</div>
                             <label class="toggle-switch">
-                                <input type="checkbox" name="billet_vvip_actif" x-model="vvipActive">
+                                <input type="checkbox" name="billet_vvip_actif" value="1" x-model="vvipActive">
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
@@ -97,11 +147,10 @@
                                 <input type="number"
                                        id="billet_vvip_prix"
                                        name="billet_vvip_prix"
-                                       value="{{ old('billet_vvip_prix', $data['billet_vvip_prix'] ?? '') }}"
+                                       value="{{ old('billet_vvip_prix', $step3['billet_vvip_prix'] ?? '') }}"
                                        min="0"
                                        step="100"
                                        placeholder="Prix en FCFA">
-                                <small class="form-hint">Laissez 0 ou vide pour un billet gratuit</small>
                                 <div class="gratuit-badge" x-show="parseFloat(vvipPrix) === 0 || vvipPrix === ''" x-transition>
                                     Gratuit
                                 </div>
@@ -109,8 +158,6 @@
                         </div>
                     </div>
                 </div>
-
-                <input type="hidden" name="est_gratuit" x-model="estGratuit">
             </div>
 
             {{-- Navigation --}}
@@ -184,13 +231,58 @@
     margin-bottom: 24px;
 }
 
-.error-alert {
-    background: #FEE2E2;
+.error-text {
     color: #CC0000;
-    padding: 12px 16px;
-    border-radius: 8px;
-    margin-bottom: 20px;
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+.type-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.type-card {
+    border: 1.5px solid #E0E0E0;
+    border-radius: 12px;
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: white;
+}
+
+.type-card:hover {
+    border-color: #CCCCCC;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.type-card.selected {
+    border: 2px solid #CC0000;
+    background: #FFF5F5;
+}
+
+.type-card-icon {
+    margin-bottom: 16px;
+    color: #666;
+}
+
+.type-card.selected .type-card-icon {
+    color: #CC0000;
+}
+
+.type-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.type-card-desc {
     font-size: 14px;
+    color: #666;
 }
 
 .ticket-types-grid {
@@ -306,13 +398,6 @@
     box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.08);
 }
 
-.form-hint {
-    display: block;
-    font-size: 11px;
-    color: #888;
-    margin-top: 4px;
-}
-
 .gratuit-badge {
     display: inline-block;
     background: #22C55E;
@@ -369,6 +454,10 @@
 }
 
 @media (max-width: 768px) {
+    .type-cards-grid {
+        grid-template-columns: 1fr;
+    }
+
     .ticket-types-grid {
         grid-template-columns: 1fr;
     }
@@ -391,33 +480,5 @@
     }
 }
 </style>
-@endpush
-
-@push('scripts')
-<script>
-function ticketManager() {
-    return {
-        classiqueActive: {{ old('billet_classique_actif', $data['billet_classique_actif'] ?? 'false') === '1' || old('billet_classique_actif', $data['billet_classique_actif'] ?? false) === true ? 'true' : 'false' }},
-        classiquePrix: '{{ old('billet_classique_prix', $data['billet_classique_prix'] ?? '') }}',
-        vipActive: {{ old('billet_vip_actif', $data['billet_vip_actif'] ?? 'false') === '1' || old('billet_vip_actif', $data['billet_vip_actif'] ?? false) === true ? 'true' : 'false' }},
-        vipPrix: '{{ old('billet_vip_prix', $data['billet_vip_prix'] ?? '') }}',
-        vvipActive: {{ old('billet_vvip_actif', $data['billet_vvip_actif'] ?? 'false') === '1' || old('billet_vvip_actif', $data['billet_vvip_actif'] ?? false) === true ? 'true' : 'false' }},
-        vvipPrix: '{{ old('billet_vvip_prix', $data['billet_vvip_prix'] ?? '') }}',
-
-        get estGratuit() {
-            const classiqueIsFree = this.classiqueActive && (parseFloat(this.classiquePrix) === 0 || this.classiquePrix === '');
-            const vipIsFree = this.vipActive && (parseFloat(this.vipPrix) === 0 || this.vipPrix === '');
-            const vvipIsFree = this.vvipActive && (parseFloat(this.vvipPrix) === 0 || this.vvipPrix === '');
-
-            const hasActive = this.classiqueActive || this.vipActive || this.vvipActive;
-            const allActiveAreFree = (!this.classiqueActive || classiqueIsFree) &&
-                                       (!this.vipActive || vipIsFree) &&
-                                       (!this.vvipActive || vvipIsFree);
-
-            return hasActive && allActiveAreFree ? '1' : '0';
-        }
-    };
-}
-</script>
 @endpush
 @endsection

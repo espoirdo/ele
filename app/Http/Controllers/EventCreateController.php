@@ -85,9 +85,9 @@ class EventCreateController extends Controller
             return redirect()->route('events.create.step2');
         }
 
-        $data = session('event_step3', []);
+        $step3 = session('event_step3', []);
 
-        return view('events.create.step3', compact('data'));
+        return view('events.create.step3', compact('step3'));
     }
 
     /**
@@ -99,51 +99,52 @@ class EventCreateController extends Controller
             return redirect()->route('events.create.step2');
         }
 
-        // Validate that at least one ticket type is active
-        $validated = $request->validate([
-            'est_gratuit' => 'required|boolean',
-            'billet_classique_actif' => 'nullable|boolean',
-            'billet_classique_prix' => 'nullable|numeric|min:0',
-            'billet_vip_actif' => 'nullable|boolean',
-            'billet_vip_prix' => 'nullable|numeric|min:0',
-            'billet_vvip_actif' => 'nullable|boolean',
-            'billet_vvip_prix' => 'nullable|numeric|min:0',
-        ]);
+        // Validation rules
+        $rules = [
+            'type_evenement' => 'required|in:gratuit,payant',
+        ];
 
-        // Check if at least one ticket type is active
-        $hasClassique = filter_var($validated['billet_classique_actif'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        $hasVip = filter_var($validated['billet_vip_actif'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        $hasVvip = filter_var($validated['billet_vvip_actif'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        if ($request->input('type_evenement') === 'payant') {
+            $rules['billet_classique_prix'] = 'nullable|numeric|min:0';
+            $rules['billet_vip_prix'] = 'nullable|numeric|min:0';
+            $rules['billet_vvip_prix'] = 'nullable|numeric|min:0';
 
-        if (!$hasClassique && !$hasVip && !$hasVvip) {
-            return back()->withErrors(['billet_classique_actif' => 'Vous devez activer au moins un type de billet.']);
+            // At least one ticket type must be active
+            if (
+                !$request->has('billet_classique_actif') &&
+                !$request->has('billet_vip_actif') &&
+                !$request->has('billet_vvip_actif')
+            ) {
+                return back()->withErrors([
+                    'billets' => 'Vous devez activer au moins un type de billet.'
+                ])->withInput();
+            }
         }
 
-        // Validate prices for active ticket types
-        if ($hasClassique && ($validated['billet_classique_prix'] ?? 0) < 0) {
-            return back()->withErrors(['billet_classique_prix' => 'Le prix doit être positif ou nul.']);
+        $validated = $request->validate($rules);
+
+        // Store data in session
+        $sessionData = [
+            'type_evenement' => $request->input('type_evenement'),
+            'billet_classique_actif' => $request->has('billet_classique_actif') ? true : false,
+            'billet_classique_prix' => $request->input('billet_classique_prix', 0),
+            'billet_vip_actif' => $request->has('billet_vip_actif') ? true : false,
+            'billet_vip_prix' => $request->input('billet_vip_prix', 0),
+            'billet_vvip_actif' => $request->has('billet_vvip_actif') ? true : false,
+            'billet_vvip_prix' => $request->input('billet_vvip_prix', 0),
+        ];
+
+        // If gratuit, all tickets are inactive
+        if ($request->input('type_evenement') === 'gratuit') {
+            $sessionData['billet_classique_actif'] = false;
+            $sessionData['billet_vip_actif'] = false;
+            $sessionData['billet_vvip_actif'] = false;
+            $sessionData['billet_classique_prix'] = 0;
+            $sessionData['billet_vip_prix'] = 0;
+            $sessionData['billet_vvip_prix'] = 0;
         }
-        if ($hasVip && ($validated['billet_vip_prix'] ?? 0) < 0) {
-            return back()->withErrors(['billet_vip_prix' => 'Le prix doit être positif ou nul.']);
-        }
-        if ($hasVvip && ($validated['billet_vvip_prix'] ?? 0) < 0) {
-            return back()->withErrors(['billet_vvip_prix' => 'Le prix doit être positif ou nul.']);
-        }
 
-        // Convert string booleans to actual booleans
-        $validated['billet_classique_actif'] = $hasClassique;
-        $validated['billet_vip_actif'] = $hasVip;
-        $validated['billet_vvip_actif'] = $hasVvip;
-
-        // Determine if event is free (all active tickets are free)
-        $isFree = true;
-        if ($hasClassique && ($validated['billet_classique_prix'] ?? 0) > 0) $isFree = false;
-        if ($hasVip && ($validated['billet_vip_prix'] ?? 0) > 0) $isFree = false;
-        if ($hasVvip && ($validated['billet_vvip_prix'] ?? 0) > 0) $isFree = false;
-
-        $validated['est_gratuit'] = $isFree;
-
-        session(['event_step3' => $validated]);
+        session(['event_step3' => $sessionData]);
 
         return redirect()->route('events.create.step4');
     }
