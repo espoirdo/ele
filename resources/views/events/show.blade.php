@@ -911,8 +911,8 @@
                             @php
                                 // Route to payment for paid tickets, booking for free tickets
                                 $ticketRoute = $ticket['prix'] > 0
-                                    ? route('payment.show', ['event' => $event->slug]) . '?type_billet=' . $ticket['type']
-                                    : route('booking.confirm.show', ['event' => $event->slug]) . '?type_billet=' . $ticket['type'];
+                                    ? '/paiement/' . $event->slug . '?type_billet=' . $ticket['type']
+                                    : '/evenements/' . $event->slug . '/participer?type_billet=' . $ticket['type'];
                             @endphp
                             <a href="{{ $ticketRoute }}"
                                class="ticket-btn"
@@ -960,7 +960,7 @@
 
                             @if($estGratuit)
                                 {{-- Evenement gratuit - Bouton Participer --}}
-                                <a href="{{ route('booking.confirm.show', ['event' => $event->slug]) }}"
+                                <a href="/evenements/{{ $event->slug }}/participer"
                                    class="btn-acheter active">
                                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
                                          stroke="currentColor" stroke-width="2.5">
@@ -973,7 +973,7 @@
                                 </a>
                             @else
                                 {{-- Evenement payants - Bouton Acheter maintenant --}}
-                                <a href="{{ route('payment.show', ['event' => $event->slug]) }}"
+                                <a href="/paiement/{{ $event->slug }}"
                                    class="btn-acheter active">
                                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
                                          stroke="currentColor" stroke-width="2.5">
