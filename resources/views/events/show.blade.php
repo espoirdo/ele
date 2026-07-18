@@ -962,24 +962,33 @@
                         @endif
 
                         @auth
-                            @if(count($event->tickets_actifs) > 0)
-                                {{-- Evenement avec types de billets - Bouton selon selection --}}
-                                <button type="button"
-                                   class="btn-acheter disabled"
-                                   id="btn-participer"
-                                   data-route="{{ route('payment.show', $event->slug) }}"
-                                   data-selected="">
-                                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
-                                         stroke="currentColor" stroke-width="2.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                              d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0
-                                                 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0
-                                                 110-4V7a2 2 0 00-2-2H5z"/>
-                                    </svg>
-                                    <span>Participer</span>
-                                </button>
+                            @php
+                                $hasPayableTickets = collect($event->tickets_actifs)->contains(function ($ticket) {
+                                    return (float) ($ticket['prix'] ?? 0) > 0;
+                                });
+                            @endphp
+
+                            @if($hasPayableTickets)
+                                {{-- Evenement payant avec types de billets - Bouton selon selection --}}
+                                <form id="participation-form" method="GET" action="{{ route('payment.show', $event->slug) }}" style="width:100%;">
+                                    <input type="hidden" name="type_billet" id="participation-type" value="">
+                                    <button type="submit"
+                                       class="btn-acheter disabled"
+                                       id="btn-participer"
+                                       data-selected=""
+                                       disabled>
+                                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
+                                             stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                  d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0
+                                                     110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0
+                                                     110-4V7a2 2 0 00-2-2H5z"/>
+                                        </svg>
+                                        <span>Participer</span>
+                                    </button>
+                                </form>
                             @else
-                                {{-- Evenement gratuit sans type de billet - Bouton Participer --}}
+                                {{-- Evenement gratuit sans type de billet ou tickets gratuits - Bouton Participer --}}
                                 <a href="{{ route('booking.confirm.show', $event->slug) }}" class="btn-acheter active">
                                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
                                          stroke="currentColor" stroke-width="2.5">
@@ -1212,21 +1221,22 @@ function initDetailMap() {
 document.addEventListener('DOMContentLoaded', function() {
     const ticketBtns = document.querySelectorAll('.ticket-btn');
     const btnParticiper = document.getElementById('btn-participer');
+    const participationForm = document.getElementById('participation-form');
+    const participationType = document.getElementById('participation-type');
 
-    if (!btnParticiper) {
+    if (!btnParticiper || !participationForm || !participationType) {
         return;
     }
 
-    const defaultRoute = btnParticiper.getAttribute('data-route') || btnParticiper.getAttribute('href');
-
-    btnParticiper.addEventListener('click', function() {
-        const selectedType = this.getAttribute('data-selected');
+    participationForm.addEventListener('submit', function(event) {
+        const selectedType = btnParticiper.getAttribute('data-selected');
 
         if (!selectedType) {
+            event.preventDefault();
             return;
         }
 
-        window.location.href = defaultRoute + '?type_billet=' + encodeURIComponent(selectedType);
+        participationType.value = selectedType;
     });
 
     ticketBtns.forEach(function(btn) {
@@ -1235,6 +1245,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (selectedType && btnParticiper) {
                 btnParticiper.setAttribute('data-selected', selectedType);
+                btnParticiper.disabled = false;
                 btnParticiper.classList.remove('disabled');
                 btnParticiper.classList.add('active');
             }
