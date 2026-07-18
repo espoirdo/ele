@@ -964,7 +964,7 @@
                         @auth
                             @if(count($event->tickets_actifs) > 0)
                                 {{-- Evenement avec types de billets - Bouton selon selection --}}
-                                <a href="{{ route('payment.show', $event->slug) }}"
+                                <button type="button"
                                    class="btn-acheter disabled"
                                    id="btn-participer"
                                    data-route="{{ route('payment.show', $event->slug) }}"
@@ -977,7 +977,7 @@
                                                  110-4V7a2 2 0 00-2-2H5z"/>
                                     </svg>
                                     <span>Participer</span>
-                                </a>
+                                </button>
                             @else
                                 {{-- Evenement gratuit sans type de billet - Bouton Participer --}}
                                 <a href="{{ route('booking.confirm.show', $event->slug) }}" class="btn-acheter active">
@@ -1219,15 +1219,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const defaultRoute = btnParticiper.getAttribute('data-route') || btnParticiper.getAttribute('href');
 
-    btnParticiper.addEventListener('click', function(event) {
+    btnParticiper.addEventListener('click', function() {
         const selectedType = this.getAttribute('data-selected');
 
         if (!selectedType) {
-            event.preventDefault();
             return;
         }
 
-        this.setAttribute('href', defaultRoute + '?type_billet=' + encodeURIComponent(selectedType));
+        window.location.href = defaultRoute + '?type_billet=' + encodeURIComponent(selectedType);
     });
 
     ticketBtns.forEach(function(btn) {
