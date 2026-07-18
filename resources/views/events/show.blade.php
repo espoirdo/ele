@@ -960,8 +960,11 @@
 
                             @if($estGratuit)
                                 {{-- Evenement gratuit - Bouton Participer --}}
+                                {{-- Debug: slug = {{ $event->slug }} --}}
                                 <a href="/evenements/{{ $event->slug }}/participer"
-                                   class="btn-acheter active">
+                                   class="btn-acheter active"
+                                   target="_blank"
+                                   id="test-participer-btn">
                                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
                                          stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round"
