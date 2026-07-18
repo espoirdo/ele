@@ -911,8 +911,8 @@
                             @php
                                 // Route to payment for paid tickets, booking for free tickets
                                 $ticketRoute = $ticket['prix'] > 0
-                                    ? route('payment.show', $event->slug) . '?type_billet=' . $ticket['type']
-                                    : route('booking.confirm.show', $event->slug) . '?type_billet=' . $ticket['type'];
+                                    ? route('payment.show', ['event' => $event->slug]) . '?type_billet=' . $ticket['type']
+                                    : route('booking.confirm.show', ['event' => $event->slug]) . '?type_billet=' . $ticket['type'];
                             @endphp
                             <a href="{{ $ticketRoute }}"
                                class="ticket-btn"
@@ -952,15 +952,15 @@
 
                         @auth
                             @php
-                                // Determine if event is free (no paid tickets)
-                                $hasPayableTickets = collect($event->tickets_actifs)->contains(function ($ticket) {
-                                    return (float) ($ticket['prix'] ?? 0) > 0;
-                                });
+                                // Triple condition to determine if event is free
+                                $estGratuit = $event->est_gratuit
+                                    || (!$event->billet_classique_actif && !$event->billet_vip_actif && !$event->billet_vvip_actif)
+                                    || empty($event->tickets_actifs);
                             @endphp
 
-                            @if($event->est_gratuit || !$hasPayableTickets)
+                            @if($estGratuit)
                                 {{-- Evenement gratuit - Bouton Participer --}}
-                                <a href="{{ route('booking.confirm.show', $event->slug) }}"
+                                <a href="{{ route('booking.confirm.show', ['event' => $event->slug]) }}"
                                    class="btn-acheter active">
                                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
                                          stroke="currentColor" stroke-width="2.5">
@@ -973,7 +973,7 @@
                                 </a>
                             @else
                                 {{-- Evenement payants - Bouton Acheter maintenant --}}
-                                <a href="{{ route('payment.show', $event->slug) }}"
+                                <a href="{{ route('payment.show', ['event' => $event->slug]) }}"
                                    class="btn-acheter active">
                                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
                                          stroke="currentColor" stroke-width="2.5">
