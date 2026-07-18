@@ -192,6 +192,12 @@ class EventCreateController extends Controller
         $eventData['user_id'] = Auth::id();
         $eventData['slug'] = Str::slug($eventData['titre']);
 
+        // Convert type_evenement to est_gratuit for database compatibility
+        if (isset($eventData['type_evenement'])) {
+            $eventData['est_gratuit'] = $eventData['type_evenement'] === 'gratuit';
+            unset($eventData['type_evenement']);
+        }
+
         // Handle image upload
         if ($request->hasFile('image_couverture')) {
             $eventData['image_couverture'] = $request->file('image_couverture')->store('events', 'public');

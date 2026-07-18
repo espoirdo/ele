@@ -908,7 +908,13 @@
                     <div class="reservation-body">
 
                         @forelse($event->tickets_actifs as $ticket)
-                            <a href="{{ route('booking.confirm.show', $event->slug) }}?type_billet={{ $ticket['type'] }}"
+                            @php
+                                // Route to payment for paid tickets, booking for free tickets
+                                $ticketRoute = $ticket['prix'] > 0
+                                    ? route('payment.show', $event->slug) . '?type_billet=' . $ticket['type']
+                                    : route('booking.confirm.show', $event->slug) . '?type_billet=' . $ticket['type'];
+                            @endphp
+                            <a href="{{ $ticketRoute }}"
                                class="ticket-btn"
                                style="border-left: 4px solid {{ $ticket['couleur'] }};">
                                 <div>
@@ -946,14 +952,15 @@
 
                         @auth
                             @php
+                                // Determine if event is free (no paid tickets)
                                 $hasPayableTickets = collect($event->tickets_actifs)->contains(function ($ticket) {
                                     return (float) ($ticket['prix'] ?? 0) > 0;
                                 });
                             @endphp
 
-                            @if(count($event->tickets_actifs) > 0)
-                                {{-- Evenement avec types de billets - Bouton dirige vers le premier type --}}
-                                <a href="{{ route('booking.confirm.show', $event->slug) }}?type_billet={{ $event->tickets_actifs[0]['type'] }}"
+                            @if($event->est_gratuit || !$hasPayableTickets)
+                                {{-- Evenement gratuit - Bouton Participer --}}
+                                <a href="{{ route('booking.confirm.show', $event->slug) }}"
                                    class="btn-acheter active">
                                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
                                          stroke="currentColor" stroke-width="2.5">
@@ -965,8 +972,9 @@
                                     Participer
                                 </a>
                             @else
-                                {{-- Evenement gratuit sans type de billet - Bouton Participer --}}
-                                <a href="{{ route('booking.confirm.show', $event->slug) }}" class="btn-acheter active">
+                                {{-- Evenement payants - Bouton Acheter maintenant --}}
+                                <a href="{{ route('payment.show', $event->slug) }}"
+                                   class="btn-acheter active">
                                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
                                          stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -974,7 +982,7 @@
                                                  110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0
                                                  110-4V7a2 2 0 00-2-2H5z"/>
                                     </svg>
-                                    Participer
+                                    Acheter maintenant
                                 </a>
                             @endif
                         @else
