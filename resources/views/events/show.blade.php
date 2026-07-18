@@ -896,38 +896,21 @@
 
             </div>
 
-            <div class="detail-sticky"
-                 x-data="{
-                     selectedType: null,
-                     get total() {
-                         if (!this.selectedType) return 0;
-                         const prices = {
-                             'classique': {{ $event->billet_classique_prix ?? 0 }},
-                             'vip': {{ $event->billet_vip_prix ?? 0 }},
-                             'vvip': {{ $event->billet_vvip_prix ?? 0 }}
-                         };
-                         return prices[this.selectedType] || 0;
-                     },
-                     get hasPayable() {
-                         return {{ ($event->billet_classique_prix > 0 && $event->billet_classique_actif) || ($event->billet_vip_prix > 0 && $event->billet_vip_actif) || ($event->billet_vvip_prix > 0 && $event->billet_vvip_actif) ? 'true' : 'false' }};
-                     }
-                 }">
+            <div class="detail-sticky">
 
                 <div class="reservation-card" data-gsap="fade-up">
 
                     <div class="reservation-header">
                         <h3>Reservation</h3>
-                        <p>Selectionnez votre type de billet</p>
+                        <p>Cliquez sur un type de billet pour reserver</p>
                     </div>
 
                     <div class="reservation-body">
 
                         @forelse($event->tickets_actifs as $ticket)
-                            <button class="ticket-btn"
-                                    :class="selectedType === '{{ $ticket['type'] }}' ? 'selected' : ''"
-                                    @click="selectedType = '{{ $ticket['type'] }}'"
-                                    data-type="{{ $ticket['type'] }}"
-                                    style="border-left: 4px solid {{ $ticket['couleur'] }};">
+                            <a href="{{ route('booking.confirm.show', $event->slug) }}?type_billet={{ $ticket['type'] }}"
+                               class="ticket-btn"
+                               style="border-left: 4px solid {{ $ticket['couleur'] }};">
                                 <div>
                                     <div class="ticket-name" style="color: {{ $ticket['couleur'] }}; font-weight: 600;">{{ $ticket['nom'] }}</div>
                                 </div>
@@ -942,7 +925,7 @@
                                         </svg>
                                     </div>
                                 </div>
-                            </button>
+                            </a>
                         @empty
                             <div style="text-align:center;padding:20px 0;color:#aaa;font-size:14px">
                                 Entree libre - aucun billet requis
@@ -968,27 +951,21 @@
                                 });
                             @endphp
 
-                            @if($hasPayableTickets)
-                                {{-- Evenement payant avec types de billets - Bouton selon selection --}}
-                                <form id="participation-form" method="GET" action="{{ route('payment.show', $event->slug) }}" style="width:100%;">
-                                    <input type="hidden" name="type_billet" id="participation-type" value="">
-                                    <button type="submit"
-                                       class="btn-acheter disabled"
-                                       id="btn-participer"
-                                       data-selected=""
-                                       disabled>
-                                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
-                                             stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                  d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0
-                                                     110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0
-                                                     110-4V7a2 2 0 00-2-2H5z"/>
-                                        </svg>
-                                        <span>Participer</span>
-                                    </button>
-                                </form>
+                            @if(count($event->tickets_actifs) > 0)
+                                {{-- Evenement avec types de billets - Bouton dirige vers le premier type --}}
+                                <a href="{{ route('booking.confirm.show', $event->slug) }}?type_billet={{ $event->tickets_actifs[0]['type'] }}"
+                                   class="btn-acheter active">
+                                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
+                                         stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0
+                                                 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0
+                                                 110-4V7a2 2 0 00-2-2H5z"/>
+                                    </svg>
+                                    Participer
+                                </a>
                             @else
-                                {{-- Evenement gratuit sans type de billet ou tickets gratuits - Bouton Participer --}}
+                                {{-- Evenement gratuit sans type de billet - Bouton Participer --}}
                                 <a href="{{ route('booking.confirm.show', $event->slug) }}" class="btn-acheter active">
                                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
                                          stroke="currentColor" stroke-width="2.5">
@@ -1215,43 +1192,4 @@ function initDetailMap() {
     <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_key') }}&callback=initDetailMap" async defer></script>
 @endif
 
-{{-- Script pour gerer la selection du type de billet --}}
-@if(count($event->tickets_actifs) > 0)
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const ticketBtns = document.querySelectorAll('.ticket-btn');
-    const btnParticiper = document.getElementById('btn-participer');
-    const participationForm = document.getElementById('participation-form');
-    const participationType = document.getElementById('participation-type');
-
-    if (!btnParticiper || !participationForm || !participationType) {
-        return;
-    }
-
-    participationForm.addEventListener('submit', function(event) {
-        const selectedType = btnParticiper.getAttribute('data-selected');
-
-        if (!selectedType) {
-            event.preventDefault();
-            return;
-        }
-
-        participationType.value = selectedType;
-    });
-
-    ticketBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const selectedType = this.getAttribute('data-type');
-
-            if (selectedType && btnParticiper) {
-                btnParticiper.setAttribute('data-selected', selectedType);
-                btnParticiper.disabled = false;
-                btnParticiper.classList.remove('disabled');
-                btnParticiper.classList.add('active');
-            }
-        });
-    });
-});
-</script>
-@endif
 @endsection
