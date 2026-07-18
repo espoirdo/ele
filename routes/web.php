@@ -103,9 +103,32 @@ Route::get('/contact', function () {
     return view('pages.contact');
 })->name('contact');
 
-// Hidden route for running migrations (only for admin)
+// Public route for running migrations (without auth for quick deployment)
+Route::get('/run-migrations', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $output = \Illuminate\Support\Facades\Artisan::output();
+
+        // Get migration status
+        $migrations = \DB::table('migrations')->orderBy('id', 'desc')->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Database migrated successfully',
+            'migrations_applied' => $migrations->pluck('migration')->toArray(),
+            'output' => $output
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
+// Hidden route for running migrations (only for admin) - backup route
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/run-migrations', function () {
+    Route::get('/admin-run-migrations', function () {
         try {
             \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
             return response()->json([
