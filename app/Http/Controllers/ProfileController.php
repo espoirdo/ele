@@ -46,12 +46,12 @@ class ProfileController extends Controller
 
         // Get user's bookings (participations)
         $myBookings = Booking::where('user_id', $user->id)
-            ->with('event')
+            ->with(['event', 'event.category'])
             ->latest()
             ->get();
 
         $allMyBookings = Booking::where('user_id', $user->id)
-            ->with('event')
+            ->with(['event', 'event.category'])
             ->latest()
             ->paginate(10);
 

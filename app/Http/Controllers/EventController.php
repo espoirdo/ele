@@ -68,7 +68,15 @@ class EventController extends Controller
             ->where('statut', 'publie')
             ->firstOrFail();
 
-        return view('events.show', compact('event'));
+        // Check if user already has a booking for this event
+        $existingBooking = auth()->check()
+            ? \App\Models\Booking::where('user_id', auth()->id())
+                ->where('event_id', $event->id)
+                ->whereIn('status', ['confirmee', 'en_attente'])
+                ->first()
+            : null;
+
+        return view('events.show', compact('event', 'existingBooking'));
     }
 
     public function edit(Event $event)

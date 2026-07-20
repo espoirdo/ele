@@ -338,8 +338,8 @@
         </div>
 
         <div class="success-actions">
-            @if($booking->status === 'confirmee' && $booking->ticket_path)
-                <a href="{{ route('ticket.download', $booking) }}" class="btn-primary" download>
+            @if($booking->status === 'confirmee')
+                <a href="{{ route('booking.download', $booking) }}" class="btn-primary" download>
                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="display: inline; margin-right: 6px;">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                     </svg>

@@ -1366,10 +1366,10 @@
                             @foreach($allMyBookings as $booking)
                                 <div class="ticket-card {{ $booking->status === 'annulee' ? 'cancelled' : '' }}">
                                     @if($booking->event && $booking->event->image_couverture)
-                                        <img src="{{ Storage::url($booking->event->image_couverture) }}" alt="{{ $booking->event->titre }}" class="ticket-img">
+                                        <img src="{{ Storage::url($booking->event->image_couverture) }}" alt="{{ $booking->event->titre }}" class="ticket-img" style="width: 64px; height: 64px; border-radius: 8px;">
                                     @else
-                                        <div class="ticket-img-placeholder">
-                                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <div class="ticket-img-placeholder" style="width: 64px; height: 64px; border-radius: 8px;">
+                                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
                                             </svg>
                                         </div>
@@ -1377,26 +1377,47 @@
 
                                     <div class="ticket-info">
                                         @if($booking->event)
-                                            <h3 class="ticket-title">{{ $booking->event->titre }}</h3>
+                                            <h3 class="ticket-title" style="font-size: 15px; font-weight: 700; font-family: 'Poppins', sans-serif;">{{ $booking->event->titre }}</h3>
                                             <div class="ticket-meta">
                                                 <span>{{ $booking->event->date->translatedFormat('d M Y') }}</span>
                                                 @if($booking->event->lieu)
                                                     <span>{{ $booking->event->lieu }}</span>
                                                 @endif
                                             </div>
-                                        @endif
-                                        <span class="ticket-number">{{ $booking->numero_reservation }}</span>
-                                        <span class="ticket-status {{ $booking->status }}">
-                                            @if($booking->status === 'confirmee') Confirme
-                                            @elseif($booking->status === 'en_attente') En attente
-                                            @else Annule
+                                            @if($booking->type_billet)
+                                                <span class="ticket-type-badge" style="display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; color: white; background: {{ $booking->type_billet_info['couleur'] }}; margin-top: 4px;">
+                                                    {{ $booking->type_billet_info['nom'] }}
+                                                </span>
                                             @endif
-                                        </span>
+                                        @endif
+                                        <div style="display: flex; align-items: center; gap: 12px; margin-top: 6px;">
+                                            <span class="ticket-number" style="font-family: monospace; font-weight: 700;">{{ $booking->numero_reservation }}</span>
+                                            <span class="ticket-status {{ $booking->status }}">
+                                                @if($booking->status === 'confirmee') Confirmé
+                                                @elseif($booking->status === 'en_attente') En attente
+                                                @else Annulé
+                                                @endif
+                                            </span>
+                                        </div>
                                     </div>
 
-                                    @if($booking->status === 'confirmee')
-                                        <a href="{{ route('booking.success', $booking) }}" class="btn-ticket">Voir le billet</a>
-                                    @endif
+                                    <div class="ticket-actions" style="display: flex; gap: 8px; margin-left: auto;">
+                                        @if($booking->status === 'confirmee')
+                                            <a href="{{ route('booking.download', $booking) }}" class="btn-ticket" style="background: transparent; border: 1px solid #CC0000; color: #CC0000;">
+                                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 4px;">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                </svg>
+                                                Voir
+                                            </a>
+                                            <a href="{{ route('booking.download', $booking) }}" class="btn-ticket" download>
+                                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 4px;">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                                </svg>
+                                                PDF
+                                            </a>
+                                        @endif
+                                    </div>
                                 </div>
                             @endforeach
                         </div>

@@ -132,7 +132,7 @@ class BookingController extends Controller
     {
         $user = Auth::user();
 
-        $query = Booking::with('event')
+        $query = Booking::with(['event', 'event.category'])
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc');
 
@@ -144,5 +144,22 @@ class BookingController extends Controller
         $bookings = $query->paginate(10);
 
         return view('bookings.index', compact('bookings'));
+    }
+
+    /**
+     * Download ticket PDF
+     */
+    public function download(Booking $booking)
+    {
+        abort_if($booking->user_id !== Auth::id(), 403);
+
+        $booking->load(['event', 'event.category', 'user']);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('booking.pdf', compact('booking'));
+        $pdf->setPaper('A4', 'portrait');
+
+        $filename = 'billet-eledji-' . $booking->numero_reservation . '.pdf';
+
+        return $pdf->download($filename);
     }
 }

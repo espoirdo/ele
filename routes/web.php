@@ -83,6 +83,7 @@ Route::middleware(['auth', 'verified', 'check.blocked'])->group(function () {
     Route::post('/evenements/{event:slug}/participer', [BookingController::class, 'confirmStore'])->name('booking.confirm.store');
     Route::get('/reservation/confirmation/{booking}', [BookingController::class, 'success'])->name('booking.success');
     Route::get('/mes-reservations', [BookingController::class, 'myBookings'])->name('user.bookings');
+    Route::get('/billet/{booking}/telecharger', [BookingController::class, 'download'])->name('booking.download');
 
     // Payment routes
     Route::get('/paiement/{event:slug}', [PaymentController::class, 'show'])->name('payment.show');

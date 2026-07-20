@@ -958,9 +958,38 @@
                                     || empty($event->tickets_actifs);
                             @endphp
 
-                            @if($estGratuit)
+                            {{-- LOGIQUE DE RESERVATION EXISTANTE --}}
+                            @if($existingBooking && $existingBooking->status === 'confirmee')
+                                {{-- Utilisateur a deja une reservation confirmee --}}
+                                <a href="{{ route('booking.download', $existingBooking) }}"
+                                   class="btn-acheter active"
+                                   style="background: #2E7D32; box-shadow: 0 6px 24px rgba(46, 125, 50, 0.35);">
+                                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
+                                         stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0
+                                                 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0
+                                                 110-4V7a2 2 0 00-2-2H5z"/>
+                                    </svg>
+                                    Voir mon billet
+                                </a>
+                                <p style="text-align: center; font-size: 12px; color: #666; margin-top: 8px; margin-bottom: 0;">
+                                    Vous participez deja a cet evenement
+                                </p>
+                            @elseif($existingBooking && $existingBooking->status === 'en_attente')
+                                {{-- Utilisateur a une reservation en attente de paiement --}}
+                                <a href="{{ route('payment.show', $event->slug) }}"
+                                   class="btn-acheter active"
+                                   style="background: #F5A623; box-shadow: 0 6px 24px rgba(245, 166, 35, 0.35);">
+                                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
+                                         stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                    </svg>
+                                    Finaliser mon paiement
+                                </a>
+                            @elseif($estGratuit)
                                 {{-- Evenement gratuit - Bouton Participer --}}
-                                {{-- Debug: slug = {{ $event->slug }} --}}
                                 <a href="/evenements/{{ $event->slug }}/participer"
                                    class="btn-acheter active"
                                    target="_blank"
@@ -989,9 +1018,21 @@
                                 </a>
                             @endif
                         @else
-                            <a href="{{ route('login') }}" class="btn-acheter login">
-                                Se connecter pour reserver
-                            </a>
+                            @php
+                                // Triple condition to determine if event is free
+                                $estGratuit = $event->est_gratuit
+                                    || (!$event->billet_classique_actif && !$event->billet_vip_actif && !$event->billet_vvip_actif)
+                                    || empty($event->tickets_actifs);
+                            @endphp
+                            @if($estGratuit)
+                                <a href="{{ route('login') }}" class="btn-acheter login">
+                                    Se connecter pour participer
+                                </a>
+                            @else
+                                <a href="{{ route('login') }}" class="btn-acheter login">
+                                    Se connecter pour acheter
+                                </a>
+                            @endif
                         @endauth
 
                         <div class="reservation-infos">
