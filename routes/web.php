@@ -71,6 +71,10 @@ Route::middleware(['auth', 'verified', 'check.blocked'])->group(function () {
     Route::get('/evenements/creer/etape-4', [EventCreateController::class, 'showStep4'])->name('events.create.step4');
     Route::post('/evenements/creer/etape-4', [EventCreateController::class, 'postStep4'])->name('events.create.step4.post');
 
+    // Premium payment routes (require auth)
+    Route::get('/evenements/options-premium/paiement', [PremiumPaymentController::class, 'show'])->name('premium.payment.show')->middleware('auth');
+    Route::post('/evenements/options-premium/paiement', [PremiumPaymentController::class, 'process'])->name('premium.payment.process')->middleware('auth');
+
     // Anciennes routes conservees pour compatibilite
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
     Route::post('/events/draft', [EventController::class, 'draft'])->name('events.draft');

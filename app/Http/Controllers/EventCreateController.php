@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\PremiumOption;
+use App\Models\PremiumPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -158,7 +159,6 @@ class EventCreateController extends Controller
             return redirect()->route('events.create.step3');
         }
 
-        $premiumOptions = PremiumOption::all();
         $step1 = session('event_step1', []);
         $step2 = session('event_step2', []);
         $step3 = session('event_step3', []);
@@ -188,7 +188,7 @@ class EventCreateController extends Controller
             ];
         }
 
-        return view('events.create.step4', compact('premiumOptions', 'step1', 'step2', 'step3', 'billetsActifs'));
+        return view('events.create.step4', compact('step1', 'step2', 'step3', 'billetsActifs'));
     }
 
     /**
@@ -202,9 +202,7 @@ class EventCreateController extends Controller
 
         $validated = $request->validate([
             'image_couverture' => 'nullable|image|max:5120|mimes:jpg,jpeg,png,webp',
-            'premium_mise_en_avant' => 'nullable|boolean',
-            'premium_newsletter' => 'nullable|boolean',
-            'premium_reseaux' => 'nullable|boolean',
+            'options_premium' => 'nullable|array',
             'statut' => 'required|in:brouillon,publie',
         ]);
 
@@ -223,6 +221,10 @@ class EventCreateController extends Controller
             unset($eventData['type_evenement']);
         }
 
+        // Remove options_premium from eventData - will be handled separately after payment
+        $optionsPremium = $eventData['options_premium'] ?? [];
+        unset($eventData['options_premium']);
+
         // Handle image upload
         if ($request->hasFile('image_couverture')) {
             $eventData['image_couverture'] = $request->file('image_couverture')->store('events', 'public');
@@ -231,22 +233,39 @@ class EventCreateController extends Controller
         // Create the event
         $event = \App\Models\Event::create($eventData);
 
-        // Attach premium options if any
-        $premiumOptions = [];
-        if (!empty($eventData['premium_mise_en_avant'])) {
-            $premiumOptions[] = 1; // mise_en_avant
-        }
-        if (!empty($eventData['premium_newsletter'])) {
-            $premiumOptions[] = 2; // newsletter
-        }
-        if (!empty($eventData['premium_reseaux'])) {
-            $premiumOptions[] = 3; // reseaux
-        }
-        if (!empty($premiumOptions)) {
-            $event->premiumOptions()->sync($premiumOptions);
+        // Check if premium options were selected
+        if (!empty($optionsPremium)) {
+            // Calculate total premium
+            $prixOptions = [
+                'mise_en_avant'   => setting('premium_mise_en_avant_prix', 5000),
+                'newsletter'      => setting('premium_newsletter_prix', 3000),
+                'reseaux_sociaux' => setting('premium_reseaux_prix', 2000),
+            ];
+
+            $totalPremium = 0;
+            foreach ($optionsPremium as $option) {
+                $totalPremium += $prixOptions[$option] ?? 0;
+            }
+
+            // Store in session for payment page
+            session([
+                'premium_payment' => [
+                    'event_id'       => $event->id,
+                    'event_slug'     => $event->slug,
+                    'options'        => $optionsPremium,
+                    'total'          => $totalPremium,
+                ]
+            ]);
+
+            // Clear session but keep event created
+            session()->forget(['event_step1', 'event_step2', 'event_step3']);
+
+            // Redirect to premium payment
+            return redirect()->route('premium.payment.show')
+                             ->with('success', 'Événement créé ! Finalisez le paiement de vos options premium.');
         }
 
-        // Clear session
+        // If no premium options, publication directly
         session()->forget(['event_step1', 'event_step2', 'event_step3']);
 
         return redirect()->to('/events/' . $event->slug)
