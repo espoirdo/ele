@@ -254,15 +254,16 @@ class EventCreateController extends Controller
                     'event_slug'     => $event->slug,
                     'options'        => $optionsPremium,
                     'total'          => $totalPremium,
+                    'description'    => 'Options premium Eledji',
                 ]
             ]);
 
             // Clear session but keep event created
             session()->forget(['event_step1', 'event_step2', 'event_step3']);
 
-            // Redirect to premium payment
-            return redirect()->route('premium.payment.show')
-                             ->with('success', 'Événement créé ! Finalisez le paiement de vos options premium.');
+            // Redirect to existing payment system
+            return redirect()->route('payment.show', $event->slug)
+                             ->with('info', 'Finalisez le paiement de vos options premium pour booster votre événement.');
         }
 
         // If no premium options, publication directly

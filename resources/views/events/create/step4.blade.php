@@ -74,89 +74,101 @@
                 <h3 class="card-title">Options premium</h3>
                 <p class="card-subtitle">Boostez la visibilité de votre événement</p>
 
-                @php
-                    $optionsPremium = [
-                        [
-                            'key'         => 'mise_en_avant',
-                            'label'       => 'Mise en avant sur la page d\'accueil',
-                            'description' => 'Votre événement apparaît en tête de la page d\'accueil pendant 7 jours',
-                            'prix'        => setting('premium_mise_en_avant_prix', 5000),
-                            'icon'        => '★',
-                        ],
-                        [
-                            'key'         => 'newsletter',
-                            'label'       => 'Publication dans la newsletter',
-                            'description' => 'Envoi à tous les abonnés de la newsletter Eledji',
-                            'prix'        => setting('premium_newsletter_prix', 3000),
-                            'icon'        => '✉',
-                        ],
-                        [
-                            'key'         => 'reseaux_sociaux',
-                            'label'       => 'Partage sur les réseaux sociaux',
-                            'description' => 'Publication sur les pages Facebook et Instagram d\'Eledji',
-                            'prix'        => setting('premium_reseaux_prix', 2000),
-                            'icon'        => '⟳',
-                        ],
-                    ];
-                @endphp
-
-                @foreach($optionsPremium as $option)
-                <div @click="toggleOption('{{ $option['key'] }}', {{ $option['prix'] }})"
-                     :style="isSelected('{{ $option['key'] }}') ?
-                             'border: 2px solid #CC0000; background: #FFF5F5;' :
-                             'border: 1.5px solid #E0E0E0; background: white;'"
-                     style="border-radius: 12px; padding: 16px 20px; margin-bottom: 12px;
-                            cursor: pointer; transition: all 0.25s ease; display: flex;
-                            align-items: center; justify-content: space-between;">
-
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        {{-- Checkbox visuel --}}
-                        <div :style="isSelected('{{ $option['key'] }}') ?
-                                     'background: #CC0000; border-color: #CC0000;' :
-                                     'background: white; border-color: #E0E0E0;'"
-                             style="width: 20px; height: 20px; border: 2px solid #E0E0E0;
-                                    border-radius: 4px; display: flex; align-items: center;
-                                    justify-content: center; flex-shrink: 0; transition: all 0.25s ease;">
-                            <svg x-show="isSelected('{{ $option['key'] }}')"
-                                 width="12" height="12" viewBox="0 0 12 12" fill="white">
-                                <path d="M2 6l3 3 5-5" stroke="white" stroke-width="2"
-                                      fill="none" stroke-linecap="round"/>
-                            </svg>
+                <div x-data="{
+                    options: {
+                        mise_en_avant: false,
+                        newsletter: false,
+                        reseaux_sociaux: false
+                    },
+                    prix: {
+                        mise_en_avant: {{ setting('premium_mise_en_avant_prix', 5000) }},
+                        newsletter: {{ setting('premium_newsletter_prix', 3000) }},
+                        reseaux_sociaux: {{ setting('premium_reseaux_prix', 2000) }}
+                    },
+                    get total() {
+                        let t = 0;
+                        for (let key in this.options) {
+                            if (this.options[key]) t += this.prix[key];
+                        }
+                        return t;
+                    }
+                }">
+                    {{-- Carte Mise en avant --}}
+                    <div @click="options.mise_en_avant = !options.mise_en_avant"
+                         :style="options.mise_en_avant ? 'border: 2px solid #CC0000; background: #FFF5F5;' : 'border: 1.5px solid #E0E0E0; background: #FFFFFF;'"
+                         style="border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; justify-content: space-between; user-select: none;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div :style="options.mise_en_avant ? 'background: #CC0000; border-color: #CC0000;' : 'background: white; border-color: #CCCCCC;'"
+                                 style="width: 20px; height: 20px; border: 2px solid #CCCCCC; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s ease;">
+                                <svg x-show="options.mise_en_avant" width="11" height="9" viewBox="0 0 11 9" fill="none">
+                                    <path d="M1 4L4 7L10 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p style="font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600; color: #222222; margin: 0 0 2px 0;">Mise en avant sur la page d'accueil</p>
+                                <p style="font-family: 'Poppins', sans-serif; font-size: 12px; color: #888888; margin: 0;">Votre événement apparaît en tête de la page d'accueil pendant 7 jours</p>
+                            </div>
                         </div>
-                        <div>
-                            <p style="font-family: 'Poppins', sans-serif; font-size: 14px;
-                                      font-weight: 600; color: #222222; margin: 0;">
-                                {{ $option['label'] }}
-                            </p>
-                            <p style="font-family: 'Poppins', sans-serif; font-size: 12px;
-                                      color: #888888; margin: 4px 0 0 0;">
-                                {{ $option['description'] }}
-                            </p>
-                        </div>
+                        <span :style="options.mise_en_avant ? 'color: #CC0000;' : 'color: #888888;'"
+                              style="font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px; white-space: nowrap; margin-left: 16px;">
+                            {{ number_format(setting('premium_mise_en_avant_prix', 5000), 0, ',', ' ') }} FCA
+                        </span>
+                        <input type="checkbox" name="options_premium[]" value="mise_en_avant" :checked="options.mise_en_avant" style="display:none;">
                     </div>
 
-                    <span style="font-family: 'Poppins', sans-serif; font-weight: 700;
-                                 font-size: 14px; color: #CC0000; white-space: nowrap; margin-left: 12px;">
-                        {{ number_format($option['prix'], 0, ',', ' ') }} FCA
-                    </span>
+                    {{-- Carte Newsletter --}}
+                    <div @click="options.newsletter = !options.newsletter"
+                         :style="options.newsletter ? 'border: 2px solid #CC0000; background: #FFF5F5;' : 'border: 1.5px solid #E0E0E0; background: #FFFFFF;'"
+                         style="border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; justify-content: space-between; user-select: none;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div :style="options.newsletter ? 'background: #CC0000; border-color: #CC0000;' : 'background: white; border-color: #CCCCCC;'"
+                                 style="width: 20px; height: 20px; border: 2px solid #CCCCCC; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s ease;">
+                                <svg x-show="options.newsletter" width="11" height="9" viewBox="0 0 11 9" fill="none">
+                                    <path d="M1 4L4 7L10 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p style="font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600; color: #222222; margin: 0 0 2px 0;">Publication dans la newsletter</p>
+                                <p style="font-family: 'Poppins', sans-serif; font-size: 12px; color: #888888; margin: 0;">Envoi à tous les abonnés de la newsletter Eledji</p>
+                            </div>
+                        </div>
+                        <span :style="options.newsletter ? 'color: #CC0000;' : 'color: #888888;'"
+                              style="font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px; white-space: nowrap; margin-left: 16px;">
+                            {{ number_format(setting('premium_newsletter_prix', 3000), 0, ',', ' ') }} FCA
+                        </span>
+                        <input type="checkbox" name="options_premium[]" value="newsletter" :checked="options.newsletter" style="display:none;">
+                    </div>
 
-                    <input type="checkbox"
-                           name="options_premium[]"
-                           value="{{ $option['key'] }}"
-                           :checked="isSelected('{{ $option['key'] }}')"
-                           style="display: none;">
-                @endforeach
+                    {{-- Carte Réseaux sociaux --}}
+                    <div @click="options.reseaux_sociaux = !options.reseaux_sociaux"
+                         :style="options.reseaux_sociaux ? 'border: 2px solid #CC0000; background: #FFF5F5;' : 'border: 1.5px solid #E0E0E0; background: #FFFFFF;'"
+                         style="border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; justify-content: space-between; user-select: none;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div :style="options.reseaux_sociaux ? 'background: #CC0000; border-color: #CC0000;' : 'background: white; border-color: #CCCCCC;'"
+                                 style="width: 20px; height: 20px; border: 2px solid #CCCCCC; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s ease;">
+                                <svg x-show="options.reseaux_sociaux" width="11" height="9" viewBox="0 0 11 9" fill="none">
+                                    <path d="M1 4L4 7L10 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p style="font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600; color: #222222; margin: 0 0 2px 0;">Partage sur les réseaux sociaux</p>
+                                <p style="font-family: 'Poppins', sans-serif; font-size: 12px; color: #888888; margin: 0;">Publication sur les pages Facebook et Instagram d'Eledji</p>
+                            </div>
+                        </div>
+                        <span :style="options.reseaux_sociaux ? 'color: #CC0000;' : 'color: #888888;'"
+                              style="font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px; white-space: nowrap; margin-left: 16px;">
+                            {{ number_format(setting('premium_reseaux_prix', 2000), 0, ',', ' ') }} FCA
+                        </span>
+                        <input type="checkbox" name="options_premium[]" value="reseaux_sociaux" :checked="options.reseaux_sociaux" style="display:none;">
+                    </div>
 
-                {{-- Total options premium --}}
-                <div x-show="total > 0" x-transition
-                     style="margin-top: 16px; padding: 12px 20px; background: #FFF5F5;
-                            border-radius: 10px; display: flex; justify-content: space-between;
-                            align-items: center;">
-                    <span style="font-family: 'Poppins', sans-serif; font-size: 14px;
-                                 color: #444444;">Total options premium</span>
-                    <span style="font-family: 'Poppins', sans-serif; font-size: 16px;
-                                 font-weight: 700; color: #CC0000;"
-                          x-text="total.toLocaleString('fr-FR') + ' FCA'"></span>
+                    {{-- Total visible uniquement si au moins une option cochée --}}
+                    <div x-show="total > 0" x-transition
+                         style="margin-top: 8px; padding: 14px 20px; background: #FFF5F5; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #FFDDDD;">
+                        <span style="font-family: 'Poppins', sans-serif; font-size: 14px; color: #444444; font-weight: 500;">Total options premium</span>
+                        <span style="font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; color: #CC0000;"
+                              x-text="total.toLocaleString('fr-FR') + ' FCA'"></span>
+                    </div>
                 </div>
             </div>
 
