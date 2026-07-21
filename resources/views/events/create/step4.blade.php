@@ -131,12 +131,31 @@
                         <span class="recap-value">{{ $step2['date'] ?? '' }} de {{ $step2['heure_debut'] ?? '' }} a {{ $step2['heure_fin'] ?? '' }}</span>
                     </div>
                     <div class="recap-item">
-                        <span class="recap-label">Prix</span>
-                        <span class="recap-value">{{ $step3['est_gratuit'] ?? '1' == '1' ? 'Gratuit' : number_format($step3['prix'] ?? 0, 0, ',', ' ') . ' XOF' }}</span>
-                    </div>
-                    <div class="recap-item">
-                        <span class="recap-label">Places</span>
-                        <span class="recap-value">{{ $step3['nombre_places'] ?? '' }}</span>
+                        <span class="recap-label">Billetterie</span>
+                        <span class="recap-value">
+                            @if(session('event_step3.type_evenement') === 'gratuit')
+                                <span style="background: #2E7D32; color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                                    Gratuit
+                                </span>
+                            @else
+                                @forelse($billetsActifs as $billet)
+                                    <div style="margin-bottom: 6px; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+                                        <span style="background: {{ $billet['color'] }}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700;">
+                                            {{ $billet['type'] }}
+                                        </span>
+                                        <span style="color: #CC0000; font-weight: 700;">
+                                            @if($billet['prix'] > 0)
+                                                {{ number_format($billet['prix'], 0, ',', ' ') }} FCF
+                                            @else
+                                                Gratuit
+                                            @endif
+                                        </span>
+                                    </div>
+                                @empty
+                                    <span style="color: #CC0000;">Aucun billet configure</span>
+                                @endforelse
+                            @endif
+                        </span>
                     </div>
                 </div>
             </div>

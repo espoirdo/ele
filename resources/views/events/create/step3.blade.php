@@ -95,12 +95,15 @@ $step3 = session('event_step3', []);
                                 <input type="number"
                                        id="billet_classique_prix"
                                        name="billet_classique_prix"
+                                       x-model="classiquePrix"
                                        value="{{ old('billet_classique_prix', $step3['billet_classique_prix'] ?? '') }}"
                                        min="0"
                                        step="100"
                                        placeholder="Prix en FCFA">
-                                <div class="gratuit-badge" x-show="parseFloat(classiquePrix) === 0 || classiquePrix === ''" x-transition>
+                                <div class="gratuit-badge" x-show="parseFloat(classiquePrix) === 0 || classiquePrix === ''" style="display:inline-block; background:#22C55E; color:white; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; margin-top:8px;">
                                     Gratuit
+                                </div>
+                                <div class="price-badge" x-show="parseFloat(classiquePrix) > 0" x-text="Number(classiquePrix).toLocaleString('fr-FR') + ' FCA'" style="display:inline-block; background:#333333; color:white; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; margin-top:8px;">
                                 </div>
                             </div>
                         </div>
@@ -121,12 +124,15 @@ $step3 = session('event_step3', []);
                                 <input type="number"
                                        id="billet_vip_prix"
                                        name="billet_vip_prix"
+                                       x-model="vipPrix"
                                        value="{{ old('billet_vip_prix', $step3['billet_vip_prix'] ?? '') }}"
                                        min="0"
                                        step="100"
                                        placeholder="Prix en FCFA">
-                                <div class="gratuit-badge" x-show="parseFloat(vipPrix) === 0 || vipPrix === ''" x-transition>
+                                <div class="gratuit-badge" x-show="parseFloat(vipPrix) === 0 || vipPrix === ''" style="display:inline-block; background:#22C55E; color:white; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; margin-top:8px;">
                                     Gratuit
+                                </div>
+                                <div class="price-badge" x-show="parseFloat(vipPrix) > 0" x-text="Number(vipPrix).toLocaleString('fr-FR') + ' FCA'" style="display:inline-block; background:#CC0000; color:white; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; margin-top:8px;">
                                 </div>
                             </div>
                         </div>
@@ -147,12 +153,15 @@ $step3 = session('event_step3', []);
                                 <input type="number"
                                        id="billet_vvip_prix"
                                        name="billet_vvip_prix"
+                                       x-model="vvipPrix"
                                        value="{{ old('billet_vvip_prix', $step3['billet_vvip_prix'] ?? '') }}"
                                        min="0"
                                        step="100"
                                        placeholder="Prix en FCFA">
-                                <div class="gratuit-badge" x-show="parseFloat(vvipPrix) === 0 || vvipPrix === ''" x-transition>
+                                <div class="gratuit-badge" x-show="parseFloat(vvipPrix) === 0 || vvipPrix === ''" style="display:inline-block; background:#22C55E; color:white; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; margin-top:8px;">
                                     Gratuit
+                                </div>
+                                <div class="price-badge" x-show="parseFloat(vvipPrix) > 0" x-text="Number(vvipPrix).toLocaleString('fr-FR') + ' FCA'" style="display:inline-block; background:#F5A623; color:white; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:600; margin-top:8px;">
                                 </div>
                             </div>
                         </div>

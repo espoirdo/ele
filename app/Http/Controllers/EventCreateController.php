@@ -163,7 +163,32 @@ class EventCreateController extends Controller
         $step2 = session('event_step2', []);
         $step3 = session('event_step3', []);
 
-        return view('events.create.step4', compact('premiumOptions', 'step1', 'step2', 'step3'));
+        // Préparer les billets actifs pour le récapitulatif
+        $billetsActifs = [];
+
+        if (!empty($step3['billet_classique_actif'])) {
+            $billetsActifs[] = [
+                'type'  => 'Classique',
+                'prix'  => $step3['billet_classique_prix'] ?? 0,
+                'color' => '#333333',
+            ];
+        }
+        if (!empty($step3['billet_vip_actif'])) {
+            $billetsActifs[] = [
+                'type'  => 'VIP',
+                'prix'  => $step3['billet_vip_prix'] ?? 0,
+                'color' => '#CC0000',
+            ];
+        }
+        if (!empty($step3['billet_vvip_actif'])) {
+            $billetsActifs[] = [
+                'type'  => 'VVIP',
+                'prix'  => $step3['billet_vvip_prix'] ?? 0,
+                'color' => '#F5A623',
+            ];
+        }
+
+        return view('events.create.step4', compact('premiumOptions', 'step1', 'step2', 'step3', 'billetsActifs'));
     }
 
     /**
