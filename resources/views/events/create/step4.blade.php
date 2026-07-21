@@ -95,79 +95,221 @@
                 }">
                     {{-- Carte Mise en avant --}}
                     <div @click="options.mise_en_avant = !options.mise_en_avant"
-                         :style="options.mise_en_avant ? 'border: 2px solid #CC0000; background: #FFF5F5;' : 'border: 1.5px solid #E0E0E0; background: #FFFFFF;'"
-                         style="border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; justify-content: space-between; user-select: none;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div :style="options.mise_en_avant ? 'background: #CC0000; border-color: #CC0000;' : 'background: white; border-color: #CCCCCC;'"
-                                 style="width: 20px; height: 20px; border: 2px solid #CCCCCC; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s ease;">
-                                <svg x-show="options.mise_en_avant" width="11" height="9" viewBox="0 0 11 9" fill="none">
-                                    <path d="M1 4L4 7L10 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                         :style="options.mise_en_avant ?
+                                 'border: 2px solid #CC0000; background: linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%); box-shadow: 0 4px 16px rgba(204,0,0,0.12);' :
+                                 'border: 1.5px solid #EEEEEE; background: #FFFFFF; box-shadow: 0 2px 8px rgba(0,0,0,0.05);'"
+                         style="border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; cursor: pointer;
+                                transition: all 0.25s ease; user-select: none; position: relative; overflow: hidden;">
+
+                        <div x-show="options.mise_en_avant"
+                             style="position: absolute; top: 0; right: 0; background: #CC0000; color: white;
+                                    font-size: 10px; font-weight: 700; padding: 4px 10px;
+                                    border-bottom-left-radius: 8px; font-family: 'Poppins', sans-serif;
+                                    letter-spacing: 0.5px;">
+                            SÉLECTIONNÉ
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div :style="options.mise_en_avant ?
+                                         'background: linear-gradient(135deg, #CC0000, #910000);' :
+                                         'background: #F5F5F5;'"
+                                 style="width: 44px; height: 44px; border-radius: 10px; display: flex;
+                                        align-items: center; justify-content: center; flex-shrink: 0;
+                                        transition: all 0.25s ease;">
+                                <svg width="20" height="20" viewBox="0 0 24 24"
+                                     :fill="options.mise_en_avant ? 'white' : '#AAAAAA'">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                                 </svg>
                             </div>
-                            <div>
-                                <p style="font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600; color: #222222; margin: 0 0 2px 0;">Mise en avant sur la page d'accueil</p>
-                                <p style="font-family: 'Poppins', sans-serif; font-size: 12px; color: #888888; margin: 0;">Votre événement apparaît en tête de la page d'accueil pendant 7 jours</p>
+
+                            <div style="flex: 1;">
+                                <p :style="options.mise_en_avant ? 'color: #CC0000;' : 'color: #222222;'"
+                                   style="font-family: 'Poppins', sans-serif; font-size: 14px;
+                                          font-weight: 700; margin: 0 0 3px 0; transition: color 0.25s ease;">
+                                    Mise en avant sur la page d'accueil
+                                </p>
+                                <p style="font-family: 'Poppins', sans-serif; font-size: 12px;
+                                          color: #888888; margin: 0; line-height: 1.4;">
+                                    Votre événement en tête de page pendant 7 jours
+                                </p>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0;">
+                                <span style="font-family: 'Poppins', sans-serif; font-weight: 800;
+                                             font-size: 16px; color: #CC0000;">
+                                    {{ number_format(setting('premium_mise_en_avant_prix', 5000), 0, ',', ' ') }}
+                                    <span style="font-size: 11px; font-weight: 500; color: #888888;">FCFA</span>
+                                </span>
+                                <div :style="options.mise_en_avant ?
+                                             'background: #CC0000;' :
+                                             'background: #DDDDDD;'"
+                                     style="width: 40px; height: 22px; border-radius: 11px; position: relative;
+                                            transition: background 0.25s ease; flex-shrink: 0;">
+                                    <div :style="options.mise_en_avant ? 'transform: translateX(18px);' : 'transform: translateX(2px);'"
+                                         style="width: 18px; height: 18px; background: white; border-radius: 50%;
+                                                position: absolute; top: 2px; transition: transform 0.25s ease;
+                                                box-shadow: 0 1px 4px rgba(0,0,0,0.2);"></div>
+                                </div>
                             </div>
                         </div>
-                        <span :style="options.mise_en_avant ? 'color: #CC0000;' : 'color: #888888;'"
-                              style="font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px; white-space: nowrap; margin-left: 16px;">
-                            {{ number_format(setting('premium_mise_en_avant_prix', 5000), 0, ',', ' ') }} FCA
-                        </span>
-                        <input type="checkbox" name="options_premium[]" value="mise_en_avant" :checked="options.mise_en_avant" style="display:none;">
+
+                        <input type="checkbox" name="options_premium[]" value="mise_en_avant"
+                               :checked="options.mise_en_avant" style="display:none;">
                     </div>
 
                     {{-- Carte Newsletter --}}
                     <div @click="options.newsletter = !options.newsletter"
-                         :style="options.newsletter ? 'border: 2px solid #CC0000; background: #FFF5F5;' : 'border: 1.5px solid #E0E0E0; background: #FFFFFF;'"
-                         style="border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; justify-content: space-between; user-select: none;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div :style="options.newsletter ? 'background: #CC0000; border-color: #CC0000;' : 'background: white; border-color: #CCCCCC;'"
-                                 style="width: 20px; height: 20px; border: 2px solid #CCCCCC; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s ease;">
-                                <svg x-show="options.newsletter" width="11" height="9" viewBox="0 0 11 9" fill="none">
-                                    <path d="M1 4L4 7L10 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                         :style="options.newsletter ?
+                                 'border: 2px solid #CC0000; background: linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%); box-shadow: 0 4px 16px rgba(204,0,0,0.12);' :
+                                 'border: 1.5px solid #EEEEEE; background: #FFFFFF; box-shadow: 0 2px 8px rgba(0,0,0,0.05);'"
+                         style="border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; cursor: pointer;
+                                transition: all 0.25s ease; user-select: none; position: relative; overflow: hidden;">
+
+                        <div x-show="options.newsletter"
+                             style="position: absolute; top: 0; right: 0; background: #CC0000; color: white;
+                                    font-size: 10px; font-weight: 700; padding: 4px 10px;
+                                    border-bottom-left-radius: 8px; font-family: 'Poppins', sans-serif;
+                                    letter-spacing: 0.5px;">
+                            SÉLECTIONNÉ
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div :style="options.newsletter ?
+                                         'background: linear-gradient(135deg, #CC0000, #910000);' :
+                                         'background: #F5F5F5;'"
+                                 style="width: 44px; height: 44px; border-radius: 10px; display: flex;
+                                        align-items: center; justify-content: center; flex-shrink: 0;
+                                        transition: all 0.25s ease;">
+                                <svg width="20" height="20" viewBox="0 0 24 24"
+                                     :fill="options.newsletter ? 'white' : '#AAAAAA'">
+                                    <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
                                 </svg>
                             </div>
-                            <div>
-                                <p style="font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600; color: #222222; margin: 0 0 2px 0;">Publication dans la newsletter</p>
-                                <p style="font-family: 'Poppins', sans-serif; font-size: 12px; color: #888888; margin: 0;">Envoi à tous les abonnés de la newsletter Eledji</p>
+
+                            <div style="flex: 1;">
+                                <p :style="options.newsletter ? 'color: #CC0000;' : 'color: #222222;'"
+                                   style="font-family: 'Poppins', sans-serif; font-size: 14px;
+                                          font-weight: 700; margin: 0 0 3px 0; transition: color 0.25s ease;">
+                                    Publication dans la newsletter
+                                </p>
+                                <p style="font-family: 'Poppins', sans-serif; font-size: 12px;
+                                          color: #888888; margin: 0; line-height: 1.4;">
+                                    Envoi à tous les abonnés de la newsletter Eledji
+                                </p>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0;">
+                                <span style="font-family: 'Poppins', sans-serif; font-weight: 800;
+                                             font-size: 16px; color: #CC0000;">
+                                    {{ number_format(setting('premium_newsletter_prix', 3000), 0, ',', ' ') }}
+                                    <span style="font-size: 11px; font-weight: 500; color: #888888;">FCFA</span>
+                                </span>
+                                <div :style="options.newsletter ?
+                                             'background: #CC0000;' :
+                                             'background: #DDDDDD;'"
+                                     style="width: 40px; height: 22px; border-radius: 11px; position: relative;
+                                            transition: background 0.25s ease; flex-shrink: 0;">
+                                    <div :style="options.newsletter ? 'transform: translateX(18px);' : 'transform: translateX(2px);'"
+                                         style="width: 18px; height: 18px; background: white; border-radius: 50%;
+                                                position: absolute; top: 2px; transition: transform 0.25s ease;
+                                                box-shadow: 0 1px 4px rgba(0,0,0,0.2);"></div>
+                                </div>
                             </div>
                         </div>
-                        <span :style="options.newsletter ? 'color: #CC0000;' : 'color: #888888;'"
-                              style="font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px; white-space: nowrap; margin-left: 16px;">
-                            {{ number_format(setting('premium_newsletter_prix', 3000), 0, ',', ' ') }} FCA
-                        </span>
-                        <input type="checkbox" name="options_premium[]" value="newsletter" :checked="options.newsletter" style="display:none;">
+
+                        <input type="checkbox" name="options_premium[]" value="newsletter"
+                               :checked="options.newsletter" style="display:none;">
                     </div>
 
                     {{-- Carte Réseaux sociaux --}}
                     <div @click="options.reseaux_sociaux = !options.reseaux_sociaux"
-                         :style="options.reseaux_sociaux ? 'border: 2px solid #CC0000; background: #FFF5F5;' : 'border: 1.5px solid #E0E0E0; background: #FFFFFF;'"
-                         style="border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; justify-content: space-between; user-select: none;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div :style="options.reseaux_sociaux ? 'background: #CC0000; border-color: #CC0000;' : 'background: white; border-color: #CCCCCC;'"
-                                 style="width: 20px; height: 20px; border: 2px solid #CCCCCC; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s ease;">
-                                <svg x-show="options.reseaux_sociaux" width="11" height="9" viewBox="0 0 11 9" fill="none">
-                                    <path d="M1 4L4 7L10 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                         :style="options.reseaux_sociaux ?
+                                 'border: 2px solid #CC0000; background: linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%); box-shadow: 0 4px 16px rgba(204,0,0,0.12);' :
+                                 'border: 1.5px solid #EEEEEE; background: #FFFFFF; box-shadow: 0 2px 8px rgba(0,0,0,0.05);'"
+                         style="border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; cursor: pointer;
+                                transition: all 0.25s ease; user-select: none; position: relative; overflow: hidden;">
+
+                        <div x-show="options.reseaux_sociaux"
+                             style="position: absolute; top: 0; right: 0; background: #CC0000; color: white;
+                                    font-size: 10px; font-weight: 700; padding: 4px 10px;
+                                    border-bottom-left-radius: 8px; font-family: 'Poppins', sans-serif;
+                                    letter-spacing: 0.5px;">
+                            SÉLECTIONNÉ
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div :style="options.reseaux_sociaux ?
+                                         'background: linear-gradient(135deg, #CC0000, #910000);' :
+                                         'background: #F5F5F5;'"
+                                 style="width: 44px; height: 44px; border-radius: 10px; display: flex;
+                                        align-items: center; justify-content: center; flex-shrink: 0;
+                                        transition: all 0.25s ease;">
+                                <svg width="20" height="20" viewBox="0 0 24 24"
+                                     :fill="options.reseaux_sociaux ? 'white' : '#AAAAAA'">
+                                    <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
                                 </svg>
                             </div>
-                            <div>
-                                <p style="font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600; color: #222222; margin: 0 0 2px 0;">Partage sur les réseaux sociaux</p>
-                                <p style="font-family: 'Poppins', sans-serif; font-size: 12px; color: #888888; margin: 0;">Publication sur les pages Facebook et Instagram d'Eledji</p>
+
+                            <div style="flex: 1;">
+                                <p :style="options.reseaux_sociaux ? 'color: #CC0000;' : 'color: #222222;'"
+                                   style="font-family: 'Poppins', sans-serif; font-size: 14px;
+                                          font-weight: 700; margin: 0 0 3px 0; transition: color 0.25s ease;">
+                                    Partage sur les réseaux sociaux
+                                </p>
+                                <p style="font-family: 'Poppins', sans-serif; font-size: 12px;
+                                          color: #888888; margin: 0; line-height: 1.4;">
+                                    Publication sur Facebook et Instagram d'Eledji
+                                </p>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0;">
+                                <span style="font-family: 'Poppins', sans-serif; font-weight: 800;
+                                             font-size: 16px; color: #CC0000;">
+                                    {{ number_format(setting('premium_reseaux_prix', 2000), 0, ',', ' ') }}
+                                    <span style="font-size: 11px; font-weight: 500; color: #888888;">FCFA</span>
+                                </span>
+                                <div :style="options.reseaux_sociaux ?
+                                             'background: #CC0000;' :
+                                             'background: #DDDDDD;'"
+                                     style="width: 40px; height: 22px; border-radius: 11px; position: relative;
+                                            transition: background 0.25s ease; flex-shrink: 0;">
+                                    <div :style="options.reseaux_sociaux ? 'transform: translateX(18px);' : 'transform: translateX(2px);'"
+                                         style="width: 18px; height: 18px; background: white; border-radius: 50%;
+                                                position: absolute; top: 2px; transition: transform 0.25s ease;
+                                                box-shadow: 0 1px 4px rgba(0,0,0,0.2);"></div>
+                                </div>
                             </div>
                         </div>
-                        <span :style="options.reseaux_sociaux ? 'color: #CC0000;' : 'color: #888888;'"
-                              style="font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px; white-space: nowrap; margin-left: 16px;">
-                            {{ number_format(setting('premium_reseaux_prix', 2000), 0, ',', ' ') }} FCA
-                        </span>
-                        <input type="checkbox" name="options_premium[]" value="reseaux_sociaux" :checked="options.reseaux_sociaux" style="display:none;">
+
+                        <input type="checkbox" name="options_premium[]" value="reseaux_sociaux"
+                               :checked="options.reseaux_sociaux" style="display:none;">
                     </div>
 
-                    {{-- Total visible uniquement si au moins une option cochée --}}
-                    <div x-show="total > 0" x-transition
-                         style="margin-top: 8px; padding: 14px 20px; background: #FFF5F5; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #FFDDDD;">
-                        <span style="font-family: 'Poppins', sans-serif; font-size: 14px; color: #444444; font-weight: 500;">Total options premium</span>
-                        <span style="font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; color: #CC0000;"
-                              x-text="total.toLocaleString('fr-FR') + ' FCA'"></span>
+                    {{-- Total --}}
+                    <div x-show="total > 0" x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 transform -translate-y-2"
+                         x-transition:enter-end="opacity-100 transform translate-y-0"
+                         style="margin-top: 16px; padding: 16px 20px;
+                                background: linear-gradient(135deg, #FFF0F0, #FFFFFF);
+                                border-radius: 12px; border: 1.5px solid #FFCCCC;
+                                display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p style="font-family: 'Poppins', sans-serif; font-size: 12px;
+                                      color: #888888; margin: 0 0 2px 0; font-weight: 500;">
+                                Total à payer pour les options
+                            </p>
+                            <p style="font-family: 'Poppins', sans-serif; font-size: 11px;
+                                      color: #AAAAAA; margin: 0;">
+                                Paiement sécurisé après publication
+                            </p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-family: 'Poppins', sans-serif; font-weight: 800;
+                                         font-size: 22px; color: #CC0000;"
+                                  x-text="total.toLocaleString('fr-FR')"></span>
+                            <span style="font-family: 'Poppins', sans-serif; font-size: 13px;
+                                         color: #CC0000; font-weight: 600;">FCFA</span>
+                        </div>
                     </div>
                 </div>
             </div>
