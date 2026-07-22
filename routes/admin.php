@@ -71,5 +71,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::patch('parametres/administrateurs/{user}/toggle', [AdminController::class, 'toggle'])->name('settings.admins.toggle');
             Route::delete('parametres/administrateurs/{user}', [AdminController::class, 'destroy'])->name('settings.admins.destroy');
         });
+
+        // Stats en temps réel
+        Route::get('stats/live', [DashboardController::class, 'liveStats'])->name('stats.live');
+        Route::post('stats/rappel-verification', [DashboardController::class, 'sendVerificationReminder'])->name('stats.remind');
     });
 });

@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \App\Http\Middleware\CheckPermission::class,
             'vip' => \App\Http\Middleware\CheckVipExpiry::class,
             'require.vip' => \App\Http\Middleware\RequireVip::class,
+            'track.visit' => \App\Http\Middleware\TrackVisit::class,
+        ]);
+
+        // Ajouter le middleware TrackVisit au groupe web par défaut
+        $middleware->web(append: [
+            \App\Http\Middleware\TrackVisit::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

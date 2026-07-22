@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Auth\Events\Login;
+use App\Listeners\UpdateLastLogin;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Enregistrer le listener pour mettre à jour last_login_at
+        Event::listen(Login::class, UpdateLastLogin::class);
+
         // Synchroniser les fichiers de storage/app/public vers public/storage
         $this->syncStorageFiles();
     }

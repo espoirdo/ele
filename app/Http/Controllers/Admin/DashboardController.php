@@ -13,6 +13,44 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Statistiques temps réel
+        $connectesMaintenant = DB::table('sessions')
+            ->whereNotNull('user_id')
+            ->where('last_activity', '>=', now()->subMinutes(15)->getTimestamp())
+            ->distinct('user_id')
+            ->count('user_id');
+
+        $visiteursAnonymes = DB::table('sessions')
+            ->whereNull('user_id')
+            ->where('last_activity', '>=', now()->subMinutes(15)->getTimestamp())
+            ->count();
+
+        $connectesCeMois = User::whereNotNull('last_login_at')
+            ->where('last_login_at', '>=', now()->startOfMonth())
+            ->count();
+
+        $visiteursTotal = DB::table('page_visits')->count();
+        $visiteursCeMois = DB::table('page_visits')
+            ->where('visited_at', '>=', now()->startOfMonth())
+            ->count();
+        $visiteursAujourdhui = DB::table('page_visits')
+            ->whereDate('visited_at', today())
+            ->count();
+
+        $nonVerifies = User::whereNull('email_verified_at')
+            ->where('created_at', '<=', now()->subHours(24))
+            ->count();
+
+        $realtimeStats = [
+            'connectes_maintenant' => $connectesMaintenant,
+            'visiteurs_anonymes' => $visiteursAnonymes,
+            'connectes_ce_mois' => $connectesCeMois,
+            'visiteurs_total' => $visiteursTotal,
+            'visiteurs_ce_mois' => $visiteursCeMois,
+            'visiteurs_aujourdhui' => $visiteursAujourdhui,
+            'non_verifies' => $nonVerifies,
+        ];
+
         $stats = [
             'total_events' => Event::count(),
             'pending_events' => Event::where('statut', 'en_attente')->count(),
@@ -46,6 +84,57 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        return view('admin.dashboard.index', compact('stats', 'recentEvents', 'recentPayments', 'recentUsers'));
+        return view('admin.dashboard.index', compact('stats', 'recentEvents', 'recentPayments', 'recentUsers', 'realtimeStats'));
+    }
+
+    /**
+     * Return live stats as JSON for auto-refresh
+     */
+    public function liveStats()
+    {
+        $connectesMaintenant = DB::table('sessions')
+            ->whereNotNull('user_id')
+            ->where('last_activity', '>=', now()->subMinutes(15)->getTimestamp())
+            ->distinct('user_id')
+            ->count('user_id');
+
+        $connectesCeMois = User::whereNotNull('last_login_at')
+            ->where('last_login_at', '>=', now()->startOfMonth())
+            ->count();
+
+        $visiteursTotal = DB::table('page_visits')->count();
+        $nonVerifies = User::whereNull('email_verified_at')
+            ->where('created_at', '<=', now()->subHours(24))
+            ->count();
+
+        return response()->json([
+            'connectes_actuellement' => $connectesMaintenant,
+            'connectes_ce_mois' => $connectesCeMois,
+            'visiteurs_total' => $visiteursTotal,
+            'non_verifies' => $nonVerifies,
+        ]);
+    }
+
+    /**
+     * Send verification email reminder to unverified users
+     */
+    public function sendVerificationReminder()
+    {
+        $users = User::whereNull('email_verified_at')
+            ->where('created_at', '<=', now()->subHours(24))
+            ->get();
+
+        $count = 0;
+        foreach ($users as $user) {
+            try {
+                $user->sendEmailVerificationNotification();
+                $count++;
+            } catch (\Exception $e) {
+                // Continue even if one fails
+            }
+        }
+
+        return redirect()->route('admin.dashboard')
+            ->with('success', "Rappel de vérification envoyé à {$count} utilisateur(s).");
     }
 }
