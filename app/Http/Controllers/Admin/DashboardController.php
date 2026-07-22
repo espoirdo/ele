@@ -13,33 +13,51 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Statistiques temps réel
-        $connectesMaintenant = DB::table('sessions')
-            ->whereNotNull('user_id')
-            ->where('last_activity', '>=', now()->subMinutes(15)->getTimestamp())
-            ->distinct('user_id')
-            ->count('user_id');
+        // Statistiques temps réel - avec fallback si tables n'existent pas
+        $connectesMaintenant = 0;
+        $visiteursAnonymes = 0;
+        $connectesCeMois = 0;
+        $visiteursTotal = 0;
+        $visiteursCeMois = 0;
+        $visiteursAujourdhui = 0;
+        $nonVerifies = 0;
 
-        $visiteursAnonymes = DB::table('sessions')
-            ->whereNull('user_id')
-            ->where('last_activity', '>=', now()->subMinutes(15)->getTimestamp())
-            ->count();
+        try {
+            // Sessions connectées
+            $connectesMaintenant = DB::table('sessions')
+                ->whereNotNull('user_id')
+                ->where('last_activity', '>=', now()->subMinutes(15)->getTimestamp())
+                ->distinct('user_id')
+                ->count('user_id');
 
-        $connectesCeMois = User::whereNotNull('last_login_at')
-            ->where('last_login_at', '>=', now()->startOfMonth())
-            ->count();
+            $visiteursAnonymes = DB::table('sessions')
+                ->whereNull('user_id')
+                ->where('last_activity', '>=', now()->subMinutes(15)->getTimestamp())
+                ->count();
 
-        $visiteursTotal = DB::table('page_visits')->count();
-        $visiteursCeMois = DB::table('page_visits')
-            ->where('visited_at', '>=', now()->startOfMonth())
-            ->count();
-        $visiteursAujourdhui = DB::table('page_visits')
-            ->whereDate('visited_at', today())
-            ->count();
+            // Utilisateurs connectés ce mois
+            $connectesCeMois = User::whereNotNull('last_login_at')
+                ->where('last_login_at', '>=', now()->startOfMonth())
+                ->count();
 
-        $nonVerifies = User::whereNull('email_verified_at')
-            ->where('created_at', '<=', now()->subHours(24))
-            ->count();
+            // Visiteurs si la table existe
+            if (DB::getSchemaBuilder()->hasTable('page_visits')) {
+                $visiteursTotal = DB::table('page_visits')->count();
+                $visiteursCeMois = DB::table('page_visits')
+                    ->where('visited_at', '>=', now()->startOfMonth())
+                    ->count();
+                $visiteursAujourdhui = DB::table('page_visits')
+                    ->whereDate('visited_at', today())
+                    ->count();
+            }
+
+            // Non vérifiés
+            $nonVerifies = User::whereNull('email_verified_at')
+                ->where('created_at', '<=', now()->subHours(24))
+                ->count();
+        } catch (\Exception $e) {
+            // En cas d'erreur, garder les valeurs par défaut (0)
+        }
 
         $realtimeStats = [
             'connectes_maintenant' => $connectesMaintenant,
@@ -92,20 +110,32 @@ class DashboardController extends Controller
      */
     public function liveStats()
     {
-        $connectesMaintenant = DB::table('sessions')
-            ->whereNotNull('user_id')
-            ->where('last_activity', '>=', now()->subMinutes(15)->getTimestamp())
-            ->distinct('user_id')
-            ->count('user_id');
+        $connectesMaintenant = 0;
+        $connectesCeMois = 0;
+        $visiteursTotal = 0;
+        $nonVerifies = 0;
 
-        $connectesCeMois = User::whereNotNull('last_login_at')
-            ->where('last_login_at', '>=', now()->startOfMonth())
-            ->count();
+        try {
+            $connectesMaintenant = DB::table('sessions')
+                ->whereNotNull('user_id')
+                ->where('last_activity', '>=', now()->subMinutes(15)->getTimestamp())
+                ->distinct('user_id')
+                ->count('user_id');
 
-        $visiteursTotal = DB::table('page_visits')->count();
-        $nonVerifies = User::whereNull('email_verified_at')
-            ->where('created_at', '<=', now()->subHours(24))
-            ->count();
+            $connectesCeMois = User::whereNotNull('last_login_at')
+                ->where('last_login_at', '>=', now()->startOfMonth())
+                ->count();
+
+            if (DB::getSchemaBuilder()->hasTable('page_visits')) {
+                $visiteursTotal = DB::table('page_visits')->count();
+            }
+
+            $nonVerifies = User::whereNull('email_verified_at')
+                ->where('created_at', '<=', now()->subHours(24))
+                ->count();
+        } catch (\Exception $e) {
+            // Keep default values (0)
+        }
 
         return response()->json([
             'connectes_actuellement' => $connectesMaintenant,

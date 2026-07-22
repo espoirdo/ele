@@ -11,6 +11,16 @@ class TrackVisit
 {
     public function handle(Request $request, Closure $next): Response
     {
+        // Vérifier si la table existe avant de tracker
+        try {
+            if (!DB::getSchemaBuilder()->hasTable('page_visits')) {
+                return $next($request);
+            }
+        } catch (\Exception $e) {
+            // Si erreur de connexion ou autre, passer
+            return $next($request);
+        }
+
         $sessionId = session()->getId();
         $today = now()->toDateString();
 
