@@ -383,8 +383,8 @@
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                     <label style="position: relative; display: inline-block; width: 52px; height: 28px; cursor: pointer;">
                         <input type="checkbox" x-model="badgeActif" name="badge_actif" value="1" style="opacity: 0; width: 0; height: 0;">
-                        <span style="position: absolute; inset: 0; background: #ddd; border-radius: 28px; transition: 0.3s;"
-                              :style="badgeActif ? 'background: #CC0000;' : 'background: #ddd;'"></span>
+                        <span style="position: absolute; inset: 0; background: #CC0000; border-radius: 28px; transition: 0.3s; opacity: 0.4;"
+                              :style="badgeActif ? 'opacity: 1;' : 'opacity: 0.4;'"></span>
                         <span style="position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
                               :style="badgeActif ? 'transform: translateX(24px);' : ''"></span>
                     </label>
