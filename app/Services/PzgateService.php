@@ -33,7 +33,7 @@ class PzgateService
             'reference'    => $data['reference'],
             'description'  => $data['description'],
             'callback_url' => config('pzgate.callback_url'),
-            'return_url'   => config('pzgate.return_url'),
+            'return_url'   => $data['return_url'] ?? config('pzgate.return_url'),
         ];
 
         try {
@@ -73,7 +73,7 @@ class PzgateService
                 'holder'     => $data['card_holder'],
             ],
             'callback_url' => config('pzgate.callback_url'),
-            'return_url'   => config('pzgate.return_url'),
+            'return_url'   => $data['return_url'] ?? config('pzgate.return_url'),
         ];
 
         try {

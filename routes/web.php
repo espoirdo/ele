@@ -81,6 +81,7 @@ Route::middleware(['auth', 'verified', 'check.blocked'])->group(function () {
     Route::post('/evenements/options-premium/paiement', [PremiumPaymentController::class, 'process'])->name('premium.payment.process')->middleware('auth');
     Route::get('/evenements/options-premium/attente/{payment}', [PremiumPaymentController::class, 'waiting'])->name('premium.waiting')->middleware('auth');
     Route::get('/evenements/options-premium/statut/{payment}', [PremiumPaymentController::class, 'status'])->name('premium.status')->middleware('auth');
+    Route::get('/evenements/options-premium/callback', [PremiumPaymentController::class, 'callback'])->name('premium.callback');
 
     // Anciennes routes conservees pour compatibilite
     Route::post('/events', [EventController::class, 'store'])->name('events.store');

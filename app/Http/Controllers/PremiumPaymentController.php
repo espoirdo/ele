@@ -113,7 +113,9 @@ class PremiumPaymentController extends Controller
                 'description' => $description,
             ]);
         } else {
-            // Card payment
+            // Card payment - use custom return_url for premium callback
+            $returnUrl = route('premium.callback');
+
             $result = $this->pzgate->initiateCard([
                 'amount'       => $premiumPayment['total'],
                 'reference'    => $reference,
@@ -122,6 +124,7 @@ class PremiumPaymentController extends Controller
                 'card_expiry'  => $request->expiration,
                 'card_cvv'     => $request->cvv,
                 'card_holder'  => $request->nom_titulaire,
+                'return_url'   => $returnUrl,
             ]);
         }
 
@@ -181,6 +184,58 @@ class PremiumPaymentController extends Controller
     {
         abort_if($payment->user_id !== Auth::id(), 403);
         return response()->json(['statut' => $payment->fresh()->statut]);
+    }
+
+    /**
+     * Handle Premium payment callback (for card payments)
+     */
+    public function callback(Request $request)
+    {
+        $transactionId = $request->query('transaction_id');
+
+        if (!$transactionId) {
+            return redirect()->route('home')->with('error', 'Transaction invalide.');
+        }
+
+        $payment = PremiumPayment::where('transaction_id', $transactionId)->first();
+
+        if (!$payment) {
+            return redirect()->route('home')->with('error', 'Paiement premium non trouvé.');
+        }
+
+        $event = $payment->event;
+
+        // Check if payment was successful
+        $status = $request->query('status', 'FAILED');
+
+        if ($status === 'SUCCESS' || $request->query('cpm_trans_status') === 'ACCEPTED') {
+            // Mark payment as confirmed
+            $payment->update(['statut' => 'confirme']);
+
+            // Activate premium options on the event
+            $options = is_array($payment->options) ? $payment->options : json_decode($payment->options, true);
+
+            $columnMap = [
+                'mise_en_avant'   => 'premium_mise_en_avant',
+                'newsletter'      => 'premium_newsletter',
+                'reseaux_sociaux' => 'premium_reseaux_sociaux',
+            ];
+
+            foreach ($options as $option) {
+                if (isset($columnMap[$option])) {
+                    $event->update([$columnMap[$option] => true]);
+                }
+            }
+
+            return redirect()->route('events.show', $event->slug)
+                ->with('success', 'Paiement confirmé! Vos options premium ont été activées.');
+        }
+
+        // Payment failed
+        $payment->update(['statut' => 'annule']);
+
+        return redirect()->route('events.show', $event->slug)
+            ->with('error', 'Le paiement a échoué. Vos options premium n\'ont pas été activées.');
     }
 
     /**
