@@ -139,7 +139,7 @@
 }
 </style>
 
-{{-- KPI Cards --}}}
+{{-- KPI Cards --}}
 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 32px;">
     <div class="card" style="text-align: center;">
         <div style="font-size: 32px; color: #C0392B; margin-bottom: 8px;">
