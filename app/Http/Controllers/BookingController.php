@@ -17,6 +17,11 @@ class BookingController extends Controller
      */
     public function confirmShow(Request $request, Event $event)
     {
+        // Check if user is authenticated
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Veuillez vous connecter pour participer à cet événement.');
+        }
+
         // Check if user already has a confirmed booking for this event
         $existingBooking = Booking::where('user_id', Auth::id())
             ->where('event_id', $event->id)
@@ -45,6 +50,11 @@ class BookingController extends Controller
      */
     public function confirmStore(Request $request, Event $event, TicketGeneratorService $ticketGenerator)
     {
+        // Check if user is authenticated
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Veuillez vous connecter pour participer à cet événement.');
+        }
+
         // Get active tickets
         $ticketsActifs = $event->tickets_actifs;
 

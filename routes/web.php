@@ -10,6 +10,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\PremiumPaymentController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/dashboard', function () {

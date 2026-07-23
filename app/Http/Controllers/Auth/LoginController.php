@@ -30,6 +30,9 @@ class LoginController extends Controller
                 ])->withInput();
             }
 
+            // Update last_login_at
+            auth()->user()->update(['last_login_at' => now()]);
+
             $intendedUrl = session('url.intended', route('home'));
 
             // Verify the intended URL is valid (not the login page itself)
