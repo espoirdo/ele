@@ -20,6 +20,26 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/logout',[AdminAuthController::class,'logout'])->name('logout');
 
     Route::middleware(['auth','admin'])->group(function () {
+        // Route pour exécuter les migrations (protection supplémentaire par token)
+        Route::post('/run-migrations', function () {
+            $token = request('token');
+            $expectedToken = config('app.migration_token') ?: 'eledji-migration-2026';
+
+            if ($token !== $expectedToken) {
+                return response()->json(['error' => 'Token invalide'], 403);
+            }
+
+            try {
+                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+                return response()->json([
+                    'success' => true,
+                    'output' => \Illuminate\Support\Facades\Artisan::output()
+                ]);
+            } catch (\Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
+        })->name('run-migrations');
+
         Route::get('/',[DashboardController::class,'index'])->name('dashboard');
         Route::resource('events', AdminEventController::class)->except(['create','store']);
         Route::patch('events/{event}/approve',[AdminEventController::class,'approve'])->name('events.approve');
