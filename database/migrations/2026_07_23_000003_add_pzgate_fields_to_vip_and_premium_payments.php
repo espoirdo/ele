@@ -16,6 +16,7 @@ return new class extends Migration
         });
 
         Schema::table('premium_payments', function (Blueprint $table) {
+            $table->string('transaction_id')->nullable()->after('statut');
             $table->string('pzgate_reference')->nullable()->after('transaction_id');
             $table->string('pzgate_transaction_id')->nullable()->after('pzgate_reference');
             $table->string('pzgate_status')->nullable()->after('pzgate_transaction_id');

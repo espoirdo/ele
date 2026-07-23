@@ -15,7 +15,8 @@ return new class extends Migration
             $table->json('options'); // array of selected options
             $table->decimal('total', 10, 0);
             $table->string('moyen_paiement')->nullable(); // tmoney, flooz, carte
-            $table->enum('statut', ['en_attente', 'confirme', 'echoue'])->default('en_attente');
+            $table->enum('statut', ['en_attente', 'confirme', 'annule', 'echoue'])->default('en_attente');
+            $table->string('transaction_id')->nullable();
             $table->timestamps();
         });
     }
