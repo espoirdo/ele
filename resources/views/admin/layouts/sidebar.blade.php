@@ -62,8 +62,26 @@
         <a href="{{ route('admin.vip.members') }}"
            class="menu-item {{ request()->routeIs('admin.vip.*') ? 'active' : '' }}">
             <i class="fas fa-crown"></i>
-            Membres VIP
+            VIP & Premium
         </a>
+
+        <div class="submenu-items" style="padding-left: 20px; font-size: 12px;">
+            <a href="{{ route('admin.vip.members') }}"
+               class="menu-item submenu-item {{ request()->routeIs('admin.vip.members') ? 'active' : '' }}">
+                <i class="fas fa-users"></i>
+                Membres VIP
+            </a>
+            <a href="{{ route('admin.vip.payments') }}"
+               class="menu-item submenu-item {{ request()->routeIs('admin.vip.payments') ? 'active' : '' }}">
+                <i class="fas fa-credit-card"></i>
+                Paiements VIP
+            </a>
+            <a href="{{ route('admin.premium.payments') }}"
+               class="menu-item submenu-item {{ request()->routeIs('admin.premium.*') ? 'active' : '' }}">
+                <i class="fas fa-star"></i>
+                Paiements Premium
+            </a>
+        </div>
 
         <a href="{{ route('admin.marketplace.index') }}"
            class="menu-item {{ request()->routeIs('admin.marketplace.*') ? 'active' : '' }}">

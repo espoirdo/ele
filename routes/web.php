@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PremiumPaymentController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\VipController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/dashboard', function () {
@@ -40,9 +41,11 @@ Route::middleware(['auth', 'verified', 'vip'])->group(function () {
 
 // VIP routes (requires verified email)
 Route::middleware(['auth', 'verified', 'vip'])->group(function () {
-    Route::get('/vip/souscrire', [\App\Http\Controllers\VipController::class, 'show'])->name('vip.subscribe.show');
-    Route::post('/vip/souscrire', [\App\Http\Controllers\VipController::class, 'process'])->name('vip.subscribe.process');
-    Route::get('/vip/callback', [\App\Http\Controllers\VipController::class, 'callback'])->name('vip.callback');
+    Route::get('/vip/souscrire', [VipController::class, 'show'])->name('vip.subscribe.show');
+    Route::post('/vip/souscrire', [VipController::class, 'process'])->name('vip.subscribe.process');
+    Route::get('/vip/callback', [VipController::class, 'callback'])->name('vip.callback');
+    Route::get('/vip/attente/{vipPayment}', [VipController::class, 'waiting'])->name('vip.waiting');
+    Route::get('/vip/statut/{vipPayment}', [VipController::class, 'status'])->name('vip.status');
 });
 
 // Marketplace route (accessible to everyone)
@@ -76,6 +79,8 @@ Route::middleware(['auth', 'verified', 'check.blocked'])->group(function () {
     // Premium payment routes (require auth)
     Route::get('/evenements/options-premium/paiement', [PremiumPaymentController::class, 'show'])->name('premium.payment.show')->middleware('auth');
     Route::post('/evenements/options-premium/paiement', [PremiumPaymentController::class, 'process'])->name('premium.payment.process')->middleware('auth');
+    Route::get('/evenements/options-premium/attente/{payment}', [PremiumPaymentController::class, 'waiting'])->name('premium.waiting')->middleware('auth');
+    Route::get('/evenements/options-premium/statut/{payment}', [PremiumPaymentController::class, 'status'])->name('premium.status')->middleware('auth');
 
     // Anciennes routes conservees pour compatibilite
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
@@ -125,8 +130,9 @@ Route::post('/events/{event}/badge/track', function (\App\Models\Event $event) {
 Route::get('/paiement/callback', [PaymentController::class, 'callback'])->name('payment.callback');
 
 // Webhook PZGate — pas de middleware auth
-Route::post('/webhook/pzgate', [WebhookController::class, 'pzgate'])
-     ->name('webhook.pzgate');
+Route::post('/webhook/pzgate', [WebhookController::class, 'pzgate'])->name('webhook.pzgate');
+Route::post('/webhook/pzgate/vip', [VipController::class, 'webhook'])->name('webhook.pzgate.vip');
+Route::post('/webhook/pzgate/premium', [PremiumPaymentController::class, 'webhook'])->name('webhook.pzgate.premium');
 
 // Page d'attente de confirmation
 Route::get('/paiement/attente/{booking}', [PaymentController::class, 'waiting'])

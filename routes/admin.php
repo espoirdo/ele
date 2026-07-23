@@ -53,6 +53,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::patch('vip/{user}/revoke', [\App\Http\Controllers\Admin\AdminVipController::class, 'revoke'])->name('vip.revoke');
         Route::patch('vip/payments/{vipPayment}/confirm', [\App\Http\Controllers\Admin\AdminVipController::class, 'confirmPayment'])->name('vip.payments.confirm');
 
+        // Premium Payments Management
+        Route::get('premium/payments', [\App\Http\Controllers\Admin\AdminPremiumController::class, 'payments'])->name('premium.payments');
+        Route::get('premium/payments/{payment}', [\App\Http\Controllers\Admin\AdminPremiumController::class, 'show'])->name('premium.payments.show');
+        Route::patch('premium/payments/{payment}/confirm', [\App\Http\Controllers\Admin\AdminPremiumController::class, 'confirmPayment'])->name('premium.payments.confirm');
+        Route::patch('premium/payments/{payment}/cancel', [\App\Http\Controllers\Admin\AdminPremiumController::class, 'cancelPayment'])->name('premium.payments.cancel');
+
         // Marketplace Management
         Route::resource('marketplace', \App\Http\Controllers\Admin\AdminMarketplaceController::class)->except(['show']);
 

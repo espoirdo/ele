@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\VipPayment;
-use App\Services\CinetPayService;
+use App\Services\PzgateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class VipController extends Controller
 {
+    public function __construct(private PzgateService $pzgate) {}
+
     /**
      * Display VIP subscription page
      */
@@ -25,7 +28,7 @@ class VipController extends Controller
         $vipPrice = (int) setting('vip_price', 5000);
         $vipDuration = (int) setting('vip_duration_days', 30);
         $vipPageTitle = setting('vip_page_title', 'Devenez VIP Eledji');
-        $vipAdvantagesText = setting('vip_advantages_text', 'Accédez à la Marketplace exclusive, obtenez un badge VIP et bien plus encore!');
+        $vipAdvantagesText = setting('vip_advantages_text', 'Accédez à la Marketplace exclusive, obtenir un badge VIP et bien plus encore!');
 
         return view('vip.subscribe', compact('vipPrice', 'vipDuration', 'vipPageTitle', 'vipAdvantagesText'));
     }
@@ -33,7 +36,7 @@ class VipController extends Controller
     /**
      * Process VIP subscription payment
      */
-    public function process(Request $request, CinetPayService $cinetPayService)
+    public function process(Request $request)
     {
         $validated = $request->validate([
             'methode' => 'required|in:tmoney,flooz,carte',
@@ -63,8 +66,8 @@ class VipController extends Controller
         $vipPrice = (int) setting('vip_price', 5000);
         $vipDuration = (int) setting('vip_duration_days', 30);
 
-        // Generate transaction ID
-        $transactionId = 'eledji_vip_' . strtoupper(uniqid()) . '_' . now()->timestamp;
+        // Generate unique reference for PZGate
+        $reference = 'ELD-VIP-' . strtoupper(Str::random(8)) . '-' . time();
 
         // Create VIP payment record
         $vipPayment = VipPayment::create([
@@ -72,37 +75,91 @@ class VipController extends Controller
             'montant' => $vipPrice,
             'methode' => $validated['methode'],
             'statut' => 'en_attente',
-            'transaction_id' => $transactionId,
+            'transaction_id' => $reference,
+            'pzgate_reference' => $reference,
         ]);
 
-        // Initiate CinetPay payment
-        $cinetPayResponse = $cinetPayService->createPayment([
-            'transaction_id' => $transactionId,
-            'amount' => $vipPrice,
-            'currency' => 'XOF',
-            'description' => 'Abonnement VIP Eledji - ' . $vipDuration . ' jours',
-            'customer_name' => $user->name,
-            'customer_email' => $user->email,
-            'return_url' => route('vip.callback') . '?transaction_id=' . $transactionId,
-            'notify_url' => route('vip.callback'),
+        $description = "Abonnement VIP Eledji - {$vipDuration} jours";
+
+        // Initiate PZGate payment based on method
+        if (in_array($validated['methode'], ['tmoney', 'flooz'])) {
+            // Mobile money payment
+            $provider = $validated['methode'] === 'tmoney' ? 'TMONEY' : 'FLOOZ';
+
+            $result = $this->pzgate->initiateMobileMoney([
+                'amount'      => $vipPrice,
+                'phone'       => '+228' . $request->telephone,
+                'provider'    => $provider,
+                'reference'   => $reference,
+                'description' => $description,
+            ]);
+        } else {
+            // Card payment
+            $result = $this->pzgate->initiateCard([
+                'amount'       => $vipPrice,
+                'reference'    => $reference,
+                'description'  => $description,
+                'card_number'  => str_replace(' ', '', $request->numero_carte),
+                'card_expiry'  => $request->expiration,
+                'card_cvv'     => $request->cvv,
+                'card_holder'  => $request->nom_titulaire,
+            ]);
+        }
+
+        Log::info('PZGate VIP Response', $result);
+
+        // Update VIP payment with PZGate response
+        $vipPayment->update([
+            'pzgate_transaction_id' => $result['transaction_id'] ?? null,
+            'pzgate_status'        => $result['status'] ?? 'pending',
+            'pzgate_response'      => $result,
         ]);
 
-        Log::info('CinetPay VIP Response', $cinetPayResponse);
+        // Check if PZGate returned an immediate error
+        if (isset($result['success']) && $result['success'] === false) {
+            $vipPayment->update(['statut' => 'echoue']);
+            return back()->withErrors([
+                'paiement' => 'Le paiement a échoué : ' . ($result['message'] ?? 'Erreur inconnue')
+            ])->withInput();
+        }
 
-        // If CinetPay returns a payment URL, redirect to it
-        if (isset($cinetPayResponse['data']['payment_url'])) {
-            return redirect($cinetPayResponse['data']['payment_url']);
+        // If PZGate returns a payment URL (for card), redirect to it
+        if (isset($result['data']['payment_url'])) {
+            return redirect($result['data']['payment_url']);
         }
 
         // If there's a checkout URL (alternative)
-        if (isset($cinetPayResponse['checkout_url'])) {
-            return redirect($cinetPayResponse['checkout_url']);
+        if (isset($result['checkout_url'])) {
+            return redirect($result['checkout_url']);
         }
 
-        // Fallback: Mark as failed
-        $vipPayment->update(['statut' => 'echoue']);
+        // For mobile money, redirect to waiting page
+        if (in_array($validated['methode'], ['tmoney', 'flooz'])) {
+            return redirect()->route('vip.waiting', $vipPayment->id)
+                ->with('info', 'Votre paiement est en cours de traitement. Confirmez sur votre téléphone.');
+        }
 
+        // Fallback
+        $vipPayment->update(['statut' => 'echoue']);
         return back()->with('error', 'Erreur lors de l\'initialisation du paiement. Veuillez réessayer.');
+    }
+
+    /**
+     * Page d'attente pour paiement VIP mobile money
+     */
+    public function waiting(VipPayment $vipPayment)
+    {
+        abort_if($vipPayment->user_id !== Auth::id(), 403);
+        return view('vip.waiting', compact('vipPayment'));
+    }
+
+    /**
+     * Vérifier le statut du paiement VIP (AJAX)
+     */
+    public function status(VipPayment $vipPayment)
+    {
+        abort_if($vipPayment->user_id !== Auth::id(), 403);
+        return response()->json(['statut' => $vipPayment->fresh()->statut]);
     }
 
     /**
@@ -150,6 +207,81 @@ class VipController extends Controller
 
         return redirect()->route('vip.subscribe.show')
             ->with('error', 'Le paiement a échoué. Votre abonnement VIP n\'a pas été activé.');
+    }
+
+    /**
+     * Webhook pour confirmer le paiement VIP
+     */
+    public function webhook(Request $request, PzgateService $pzgate)
+    {
+        $payload   = $request->getContent();
+        $signature = $request->header('X-PZGate-Signature', '');
+
+        // Vérifie la signature
+        if (!$pzgate->verifyWebhookSignature($payload, $signature)) {
+            Log::warning('PZGate VIP webhook signature invalide', [
+                'signature' => $signature,
+                'ip'        => $request->ip(),
+            ]);
+            return response()->json(['error' => 'Signature invalide'], 401);
+        }
+
+        $data = $request->json()->all();
+
+        Log::info('PZGate VIP webhook reçu', $data);
+
+        $reference = $data['reference'] ?? null;
+        $status    = $data['status']    ?? null;
+
+        if (!$reference || !$status) {
+            return response()->json(['error' => 'Données manquantes'], 400);
+        }
+
+        // Trouve le paiement VIP correspondant
+        $vipPayment = VipPayment::where('pzgate_reference', $reference)->first();
+
+        if (!$vipPayment) {
+            Log::warning('PZGate VIP webhook: paiement non trouvé', ['reference' => $reference]);
+            return response()->json(['error' => 'Paiement non trouvé'], 404);
+        }
+
+        // Évite le double traitement
+        if ($vipPayment->statut === 'confirme') {
+            return response()->json(['message' => 'Déjà traité'], 200);
+        }
+
+        // Met à jour le statut
+        if (in_array(strtolower($status), ['success', 'successful', 'completed'])) {
+            $vipPayment->update([
+                'statut'         => 'confirme',
+                'pzgate_status'  => $status,
+                'pzgate_response'=> $data,
+            ]);
+
+            // Activate VIP
+            $vipDuration = (int) setting('vip_duration_days', 30);
+            $user = $vipPayment->user;
+
+            $user->update([
+                'is_vip' => true,
+                'vip_subscribed_at' => now(),
+                'vip_expires_at' => now()->addDays($vipDuration),
+            ]);
+
+            Log::info('VIP activé via PZGate', [
+                'vip_payment_id' => $vipPayment->id,
+                'user_id'       => $user->id,
+            ]);
+
+        } elseif (in_array(strtolower($status), ['failed', 'cancelled', 'rejected'])) {
+            $vipPayment->update([
+                'statut'          => 'echoue',
+                'pzgate_status'   => $status,
+                'pzgate_response' => $data,
+            ]);
+        }
+
+        return response()->json(['message' => 'Webhook traité'], 200);
     }
 
     /**

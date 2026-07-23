@@ -13,10 +13,16 @@ class VipPayment extends Model
         'methode',
         'statut',
         'transaction_id',
+        // PZGate fields
+        'pzgate_reference',
+        'pzgate_transaction_id',
+        'pzgate_status',
+        'pzgate_response',
     ];
 
     protected $casts = [
         'montant' => 'integer',
+        'pzgate_response' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -25,4 +31,4 @@ class VipPayment extends Model
     {
         return $this->belongsTo(User::class);
     }
-};
+}

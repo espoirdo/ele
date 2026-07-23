@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\PremiumPayment;
+use App\Services\PzgateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PremiumPaymentController extends Controller
 {
+    public function __construct(private PzgateService $pzgate) {}
+
     /**
      * Display the premium payment page
      */
@@ -78,33 +82,185 @@ class PremiumPaymentController extends Controller
 
         $event = Event::findOrFail($premiumPayment['event_id']);
 
+        // Generate unique reference for PZGate
+        $reference = 'ELD-PREM-' . strtoupper(Str::random(8)) . '-' . time();
+
         // Create premium payment record
         $payment = PremiumPayment::create([
-            'event_id'       => $event->id,
-            'user_id'        => Auth::id(),
-            'options'        => json_encode($premiumPayment['options']),
-            'total'          => $premiumPayment['total'],
-            'moyen_paiement' => $validated['methode'],
-            'statut'         => 'confirme', // Direct confirmation for demo
+            'event_id'        => $event->id,
+            'user_id'         => Auth::id(),
+            'options'         => json_encode($premiumPayment['options']),
+            'total'           => $premiumPayment['total'],
+            'moyen_paiement'  => $validated['methode'],
+            'statut'          => 'en_attente',
+            'transaction_id'  => $reference,
+            'pzgate_reference' => $reference,
         ]);
 
-        // Activate premium options on the event
-        foreach ($premiumPayment['options'] as $option) {
-            $columnMap = [
-                'mise_en_avant'   => 'premium_mise_en_avant',
-                'newsletter'      => 'premium_newsletter',
-                'reseaux_sociaux' => 'premium_reseaux_sociaux',
-            ];
+        $optionsLabels = implode(', ', $premiumPayment['options']);
+        $description = "Options Premium - {$event->titre} ({$optionsLabels})";
 
-            if (isset($columnMap[$option])) {
-                $event->update([$columnMap[$option] => true]);
-            }
+        // Initiate PZGate payment based on method
+        if (in_array($validated['methode'], ['tmoney', 'flooz'])) {
+            // Mobile money payment
+            $provider = $validated['methode'] === 'tmoney' ? 'TMONEY' : 'FLOOZ';
+
+            $result = $this->pzgate->initiateMobileMoney([
+                'amount'      => $premiumPayment['total'],
+                'phone'       => '+228' . $request->telephone,
+                'provider'    => $provider,
+                'reference'   => $reference,
+                'description' => $description,
+            ]);
+        } else {
+            // Card payment
+            $result = $this->pzgate->initiateCard([
+                'amount'       => $premiumPayment['total'],
+                'reference'    => $reference,
+                'description' => $description,
+                'card_number'  => str_replace(' ', '', $request->numero_carte),
+                'card_expiry'  => $request->expiration,
+                'card_cvv'     => $request->cvv,
+                'card_holder'  => $request->nom_titulaire,
+            ]);
         }
 
-        // Clear session
-        session()->forget('premium_payment');
+        Log::info('PZGate Premium Response', $result);
 
-        return redirect()->route('events.show', $event->slug)
-            ->with('success', 'Options premium activées ! Votre événement est maintenant mis en avant.');
+        // Update payment with PZGate response
+        $payment->update([
+            'pzgate_transaction_id' => $result['transaction_id'] ?? null,
+            'pzgate_status'        => $result['status'] ?? 'pending',
+            'pzgate_response'      => $result,
+        ]);
+
+        // Check if PZGate returned an immediate error
+        if (isset($result['success']) && $result['success'] === false) {
+            $payment->update(['statut' => 'annule']);
+            session()->forget('premium_payment');
+            return back()->withErrors([
+                'paiement' => 'Le paiement a échoué : ' . ($result['message'] ?? 'Erreur inconnue')
+            ])->withInput();
+        }
+
+        // If PZGate returns a payment URL (for card), redirect to it
+        if (isset($result['data']['payment_url'])) {
+            return redirect($result['data']['payment_url']);
+        }
+
+        // If there's a checkout URL (alternative)
+        if (isset($result['checkout_url'])) {
+            return redirect($result['checkout_url']);
+        }
+
+        // For mobile money, redirect to waiting page
+        if (in_array($validated['methode'], ['tmoney', 'flooz'])) {
+            return redirect()->route('premium.waiting', $payment->id)
+                ->with('info', 'Votre paiement est en cours de traitement. Confirmez sur votre téléphone.');
+        }
+
+        // Fallback
+        $payment->update(['statut' => 'annule']);
+        session()->forget('premium_payment');
+        return back()->with('error', 'Erreur lors de l\'initialisation du paiement. Veuillez réessayer.');
+    }
+
+    /**
+     * Page d'attente pour paiement Premium mobile money
+     */
+    public function waiting(PremiumPayment $payment)
+    {
+        abort_if($payment->user_id !== Auth::id(), 403);
+        return view('events.premium-waiting', compact('payment'));
+    }
+
+    /**
+     * Vérifier le statut du paiement Premium (AJAX)
+     */
+    public function status(PremiumPayment $payment)
+    {
+        abort_if($payment->user_id !== Auth::id(), 403);
+        return response()->json(['statut' => $payment->fresh()->statut]);
+    }
+
+    /**
+     * Webhook pour confirmer le paiement Premium
+     */
+    public function webhook(Request $request, PzgateService $pzgate)
+    {
+        $payload   = $request->getContent();
+        $signature = $request->header('X-PZGate-Signature', '');
+
+        // Vérifie la signature
+        if (!$pzgate->verifyWebhookSignature($payload, $signature)) {
+            Log::warning('PZGate Premium webhook signature invalide', [
+                'signature' => $signature,
+                'ip'        => $request->ip(),
+            ]);
+            return response()->json(['error' => 'Signature invalide'], 401);
+        }
+
+        $data = $request->json()->all();
+
+        Log::info('PZGate Premium webhook reçu', $data);
+
+        $reference = $data['reference'] ?? null;
+        $status    = $data['status']    ?? null;
+
+        if (!$reference || !$status) {
+            return response()->json(['error' => 'Données manquantes'], 400);
+        }
+
+        // Trouve le paiement Premium correspondant
+        $payment = PremiumPayment::where('pzgate_reference', $reference)->first();
+
+        if (!$payment) {
+            Log::warning('PZGate Premium webhook: paiement non trouvé', ['reference' => $reference]);
+            return response()->json(['error' => 'Paiement non trouvé'], 404);
+        }
+
+        // Évite le double traitement
+        if ($payment->statut === 'confirme') {
+            return response()->json(['message' => 'Déjà traité'], 200);
+        }
+
+        // Met à jour le statut
+        if (in_array(strtolower($status), ['success', 'successful', 'completed'])) {
+            $payment->update([
+                'statut'         => 'confirme',
+                'pzgate_status'  => $status,
+                'pzgate_response'=> $data,
+            ]);
+
+            // Activate premium options on the event
+            $event = $payment->event;
+            $options = is_array($payment->options) ? $payment->options : json_decode($payment->options, true);
+
+            foreach ($options as $option) {
+                $columnMap = [
+                    'mise_en_avant'   => 'premium_mise_en_avant',
+                    'newsletter'      => 'premium_newsletter',
+                    'reseaux_sociaux' => 'premium_reseaux_sociaux',
+                ];
+
+                if (isset($columnMap[$option])) {
+                    $event->update([$columnMap[$option] => true]);
+                }
+            }
+
+            Log::info('Premium activé via PZGate', [
+                'payment_id' => $payment->id,
+                'event_id'  => $event->id,
+            ]);
+
+        } elseif (in_array(strtolower($status), ['failed', 'cancelled', 'rejected'])) {
+            $payment->update([
+                'statut'          => 'annule',
+                'pzgate_status'   => $status,
+                'pzgate_response' => $data,
+            ]);
+        }
+
+        return response()->json(['message' => 'Webhook traité'], 200);
     }
 }
