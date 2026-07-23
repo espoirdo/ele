@@ -15,10 +15,17 @@ class Booking extends Model
         'status',
         'numero_reservation',
         'ticket_path',
+        // PZGate fields
+        'pzgate_transaction_id',
+        'pzgate_reference',
+        'pzgate_status',
+        'pzgate_response',
+        'moyen_paiement',
     ];
 
     protected $casts = [
         'type_billet' => 'string',
+        'pzgate_response' => 'array',
     ];
 
     public function user()
@@ -39,6 +46,11 @@ class Booking extends Model
     public function payment()
     {
         return $this->hasOne(Payment::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 
     /**

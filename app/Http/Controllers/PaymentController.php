@@ -7,15 +7,18 @@ use App\Models\Booking;
 use App\Models\Event;
 use App\Models\Payment;
 use App\Models\Ticket;
-use App\Services\CinetPayService;
+use App\Services\PzgateService;
 use App\Services\TicketGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class PaymentController extends Controller
 {
+    public function __construct(private PzgateService $pzgate) {}
+
     /**
      * Display payment method selection page
      */
@@ -51,7 +54,7 @@ class PaymentController extends Controller
     /**
      * Process the payment - User selected payment method (TMoney/Flooz/Carte) and phone or card
      */
-    public function process(Request $request, Event $event, CinetPayService $cinetPayService)
+    public function process(Request $request, Event $event)
     {
         // Get active tickets
         $ticketsActifs = $event->tickets_actifs;
@@ -109,8 +112,8 @@ class PaymentController extends Controller
             return back()->with('error', 'Vous avez deja une reservation pour cet evenement.');
         }
 
-        // Generate transaction ID and reservation number
-        $transactionId = 'eledji_' . strtoupper(uniqid()) . '_' . now()->timestamp;
+        // Generate unique reference for PZGate
+        $reference = 'ELD-' . strtoupper(Str::random(10)) . '-' . time();
         $numeroReservation = 'ELD-' . strtoupper(uniqid());
 
         // Create booking with status 'en_attente' (pending)
@@ -121,6 +124,8 @@ class PaymentController extends Controller
             'total' => $totalPrice,
             'status' => 'en_attente',
             'numero_reservation' => $numeroReservation,
+            'pzgate_reference' => $reference,
+            'moyen_paiement' => $validated['methode'],
         ]);
 
         // Create payment record
@@ -128,47 +133,102 @@ class PaymentController extends Controller
             'user_id' => Auth::id(),
             'event_id' => $event->id,
             'booking_id' => $booking->id,
-            'transaction_id' => $transactionId,
+            'transaction_id' => $reference,
             'montant' => (int)$totalPrice,
             'type' => 'ticket',
             'statut' => 'pending',
             'methode' => $validated['methode'],
         ]);
 
-        // Initiate CinetPay payment
-        $cinetPayResponse = $cinetPayService->createPayment([
-            'transaction_id' => $transactionId,
-            'amount' => (int)$totalPrice,
-            'currency' => 'XOF',
-            'description' => 'Paiement pour: ' . $event->titre,
-            'customer_name' => Auth::user()->name,
-            'customer_email' => Auth::user()->email,
-            'return_url' => route('payment.callback') . '?transaction_id=' . $transactionId,
-            'notify_url' => route('payment.callback'),
-        ]);
+        $description = "Billet {$typeBillet} - {$event->titre}";
+
+        // Initiate PZGate payment based on method
+        if (in_array($validated['methode'], ['tmoney', 'flooz'])) {
+            // Mobile money payment
+            $provider = $validated['methode'] === 'tmoney' ? 'TMONEY' : 'FLOOZ';
+
+            $result = $this->pzgate->initiateMobileMoney([
+                'amount'      => $totalPrice,
+                'phone'       => '+228' . $request->telephone,
+                'provider'    => $provider,
+                'reference'   => $reference,
+                'description' => $description,
+            ]);
+        } else {
+            // Card payment
+            $result = $this->pzgate->initiateCard([
+                'amount'       => $totalPrice,
+                'reference'    => $reference,
+                'description'  => $description,
+                'card_number'  => str_replace(' ', '', $request->numero_carte),
+                'card_expiry'  => $request->expiration,
+                'card_cvv'     => $request->cvv,
+                'card_holder'  => $request->nom_titulaire,
+            ]);
+        }
 
         // Log the response for debugging
-        Log::info('CinetPay Response', $cinetPayResponse);
+        Log::info('PZGate Response', $result);
 
-        // If CinetPay returns a payment URL, redirect to it
-        if (isset($cinetPayResponse['data']['payment_url'])) {
-            return redirect($cinetPayResponse['data']['payment_url']);
+        // Update booking with PZGate response
+        $booking->update([
+            'pzgate_transaction_id' => $result['transaction_id'] ?? null,
+            'pzgate_status'        => $result['status'] ?? 'pending',
+            'pzgate_response'      => $result,
+        ]);
+
+        // Check if PZGate returned an immediate error
+        if (isset($result['success']) && $result['success'] === false) {
+            $booking->update(['status' => 'annulee']);
+            $payment->update(['statut' => 'failed']);
+            return back()->withErrors([
+                'paiement' => 'Le paiement a échoué : ' . ($result['message'] ?? 'Erreur inconnue')
+            ])->withInput();
+        }
+
+        // If PZGate returns a payment URL (for card), redirect to it
+        if (isset($result['data']['payment_url'])) {
+            return redirect($result['data']['payment_url']);
         }
 
         // If there's a checkout URL (alternative)
-        if (isset($cinetPayResponse['checkout_url'])) {
-            return redirect($cinetPayResponse['checkout_url']);
+        if (isset($result['checkout_url'])) {
+            return redirect($result['checkout_url']);
         }
 
-        // Fallback: Mark as failed and show error
+        // For mobile money, redirect to waiting page
+        if (in_array($validated['methode'], ['tmoney', 'flooz'])) {
+            return redirect()->route('payment.waiting', $booking->id)
+                ->with('info', 'Votre paiement est en cours de traitement. Confirmez sur votre téléphone.');
+        }
+
+        // Fallback: If no payment URL, show error
+        $booking->update(['status' => 'annulee']);
         $payment->update(['statut' => 'failed']);
-        $booking->delete();
 
         return back()->with('error', 'Erreur lors de l\'initialisation du paiement. Veuillez reessayer.');
     }
 
     /**
-     * Handle payment callback from CinetPay
+     * Page d'attente pendant que PZGate traite le paiement mobile money
+     */
+    public function waiting(Booking $booking)
+    {
+        abort_if($booking->user_id !== Auth::id(), 403);
+        return view('payment.waiting', compact('booking'));
+    }
+
+    /**
+     * Check payment status (AJAX endpoint)
+     */
+    public function status(Booking $booking)
+    {
+        abort_if($booking->user_id !== Auth::id(), 403);
+        return response()->json(['statut' => $booking->fresh()->status]);
+    }
+
+    /**
+     * Handle payment callback from PZGate (for card payments)
      */
     public function callback(Request $request)
     {
@@ -226,7 +286,7 @@ class PaymentController extends Controller
         }
 
         $event = $booking->event;
-        $payment = $booking->payments()->first();
+        $payment = $booking->payment;
 
         $methode = session('payment_method', $payment?->methode ?? 'carte');
         $telephone = session('telephone');

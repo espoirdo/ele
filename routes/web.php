@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PremiumPaymentController;
+use App\Http\Controllers\WebhookController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/dashboard', function () {
@@ -122,6 +123,21 @@ Route::post('/events/{event}/badge/track', function (\App\Models\Event $event) {
 })->name('events.badge.track');
 
 Route::get('/paiement/callback', [PaymentController::class, 'callback'])->name('payment.callback');
+
+// Webhook PZGate — pas de middleware auth
+Route::post('/webhook/pzgate', [WebhookController::class, 'pzgate'])
+     ->name('webhook.pzgate');
+
+// Page d'attente de confirmation
+Route::get('/paiement/attente/{booking}', [PaymentController::class, 'waiting'])
+     ->name('payment.waiting')
+     ->middleware('auth');
+
+// Vérification du statut du paiement (AJAX)
+Route::get('/paiement/statut/{booking}', function (\App\Models\Booking $booking) {
+    abort_if($booking->user_id !== auth()->id(), 403);
+    return response()->json(['statut' => $booking->fresh()->status]);
+})->name('payment.status')->middleware('auth');
 
 // Pages statiques
 Route::get('/news', function () {
