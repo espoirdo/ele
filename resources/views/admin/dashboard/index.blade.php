@@ -9,8 +9,8 @@
 
 {{-- Real-time Stats Section --}}
 <div style="margin-bottom: 32px;">
-    <h3 style="font-size: 16px; font-weight: 600; color: #FFFFFF; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-        <span style="width: 8px; height: 8px; background: #10B981; border-radius: 50%; animation: pulse 2s infinite;"></span>
+    <h3 style="font-size: 16px; font-weight: 600; color: #CC0000; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+        <span style="width: 8px; height: 8px; background: #CC0000; border-radius: 50%; animation: pulse 2s infinite;"></span>
         Activité en temps réel
     </h3>
 
@@ -175,7 +175,7 @@
 </div>
 
 {{-- Revenue Cards --}}
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px;">
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 32px;">
     <div class="card" style="text-align: center;">
         <div style="font-size: 24px; font-weight: 700; color: #1A1A1A;">
             {{ number_format($stats['total_revenus'], 0, ',', ' ') }} FCF
@@ -195,6 +195,13 @@
             {{ number_format($stats['comments_pending'], 0, ',', ' ') }}
         </div>
         <div style="font-size: 13px; color: #6B7280;">Commentaires en attente</div>
+    </div>
+
+    <div class="card" style="text-align: center; background: linear-gradient(135deg, #FFF5F5, #FFEAEA);">
+        <div style="font-size: 28px; font-weight: 700; color: #CC0000;">
+            {{ number_format($stats['total_badges_generated'], 0, ',', ' ') }}
+        </div>
+        <div style="font-size: 13px; color: #6B7280;">Badges générés</div>
     </div>
 </div>
 

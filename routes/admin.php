@@ -25,6 +25,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::patch('events/{event}/approve',[AdminEventController::class,'approve'])->name('events.approve');
         Route::patch('events/{event}/reject',[AdminEventController::class,'reject'])->name('events.reject');
         Route::patch('events/{event}/places',[AdminEventController::class,'updatePlaces'])->name('events.updatePlaces');
+        Route::patch('events/{event}/badge',[AdminEventController::class,'updateBadge'])->name('events.badge.update');
         Route::resource('users', AdminUserController::class)->only(['index','show','destroy']);
         Route::patch('users/{user}/block',[AdminUserController::class,'block'])->name('users.block');
         Route::patch('users/{user}/promote',[AdminUserController::class,'promote'])->name('users.promote');

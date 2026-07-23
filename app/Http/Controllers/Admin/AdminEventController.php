@@ -102,4 +102,27 @@ class AdminEventController extends Controller
 
         return back()->with('success', 'Événement rejeté');
     }
+
+    /**
+     * Update badge configuration for an event
+     */
+    public function updateBadge(Request $request, Event $event)
+    {
+        $action = $request->input('action');
+
+        if ($action === 'validate') {
+            $event->update(['badge_valide_admin' => true]);
+            return back()->with('success', 'Configuration du badge validée');
+        }
+
+        if ($action === 'disable') {
+            $event->update([
+                'badge_actif' => false,
+                'badge_valide_admin' => false,
+            ]);
+            return back()->with('success', 'Badge désactivé');
+        }
+
+        return back()->with('error', 'Action non reconnue');
+    }
 }

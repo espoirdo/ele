@@ -204,6 +204,14 @@ class EventCreateController extends Controller
             'image_couverture' => 'nullable|image|max:5120|mimes:jpg,jpeg,png,webp',
             'options_premium' => 'nullable|array',
             'statut' => 'required|in:brouillon,publie',
+            // Badge fields
+            'badge_actif' => 'nullable',
+            'affiche_officielle' => 'nullable|image|max:10240|mimes:jpg,jpeg,png',
+            'badge_zone_type' => 'nullable|string|in:cercle,rectangle',
+            'badge_zone_x' => 'nullable|integer|min:0|max:100',
+            'badge_zone_y' => 'nullable|integer|min:0|max:100',
+            'badge_zone_width' => 'nullable|integer|min:5|max:100',
+            'badge_zone_height' => 'nullable|integer|min:5|max:100',
         ]);
 
         // Merge all session data
@@ -228,6 +236,25 @@ class EventCreateController extends Controller
         // Handle image upload
         if ($request->hasFile('image_couverture')) {
             $eventData['image_couverture'] = $request->file('image_couverture')->store('events', 'public');
+        }
+
+        // Handle badge "J'y serai" fields
+        $badgeActif = $request->has('badge_actif') && $request->input('badge_actif') == 1;
+
+        if ($badgeActif && $request->hasFile('affiche_officielle')) {
+            // Store the official poster
+            $eventData['affiche_officielle'] = $request->file('affiche_officielle')->store('events/affiches', 'public');
+            $eventData['badge_zone_type'] = $request->input('badge_zone_type', 'cercle');
+            $eventData['badge_zone_x'] = $request->input('badge_zone_x', 50);
+            $eventData['badge_zone_y'] = $request->input('badge_zone_y', 50);
+            $eventData['badge_zone_width'] = $request->input('badge_zone_width', 30);
+            $eventData['badge_zone_height'] = $request->input('badge_zone_height', 30);
+            $eventData['badge_actif'] = true;
+            $eventData['badge_valide_admin'] = false; // Require admin validation
+        } else {
+            // Ensure badge fields are reset if not active
+            $eventData['badge_actif'] = false;
+            $eventData['badge_valide_admin'] = false;
         }
 
         // Create the event

@@ -1116,6 +1116,325 @@
                     </div>
                 </div>
 
+                {{-- Badge J'y serai Section --}}
+                @if($event->badge_actif === true && $event->affiche_officielle)
+                <div class="detail-card" style="margin-top:20px; box-shadow: 0 4px 20px rgba(0,0,0,0.07);"
+                     x-data="{
+                         etape: 1,
+                         photoSrc: null,
+                         generating: false,
+                         afficheUrl: '{{ $event->afficheOfficielleUrl }}',
+                         zoneType: '{{ $event->badge_zone_type ?? 'cercle' }}',
+                         zoneX: {{ $event->badge_zone_x ?? 50 }},
+                         zoneY: {{ $event->badge_zone_y ?? 50 }},
+                         zoneWidth: {{ $event->badge_zone_width ?? 30 }},
+                         zoneHeight: {{ $event->badge_zone_height ?? 30 }},
+                         photoX: 0,
+                         photoY: 0,
+                         photoScale: 1,
+                         init() {
+                             this.$watch('photoSrc', () => { this.updatePreview(); });
+                             this.$watch('photoX', () => { this.updatePreview(); });
+                             this.$watch('photoY', () => { this.updatePreview(); });
+                             this.$watch('photoScale', () => { this.updatePreview(); });
+                         },
+                         handlePhotoSelect(event) {
+                             const file = event.target.files[0];
+                             if (file) {
+                                 const reader = new FileReader();
+                                 reader.onload = (e) => {
+                                     this.photoSrc = e.target.result;
+                                     this.etape = 2;
+                                     this.photoX = 0;
+                                     this.photoY = 0;
+                                     this.photoScale = 1;
+                                     // Track badge generation
+                                     fetch('{{ route('events.badge.track', $event) }}', {
+                                         method: 'POST',
+                                         headers: {
+                                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                             'Content-Type': 'application/json'
+                                         }
+                                     }).catch(() => {});
+                                     this.$nextTick(() => this.initCropCanvas());
+                                 };
+                                 reader.readAsDataURL(file);
+                             }
+                         },
+                         initCropCanvas() {
+                             const canvas = document.getElementById('crop-canvas');
+                             if (!canvas || !this.photoSrc) return;
+                             this.updateCropCanvas();
+                         },
+                         updateCropCanvas() {
+                             requestAnimationFrame(() => {
+                                 const canvas = document.getElementById('crop-canvas');
+                                 if (!canvas || !this.photoSrc) return;
+
+                                 const ctx = canvas.getContext('2d');
+                                 const img = new Image();
+                                 img.onload = () => {
+                                     // Set canvas size (square for crop preview)
+                                     const size = 280;
+                                     canvas.width = size;
+                                     canvas.height = size;
+
+                                     ctx.clearRect(0, 0, size, size);
+
+                                     // Calculate scaled dimensions
+                                     const scale = Math.max(size / img.width, size / img.height);
+                                     const scaledW = img.width * scale * this.photoScale;
+                                     const scaledH = img.height * scale * this.photoScale;
+
+                                     // Center the image with offset
+                                     const x = (size - scaledW) / 2 + this.photoX;
+                                     const y = (size - scaledH) / 2 + this.photoY;
+
+                                     // Draw image
+                                     ctx.drawImage(img, x, y, scaledW, scaledH);
+
+                                     // Draw mask (circle or rectangle)
+                                     const cx = size / 2;
+                                     const cy = size / 2;
+                                     const maskSize = size * 0.4;
+                                     const radius = maskSize / 2;
+
+                                     ctx.globalCompositeOperation = 'destination-in';
+
+                                     if (this.zoneType === 'cercle') {
+                                         ctx.beginPath();
+                                         ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                                         ctx.fill();
+                                     } else {
+                                         ctx.fillRect(cx - radius, cy - radius, maskSize, maskSize);
+                                     }
+
+                                     ctx.globalCompositeOperation = 'source-over';
+
+                                     // Draw border around mask area
+                                     ctx.strokeStyle = '#CC0000';
+                                     ctx.lineWidth = 3;
+                                     if (this.zoneType === 'cercle') {
+                                         ctx.beginPath();
+                                         ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                                         ctx.stroke();
+                                     } else {
+                                         ctx.strokeRect(cx - radius, cy - radius, maskSize, maskSize);
+                                     }
+                                 };
+                                 img.src = this.photoSrc;
+                             });
+                         },
+                         updatePreview() {
+                             requestAnimationFrame(() => {
+                                 this.updateCropCanvas();
+
+                                 const previewCanvas = document.getElementById('preview-canvas');
+                                 if (!previewCanvas || !this.afficheUrl || !this.photoSrc) return;
+
+                                 const ctx = previewCanvas.getContext('2d');
+                                 const afficheImg = new Image();
+                                 afficheImg.crossOrigin = 'anonymous';
+
+                                 afficheImg.onload = () => {
+                                     // Set preview canvas to match affiche aspect ratio
+                                     const maxWidth = 400;
+                                     const scale = Math.min(1, maxWidth / afficheImg.width);
+                                     previewCanvas.width = afficheImg.width * scale;
+                                     previewCanvas.height = afficheImg.height * scale;
+
+                                     ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+                                     // Draw affiche
+                                     ctx.drawImage(afficheImg, 0, 0, previewCanvas.width, previewCanvas.height);
+
+                                     // Calculate zone position
+                                     const x = (this.zoneX / 100) * previewCanvas.width;
+                                     const y = (this.zoneY / 100) * previewCanvas.height;
+                                     const w = (this.zoneWidth / 100) * previewCanvas.width;
+                                     const h = (this.zoneHeight / 100) * previewCanvas.height;
+
+                                     // Draw photo
+                                     const photoImg = new Image();
+                                     photoImg.onload = () => {
+                                         // Save context for clipping
+                                         ctx.save();
+
+                                         // Create clipping path
+                                         if (this.zoneType === 'cercle') {
+                                             ctx.beginPath();
+                                             ctx.arc(x, y, Math.min(w, h) / 2, 0, Math.PI * 2);
+                                             ctx.clip();
+                                         } else {
+                                             ctx.beginPath();
+                                             ctx.rect(x - w/2, y - h/2, w, h);
+                                             ctx.clip();
+                                         }
+
+                                         // Calculate photo position within the zone
+                                         const photoScale = Math.max(w / photoImg.width, h / photoImg.height) * this.photoScale;
+                                         const photoW = photoImg.width * photoScale;
+                                         const photoH = photoImg.height * photoScale;
+                                         const photoX = x - photoW / 2 + this.photoX * (previewCanvas.width / 100);
+                                         const photoY = y - photoH / 2 + this.photoY * (previewCanvas.height / 100);
+
+                                         ctx.drawImage(photoImg, photoX, photoY, photoW, photoH);
+                                         ctx.restore();
+                                     };
+                                     photoImg.src = this.photoSrc;
+                                 };
+                                 afficheImg.src = this.afficheUrl;
+                             });
+                         },
+                         downloadBadge() {
+                             const canvas = document.getElementById('preview-canvas');
+                             if (!canvas) return;
+
+                             this.generating = true;
+
+                             canvas.toBlob((blob) => {
+                                 const url = URL.createObjectURL(blob);
+                                 const a = document.createElement('a');
+                                 a.href = url;
+                                 a.download = 'badge-jy-serai-{{ Str::slug($event->titre) }}.png';
+                                 a.click();
+                                 URL.revokeObjectURL(url);
+                                 this.generating = false;
+                             }, 'image/png');
+                         },
+                         handleCropDrag(e) {
+                             e.preventDefault();
+                             const isTouch = e.type.startsWith('touch');
+                             const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+                             const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+
+                             if (!this._lastPos) {
+                                 this._lastPos = { x: clientX, y: clientY };
+                                 return;
+                             }
+
+                             const dx = clientX - this._lastPos.x;
+                             const dy = clientY - this._lastPos.y;
+
+                             this.photoX += dx;
+                             this.photoY += dy;
+
+                             this._lastPos = { x: clientX, y: clientY };
+                         },
+                         handleCropEnd() {
+                             this._lastPos = null;
+                         }
+                     }">
+                    <div style="padding: 28px;">
+                        <span style="background: #CC0000; color: white; font-family: 'Poppins', sans-serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 10px; border-radius: 4px;">
+                            Exclusif
+                        </span>
+                        <h3 style="font-family: 'Eras Medium ITC', serif; font-size: 18px; font-weight: 500; color: #1a1a1a; margin: 12px 0 8px;">
+                            Créez votre badge J'y serai
+                        </h3>
+                        <p style="font-family: 'Poppins', sans-serif; font-size: 12px; color: #888; margin: 0 0 20px;">
+                            Partagez votre participation sur vos réseaux sociaux
+                        </p>
+
+                        {{-- Step 1: Upload Photo --}}
+                        <template x-if="etape === 1">
+                            <div>
+                                <div style="border: 2px dashed #EEEEEE; border-radius: 12px; padding: 28px; text-align: center;"
+                                     @click="$refs.photoInput.click()">
+                                    <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#CCCCCC" stroke-width="1.5" style="margin: 0 auto 12px;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                    <p style="font-family: 'Poppins', sans-serif; font-size: 13px; color: #666; margin: 0 0 12px;">
+                                        Uploadez votre photo
+                                    </p>
+                                    <p style="font-family: 'Poppins', sans-serif; font-size: 11px; color: #aaa; margin: 0;">
+                                        JPG, PNG
+                                    </p>
+                                </div>
+                                <input type="file" x-ref="photoInput" accept="image/jpeg,image/png"
+                                       @change="handlePhotoSelect($event)"
+                                       style="display: none;">
+                                <button type="button"
+                                        @click="$refs.photoInput.click()"
+                                        style="width: 100%; margin-top: 12px; padding: 14px; background: #CC0000; color: white; border: none; border-radius: 40px; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                    Choisir ma photo
+                                </button>
+                            </div>
+                        </template>
+
+                        {{-- Step 2: Crop & Preview --}}
+                        <template x-if="etape === 2">
+                            <div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                                    <div>
+                                        <p style="font-family: 'Poppins', sans-serif; font-size: 11px; color: #888; margin-bottom: 8px; text-align: center;">Ajustez votre photo</p>
+                                        <canvas id="crop-canvas"
+                                                @mousedown="handleCropDrag($event)"
+                                                @mousemove="handleCropDrag($event)"
+                                                @mouseup="handleCropEnd()"
+                                                @mouseleave="handleCropEnd()"
+                                                style="width: 100%; border-radius: 8px; cursor: move; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                        </canvas>
+                                        <div style="margin-top: 12px;">
+                                            <label style="font-family: 'Poppins', sans-serif; font-size: 11px; color: #666; display: block; margin-bottom: 4px;">Zoom</label>
+                                            <input type="range" min="0.5" max="2" step="0.1" x-model="photoScale"
+                                                   style="width: 100%; accent-color: #CC0000;">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p style="font-family: 'Poppins', sans-serif; font-size: 11px; color: #888; margin-bottom: 8px; text-align: center;">Aperçu</p>
+                                        <canvas id="preview-canvas"
+                                                style="width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                        </canvas>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 12px;">
+                                    <button type="button"
+                                            @click="etape = 1; photoSrc = null;"
+                                            style="flex: 1; padding: 12px; background: white; color: #666; border: 1.5px solid #ddd; border-radius: 40px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;">
+                                        Retour
+                                    </button>
+                                    <button type="button"
+                                            @click="etape = 3; $nextTick(() => { const src = document.getElementById('preview-canvas'); const dest = document.getElementById('preview-canvas-final'); if(src && dest) { dest.width = src.width; dest.height = src.height; dest.getContext('2d').drawImage(src, 0, 0); }})"
+                                            style="flex: 1; padding: 12px; background: #CC0000; color: white; border: none; border-radius: 40px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;">
+                                        Continuer
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+
+                        {{-- Step 3: Download --}}
+                        <template x-if="etape === 3">
+                            <div style="text-align: center;">
+                                <canvas id="preview-canvas-final" style="max-width: 100%; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); margin-bottom: 20px;"></canvas>
+
+                                <button type="button"
+                                        @click="downloadBadge()"
+                                        :disabled="generating"
+                                        style="width: 100%; padding: 16px; background: #CC0000; color: white; border: none; border-radius: 40px; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-bottom: 12px;">
+                                    <span x-show="!generating">Télécharger mon badge J'y serai</span>
+                                    <span x-show="generating">Génération en cours...</span>
+                                </button>
+
+                                <button type="button"
+                                        @click="etape = 1; photoSrc = null;"
+                                        style="width: 100%; padding: 14px; background: white; color: #CC0000; border: 1.5px solid #CC0000; border-radius: 40px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;">
+                                    Créer un autre badge
+                                </button>
+
+                                <p style="font-family: 'Poppins', sans-serif; font-size: 12px; color: #888; margin: 20px 0 0; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#888" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                                    </svg>
+                                    Partagez ce badge sur WhatsApp, Facebook ou Instagram !
+                                </p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                @endif
+
             </div>
         </div>
 

@@ -85,6 +85,12 @@ class DashboardController extends Controller
             'total_comments' => Comment::count(),
             'comments_pending' => Comment::where('approuve', false)->count(),
             'comments_signaled' => Comment::where('signale', true)->count(),
+            // Badge "J'y serai" stats
+            'total_badges_generated' => Event::sum('badge_nb_generations'),
+            'badges_actifs' => Event::where('badge_actif', true)->count(),
+            'badges_en_attente' => Event::where('badge_actif', true)
+                ->where('badge_valide_admin', false)
+                ->count(),
         ];
 
         $recentEvents = Event::with('user', 'category')

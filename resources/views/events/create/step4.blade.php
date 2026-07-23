@@ -171,6 +171,297 @@
                 </div>
             </div>
 
+            {{-- Badge J'y serai Section --}}
+            <div class="form-card" x-data="{
+                badgeActif: false,
+                affichePreview: null,
+                canvasCtx: null,
+                imageLoaded: false,
+                zoneType: 'cercle',
+                zoneX: 50,
+                zoneY: 50,
+                zoneWidth: 30,
+                zoneHeight: 30,
+                isDragging: false,
+                isResizing: false,
+                resizeCorner: null,
+                startX: 0,
+                startY: 0,
+                startZone: {},
+                loadAffiche(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        if (file.size > 10 * 1024 * 1024) {
+                            alert('Image trop grande. Maximum 10MB.');
+                            return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.affichePreview = e.target.result;
+                            this.$nextTick(() => this.initCanvas());
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                },
+                initCanvas() {
+                    const canvas = document.getElementById('badge-canvas');
+                    if (!canvas) return;
+                    this.canvasCtx = canvas.getContext('2d');
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        this.imageLoaded = true;
+                        this.drawCanvas(img);
+                    };
+                    img.src = this.affichePreview;
+                },
+                drawCanvas(img) {
+                    if (!this.canvasCtx || !this.imageLoaded) return;
+                    const canvas = this.canvasCtx.canvas;
+                    const ctx = this.canvasCtx;
+
+                    const maxWidth = 600;
+                    const scale = Math.min(1, maxWidth / img.width);
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    const x = (this.zoneX / 100) * canvas.width;
+                    const y = (this.zoneY / 100) * canvas.height;
+                    const w = (this.zoneWidth / 100) * canvas.width;
+                    const h = (this.zoneHeight / 100) * canvas.height;
+
+                    ctx.fillStyle = 'rgba(204, 0, 0, 0.35)';
+                    ctx.strokeStyle = '#CC0000';
+                    ctx.lineWidth = 2;
+
+                    if (this.zoneType === 'cercle') {
+                        ctx.beginPath();
+                        ctx.arc(x, y, Math.min(w, h) / 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    } else {
+                        ctx.fillRect(x - w/2, y - h/2, w, h);
+                        ctx.strokeRect(x - w/2, y - h/2, w, h);
+                    }
+
+                    if (this.zoneType === 'rectangle') {
+                        const handleSize = 8;
+                        ctx.fillStyle = '#CC0000';
+                        ctx.fillRect(x - w/2 - handleSize/2, y - h/2 - handleSize/2, handleSize, handleSize);
+                        ctx.fillRect(x + w/2 - handleSize/2, y - h/2 - handleSize/2, handleSize, handleSize);
+                        ctx.fillRect(x - w/2 - handleSize/2, y + h/2 - handleSize/2, handleSize, handleSize);
+                        ctx.fillRect(x + w/2 - handleSize/2, y + h/2 - handleSize/2, handleSize, handleSize);
+                    }
+
+                    document.getElementById('badge_zone_x').value = this.zoneX;
+                    document.getElementById('badge_zone_y').value = this.zoneY;
+                    document.getElementById('badge_zone_width').value = this.zoneWidth;
+                    document.getElementById('badge_zone_height').value = this.zoneHeight;
+                },
+                handleMouseDown(e) {
+                    const canvas = this.canvasCtx.canvas;
+                    const rect = canvas.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+                    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+                    const zoneX = (this.zoneX / 100) * canvas.width;
+                    const zoneY = (this.zoneY / 100) * canvas.height;
+                    const zoneW = (this.zoneWidth / 100) * canvas.width;
+                    const zoneH = (this.zoneHeight / 100) * canvas.height;
+
+                    if (this.zoneType === 'rectangle') {
+                        const handleSize = 12;
+                        const corners = [
+                            { cx: zoneX - zoneW/2, cy: zoneY - zoneH/2 },
+                            { cx: zoneX + zoneW/2, cy: zoneY - zoneH/2 },
+                            { cx: zoneX - zoneW/2, cy: zoneY + zoneH/2 },
+                            { cx: zoneX + zoneW/2, cy: zoneY + zoneH/2 },
+                        ];
+                        for (let i = 0; i < corners.length; i++) {
+                            if (Math.abs(x - corners[i].cx) < handleSize && Math.abs(y - corners[i].cy) < handleSize) {
+                                this.isResizing = true;
+                                this.resizeCorner = i;
+                                this.startX = x;
+                                this.startY = y;
+                                this.startZone = { x: this.zoneX, y: this.zoneY, w: this.zoneWidth, h: this.zoneHeight };
+                                return;
+                            }
+                        }
+                    }
+
+                    if (this.zoneType === 'cercle') {
+                        const radius = Math.min(zoneW, zoneH) / 2;
+                        const dist = Math.sqrt((x - zoneX) ** 2 + (y - zoneY) ** 2);
+                        if (dist <= radius) {
+                            this.isDragging = true;
+                        }
+                    } else {
+                        if (x >= zoneX - zoneW/2 && x <= zoneX + zoneW/2 &&
+                            y >= zoneY - zoneH/2 && y <= zoneY + zoneH/2) {
+                            this.isDragging = true;
+                        }
+                    }
+
+                    if (this.isDragging) {
+                        this.startX = x;
+                        this.startY = y;
+                    }
+                },
+                handleMouseMove(e) {
+                    if (!this.isDragging && !this.isResizing) return;
+
+                    const canvas = this.canvasCtx.canvas;
+                    const rect = canvas.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+                    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+                    if (this.isDragging) {
+                        const dx = x - this.startX;
+                        const dy = y - this.startY;
+                        const dxPercent = (dx / canvas.width) * 100;
+                        const dyPercent = (dy / canvas.height) * 100;
+
+                        this.zoneX = Math.max(0, Math.min(100, this.startZone.x + dxPercent));
+                        this.zoneY = Math.max(0, Math.min(100, this.startZone.y + dyPercent));
+
+                        this.startX = x;
+                        this.startY = y;
+                    } else if (this.isResizing) {
+                        const dx = x - this.startX;
+                        const dy = y - this.startY;
+                        const dxPercent = (dx / canvas.width) * 100;
+                        const dyPercent = (dy / canvas.height) * 100;
+
+                        if (this.resizeCorner === 0) {
+                            this.zoneWidth = Math.max(10, this.startZone.w - dxPercent);
+                            this.zoneHeight = Math.max(10, this.startZone.h - dyPercent);
+                            this.zoneX = this.startZone.x + dxPercent / 2;
+                            this.zoneY = this.startZone.y + dyPercent / 2;
+                        } else if (this.resizeCorner === 1) {
+                            this.zoneWidth = Math.max(10, this.startZone.w + dxPercent);
+                            this.zoneHeight = Math.max(10, this.startZone.h - dyPercent);
+                            this.zoneY = this.startZone.y + dyPercent / 2;
+                        } else if (this.resizeCorner === 2) {
+                            this.zoneWidth = Math.max(10, this.startZone.w - dxPercent);
+                            this.zoneHeight = Math.max(10, this.startZone.h + dyPercent);
+                            this.zoneX = this.startZone.x + dxPercent / 2;
+                        } else if (this.resizeCorner === 3) {
+                            this.zoneWidth = Math.max(10, this.startZone.w + dxPercent);
+                            this.zoneHeight = Math.max(10, this.startZone.h + dyPercent);
+                        }
+
+                        this.zoneX = Math.max(0, Math.min(100, this.zoneX));
+                        this.zoneY = Math.max(0, Math.min(100, this.zoneY));
+                        this.zoneWidth = Math.max(10, Math.min(100, this.zoneWidth));
+                        this.zoneHeight = Math.max(10, Math.min(100, this.zoneHeight));
+                    }
+
+                    this.redrawCanvas();
+                },
+                handleMouseUp() {
+                    this.isDragging = false;
+                    this.isResizing = false;
+                    this.resizeCorner = null;
+                },
+                redrawCanvas() {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => this.drawCanvas(img);
+                    img.src = this.affichePreview;
+                },
+                updateZoneType(type) {
+                    this.zoneType = type;
+                    document.getElementById('badge_zone_type').value = type;
+                    this.redrawCanvas();
+                }
+            }">
+                <h3 class="card-title">Badge "J'y serai"</h3>
+
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <label style="position: relative; display: inline-block; width: 52px; height: 28px; cursor: pointer;">
+                        <input type="checkbox" x-model="badgeActif" name="badge_actif" value="1" style="opacity: 0; width: 0; height: 0;">
+                        <span style="position: absolute; inset: 0; background: #ddd; border-radius: 28px; transition: 0.3s;"
+                              :style="badgeActif ? 'background: #CC0000;' : 'background: #ddd;'"></span>
+                        <span style="position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
+                              :style="badgeActif ? 'transform: translateX(24px);' : ''"></span>
+                    </label>
+                    <span style="font-family: 'Poppins', sans-serif; font-size: 13px; color: #666;">
+                        Activer le badge J'y serai — Permettez à vos participants de créer un visuel personnalisé à partager
+                    </span>
+                </div>
+
+                <div x-show="badgeActif" x-transition style="margin-top: 20px;">
+                    <div class="upload-zone"
+                         :class="affichePreview ? 'has-image' : ''"
+                         style="border: 2px dashed #CC0000; background: #FFF5F5; border-radius: 12px; height: 180px; display: flex; align-items: center; justify-content: center;">
+                        <template x-if="!affichePreview">
+                            <div style="text-align: center; color: #CC0000;">
+                                <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 8px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <p style="font-family: 'Poppins', sans-serif; font-size: 13px; margin: 0; font-weight: 600;">
+                                    Uploadez l'affiche officielle de votre événement (PNG, JPG, max 10MB)
+                                </p>
+                            </div>
+                        </template>
+                        <template x-if="affichePreview">
+                            <div style="width: 100%; height: 100%; position: relative;">
+                                <img :src="affichePreview" alt="Affiche" style="width: 100%; height: 100%; object-fit: contain; border-radius: 10px;">
+                                <button type="button" @click="affichePreview = null; imageLoaded = false;"
+                                        style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.7); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+                        <input type="file"
+                               name="affiche_officielle"
+                               accept="image/png,image/jpeg"
+                               @change="loadAffiche($event)"
+                               style="position: absolute; inset: 0; opacity: 0; cursor: pointer;">
+                    </div>
+
+                    <div x-show="imageLoaded" x-transition style="margin-top: 20px;">
+                        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                            <button type="button"
+                                    @click="updateZoneType('cercle')"
+                                    :style="zoneType === 'cercle' ? 'background: #CC0000; color: white; border-color: #CC0000;' : 'background: white; color: #666; border-color: #ddd;'"
+                                    style="padding: 10px 20px; border: 2px solid #ddd; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                Cercle
+                            </button>
+                            <button type="button"
+                                    @click="updateZoneType('rectangle')"
+                                    :style="zoneType === 'rectangle' ? 'background: #CC0000; color: white; border-color: #CC0000;' : 'background: white; color: #666; border-color: #ddd;'"
+                                    style="padding: 10px 20px; border: 2px solid #ddd; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                Rectangle
+                            </button>
+                        </div>
+
+                        <p style="font-family: 'Poppins', sans-serif; font-size: 12px; color: #888; margin-bottom: 12px;">
+                            Placez le cadre à l'endroit où apparaîtra la photo du participant. Faites glisser le cadre pour le déplacer, ou utilisez les coins pour le redimensionner.
+                        </p>
+
+                        <canvas id="badge-canvas"
+                                @mousedown="handleMouseDown($event)"
+                                @mousemove="handleMouseMove($event)"
+                                @mouseup="handleMouseUp()"
+                                @mouseleave="handleMouseUp()"
+                                style="max-width: 100%; border-radius: 8px; cursor: move; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        </canvas>
+
+                        <input type="hidden" id="badge_zone_type" name="badge_zone_type" x-model="zoneType">
+                        <input type="hidden" id="badge_zone_x" name="badge_zone_x" x-model="zoneX">
+                        <input type="hidden" id="badge_zone_y" name="badge_zone_y" x-model="zoneY">
+                        <input type="hidden" id="badge_zone_width" name="badge_zone_width" x-model="zoneWidth">
+                        <input type="hidden" id="badge_zone_height" name="badge_zone_height" x-model="zoneHeight">
+                    </div>
+                </div>
+            </div>
+
             <div class="form-card">
                 <h3 class="card-title">Statut de publication</h3>
 

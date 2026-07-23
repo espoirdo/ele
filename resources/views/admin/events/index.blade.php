@@ -45,6 +45,7 @@
                 <th>Catégorie</th>
                 <th>Date</th>
                 <th>Statut</th>
+                <th>Badge J'y serai</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -79,6 +80,21 @@
                     @endswitch
                 </td>
                 <td>
+                    @if(!$event->badge_actif)
+                        <span style="background: #E5E7EB; color: #6B7280; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                            Inactif
+                        </span>
+                    @elseif($event->badge_actif && !$event->badge_valide_admin)
+                        <span style="background: #FEF3C7; color: #92400E; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                            En attente
+                        </span>
+                    @else
+                        <span style="background: #D1FAE5; color: #065F46; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                            {{ $event->badge_nb_generations }} générations
+                        </span>
+                    @endif
+                </td>
+                <td>
                     <div style="display: flex; gap: 8px;">
                         <a href="{{ route('events.show', $event) }}" target="_blank" class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;">
                             <i class="fas fa-eye"></i>
@@ -107,7 +123,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="7" style="text-align: center; color: #6B7280; padding: 40px;">Aucun événement trouvé</td>
+                <td colspan="8" style="text-align: center; color: #6B7280; padding: 40px;">Aucun événement trouvé</td>
             </tr>
             @endforelse
         </tbody>

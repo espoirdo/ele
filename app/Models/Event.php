@@ -20,6 +20,10 @@ class Event extends Model
         'billet_classique_actif', 'billet_classique_prix',
         'billet_vip_actif', 'billet_vip_prix',
         'billet_vvip_actif', 'billet_vvip_prix',
+        // Badge "J'y serai"
+        'affiche_officielle', 'badge_zone_type', 'badge_zone_x', 'badge_zone_y',
+        'badge_zone_width', 'badge_zone_height', 'badge_actif', 'badge_valide_admin',
+        'badge_nb_generations',
     ];
 
     protected $casts = [
@@ -35,6 +39,9 @@ class Event extends Model
         'billet_vip_prix' => 'decimal:2',
         'billet_vvip_actif' => 'boolean',
         'billet_vvip_prix' => 'decimal:2',
+        // Badge casts
+        'badge_actif' => 'boolean',
+        'badge_valide_admin' => 'boolean',
     ];
 
     public function user(): BelongsTo
@@ -98,6 +105,34 @@ class Event extends Model
             return Storage::url($defaultImage);
         }
         return 'https://picsum.photos/seed/' . $this->id . '/800/450';
+    }
+
+    /**
+     * Get the official poster URL for badge
+     */
+    public function getAfficheOfficielleUrlAttribute(): ?string
+    {
+        if ($this->affiche_officielle && Storage::disk('public')->exists($this->affiche_officielle)) {
+            return route('events.affiche', $this);
+        }
+        return null;
+    }
+
+    /**
+     * Get badge zone coordinates as percentages
+     */
+    public function getBadgeZonePercentAttribute(): ?array
+    {
+        if (!$this->badge_actif || !$this->badge_zone_x) {
+            return null;
+        }
+        return [
+            'x' => $this->badge_zone_x,
+            'y' => $this->badge_zone_y,
+            'width' => $this->badge_zone_width,
+            'height' => $this->badge_zone_height,
+            'type' => $this->badge_zone_type ?? 'cercle',
+        ];
     }
 
     public function getNoteMoyenneAttribute(): float

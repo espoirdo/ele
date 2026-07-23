@@ -97,6 +97,29 @@ Route::middleware(['auth', 'verified', 'check.blocked'])->group(function () {
 });
 
 Route::get('/events/{event:slug}', [EventController::class, 'show'])->name('events.show');
+
+// Badge routes - Public access for displaying official poster and tracking
+Route::get('/events/{event}/affiche', function (\App\Models\Event $event) {
+    abort_unless($event->affiche_officielle &&
+                 \Illuminate\Support\Facades\Storage::disk('public')->exists($event->affiche_officielle), 404);
+
+    return response()->file(
+        \Illuminate\Support\Facades\Storage::disk('public')->path($event->affiche_officielle),
+        [
+            'Access-Control-Allow-Origin' => '*',
+            'Content-Type' => 'image/jpeg',
+            'Cache-Control' => 'public, max-age=86400',
+        ]
+    );
+})->name('events.affiche');
+
+Route::post('/events/{event}/badge/track', function (\App\Models\Event $event) {
+    // Only increment if badge is active
+    abort_unless($event->badge_actif === true, 404);
+    $event->increment('badge_nb_generations');
+    return response()->json(['ok' => true]);
+})->name('events.badge.track');
+
 Route::get('/paiement/callback', [PaymentController::class, 'callback'])->name('payment.callback');
 
 // Pages statiques
