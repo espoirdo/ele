@@ -68,6 +68,60 @@
         </div>
 
         {{-- Change Status --}}
+        {{-- PayGate Payment Info --}}
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 20px;">Informations de paiement</h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                    <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">Moyen de paiement</div>
+                    <div style="font-weight: 600; text-transform: capitalize;">
+                        @if($booking->moyen_paiement === 'tmoney')
+                            <span style="color: #2E7D32;">T-Money</span>
+                        @elseif($booking->moyen_paiement === 'flooz')
+                            <span style="color: #1565C0;">Flooz</span>
+                        @else
+                            {{ $booking->moyen_paiement ?? 'N/A' }}
+                        @endif
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">PayGate Référence</div>
+                    <div style="font-weight: 600; font-size: 12px; word-break: break-all;">
+                        {{ $booking->paygate_identifier ?? 'N/A' }}
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">PayGate Tx Référence</div>
+                    <div style="font-weight: 600; font-size: 12px; word-break: break-all;">
+                        {{ $booking->paygate_tx_reference ?? 'N/A' }}
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">PayGate Statut</div>
+                    <div style="font-weight: 600;">
+                        @if($booking->paygate_status === 0)
+                            <span class="badge badge-success">Succès</span>
+                        @elseif(in_array($booking->paygate_status, [2]))
+                            <span class="badge badge-warning">En cours</span>
+                        @elseif(in_array($booking->paygate_status, [4, 6]))
+                            <span class="badge badge-secondary">Expiré/Annulé</span>
+                        @else
+                            <span class="badge badge-info">En attente ({{ $booking->paygate_status ?? 'N/A' }})</span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            @if($booking->paygate_response)
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #E5E7EB;">
+                <div style="font-size: 12px; color: #6B7280; margin-bottom: 8px;">Réponse PayGate (JSON)</div>
+                <pre style="background: #1F2937; color: #10B981; padding: 12px; border-radius: 8px; font-size: 11px; overflow-x: auto; white-space: pre-wrap;">{{ json_encode($booking->paygate_response, JSON_PRETTY_PRINT) }}</pre>
+            </div>
+            @endif
+        </div>
+
+        {{-- Change Status --}}
         <div class="card">
             <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 20px;">Modifier le statut</h3>
 

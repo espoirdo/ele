@@ -67,8 +67,9 @@
                 <th>Numero</th>
                 <th>Utilisateur</th>
                 <th>Evenement</th>
-                <th>Places</th>
+                <th>Billet</th>
                 <th>Total</th>
+                <th>Paiement</th>
                 <th>Statut</th>
                 <th>Date</th>
                 <th></th>
@@ -92,6 +93,15 @@
                     @endif
                 </td>
                 <td style="font-weight: 600;">{{ number_format($booking->total, 0, ',', ' ') }} XOF</td>
+                <td>
+                    @if($booking->moyen_paiement === 'tmoney')
+                        <span style="color: #2E7D32; font-weight: 600; font-size: 11px;">T-Money</span>
+                    @elseif($booking->moyen_paiement === 'flooz')
+                        <span style="color: #1565C0; font-weight: 600; font-size: 11px;">Flooz</span>
+                    @else
+                        <span style="color: #6B7280; font-size: 11px;">-</span>
+                    @endif
+                </td>
                 <td>
                     @switch($booking->status)
                         @case('confirmee')

@@ -14,7 +14,7 @@ class PaymentController extends Controller
 {
     public function __construct(private PayGateService $paygate) {}
 
-    public function show(string $slug)
+    public function show(string $slug, Request $request)
     {
         $event = Event::where('slug', $slug)->firstOrFail();
         $billets = [];
@@ -22,7 +22,14 @@ class PaymentController extends Controller
         if ($event->billet_vip_actif)       $billets['vip']       = $event->billet_vip_prix;
         if ($event->billet_vvip_actif)      $billets['vvip']      = $event->billet_vvip_prix;
 
-        return view('payment.show', compact('event', 'billets'));
+        // Get selected ticket type from query string or default to classique
+        $typeBillet = $request->query('type_billet', 'classique');
+        if (!isset($billets[$typeBillet])) {
+            $typeBillet = array_key_first($billets) ?: 'classique';
+        }
+        $price = $billets[$typeBillet] ?? 0;
+
+        return view('payment.show', compact('event', 'billets', 'typeBillet', 'price'));
     }
 
     public function process(Request $request, string $slug)

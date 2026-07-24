@@ -15,17 +15,19 @@ class Booking extends Model
         'status',
         'numero_reservation',
         'ticket_path',
-        // PZGate fields
-        'pzgate_transaction_id',
-        'pzgate_reference',
-        'pzgate_status',
-        'pzgate_response',
+        // PayGate fields
+        'paygate_tx_reference',
+        'paygate_identifier',
+        'paygate_status',
+        'paygate_response',
+        'paygate_payment_reference',
+        // Moyen de paiement
         'moyen_paiement',
     ];
 
     protected $casts = [
         'type_billet' => 'string',
-        'pzgate_response' => 'array',
+        'paygate_response' => 'array',
     ];
 
     public function user()

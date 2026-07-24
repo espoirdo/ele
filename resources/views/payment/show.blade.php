@@ -335,6 +335,9 @@
             <form action="{{ route('payment.process', $event->slug) }}" method="POST">
                 @csrf
 
+                {{-- Type de billet sélectionné (hidden) --}}
+                <input type="hidden" name="type_billet" value="{{ $typeBillet }}">
+
                 <h2 class="payment-section-title">Choisissez votre moyen de paiement</h2>
 
                 {{-- TMoney --}}
