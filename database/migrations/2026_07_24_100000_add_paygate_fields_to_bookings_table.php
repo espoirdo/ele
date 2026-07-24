@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('bookings', function (Blueprint $table) {
             if (!Schema::hasColumn('bookings', 'paygate_tx_reference')) {
-                $table->string('paygate_tx_reference')->nullable()->after('statut');
+                $table->string('paygate_tx_reference')->nullable()->after('status');
             }
             if (!Schema::hasColumn('bookings', 'paygate_identifier')) {
                 $table->string('paygate_identifier')->nullable()->after('paygate_tx_reference');
