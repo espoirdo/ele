@@ -112,12 +112,12 @@
 .payment-method-card {
     border: 2px solid var(--gris-border);
     border-radius: var(--radius-sm);
-    padding: 20px;
+    padding: 18px 20px;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     margin-bottom: 12px;
     outline: none;
     -webkit-tap-highlight-color: transparent;
@@ -133,8 +133,8 @@
 }
 
 .payment-method-card.selected.flooz {
-    border-color: #1A237E;
-    background: #E8EAF6;
+    border-color: #1565C0;
+    background: #E3F2FD;
 }
 
 .payment-method-icon {
@@ -144,24 +144,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    font-size: 14px;
+    font-weight: 900;
+    font-size: 13px;
     flex-shrink: 0;
 }
 
 .payment-method-card.tmoney .payment-method-icon {
-    background: var(--rouge);
-    color: white;
+    background: #E8F5E9;
+    color: #2E7D32;
 }
 
 .payment-method-card.flooz .payment-method-icon {
-    background: #1A237E;
-    color: white;
-}
-
-.payment-method-card.carte .payment-method-icon {
-    background: var(--gris-bg);
-    color: var(--texte);
+    background: #E3F2FD;
+    color: #1565C0;
 }
 
 .payment-method-info {
@@ -169,7 +164,7 @@
 }
 
 .payment-method-name {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--texte);
     margin: 0 0 2px;
@@ -198,8 +193,8 @@
 }
 
 .payment-method-card.selected.flooz .payment-method-radio {
-    border-color: #1A237E;
-    background: #1A237E;
+    border-color: #1565C0;
+    background: #1565C0;
 }
 
 .payment-method-card.selected .payment-method-radio::after {
@@ -223,100 +218,57 @@
 .form-group label {
     display: block;
     font-size: 13px;
-    font-weight: 600;
-    color: var(--texte);
+    font-weight: 500;
+    color: #444;
     margin-bottom: 6px;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1.5px solid var(--gris-border);
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: var(--poppins);
-    color: var(--texte);
-    transition: border-color 0.25s, box-shadow 0.25s;
-    outline: none;
-}
-
-.form-group input:focus {
-    border-color: var(--rouge);
-    box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.1);
-}
-
-.form-group input::placeholder {
-    color: #999;
 }
 
 .phone-input-wrapper {
     display: flex;
     align-items: center;
+    border: 1.5px solid #E0E0E0;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .phone-prefix {
     padding: 12px 14px;
-    background: var(--gris-bg);
-    border: 1.5px solid var(--gris-border);
-    border-right: none;
-    border-radius: 8px 0 0 8px;
+    background: #F5F5F5;
     font-size: 14px;
-    color: var(--texte-doux);
+    color: #444;
+    border-right: 1px solid #E0E0E0;
+    white-space: nowrap;
 }
 
 .phone-input-wrapper input {
-    border-radius: 0 8px 8px 0;
     flex: 1;
+    border: none;
+    outline: none;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-family: var(--poppins);
+    color: var(--texte);
 }
 
 .form-hint {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--texte-doux);
-    margin-top: 8px;
-}
-
-.places-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--rouge);
-    color: white;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: 700;
-    transition: all 0.25s ease;
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.places-btn:hover:not(:disabled) {
-    background: var(--rouge-dark);
-    transform: scale(1.05);
-}
-
-.places-btn:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    opacity: 0.6;
+    margin-top: 6px;
 }
 
 .btn-confirmer {
     width: 100%;
-    padding: 16px;
-    background: linear-gradient(135deg, var(--rouge), var(--rouge-dark));
+    background: linear-gradient(to right, var(--rouge), var(--rouge-dark));
     color: white;
     border: none;
     border-radius: 40px;
-    font-size: 15px;
-    font-weight: 700;
+    padding: 14px;
     font-family: var(--poppins);
+    font-weight: 600;
+    font-size: 15px;
     cursor: pointer;
+    outline: none;
     transition: all 0.25s ease;
-    margin-top: 24px;
 }
 
 .btn-confirmer:hover {
@@ -349,7 +301,7 @@
 @section('content')
 <div class="payment-page">
     <div class="payment-container">
-        <div class="payment-card" x-data="{ methode: '' }">
+        <div class="payment-card" x-data="{ methode: '', telephone: '' }">
 
             <div class="payment-header">
                 <h1 style="font-family: 'Eras Medium ITC', serif; font-size: 22px; color: var(--texte); margin: 0 0 8px;">
@@ -386,143 +338,62 @@
                 <h2 class="payment-section-title">Choisissez votre moyen de paiement</h2>
 
                 {{-- TMoney --}}
-                <div class="payment-method-card"
+                <div class="payment-method-card tmoney"
                      :class="methode === 'tmoney' ? 'selected' : ''"
                      @click="methode = 'tmoney'">
                     <div class="payment-method-icon">
-                        @if(setting('logo_tmoney'))
-                            <img src="{{ Storage::url(setting('logo_tmoney')) }}" alt="T-Money" style="width: 32px; height: 32px; object-fit: contain;">
-                        @else
-                            TM
-                        @endif
+                        <span>T</span>
                     </div>
                     <div class="payment-method-info">
-                        <p class="payment-method-name" style="color: var(--rouge);">T-Money</p>
+                        <p class="payment-method-name" style="color: #2E7D32;">T-Money</p>
                         <p class="payment-method-desc">Paiement mobile Togocel</p>
                     </div>
                     <div class="payment-method-radio"></div>
                 </div>
-                <input type="radio" name="methode" value="tmoney" x-model="methode" style="display: none;">
+                <input type="radio" name="moyen_paiement" value="tmoney" x-model="methode" style="display: none;">
 
                 {{-- Flooz --}}
                 <div class="payment-method-card flooz"
                      :class="methode === 'flooz' ? 'selected flooz' : ''"
                      @click="methode = 'flooz'">
                     <div class="payment-method-icon">
-                        @if(setting('logo_flooz'))
-                            <img src="{{ Storage::url(setting('logo_flooz')) }}" alt="Flooz" style="width: 32px; height: 32px; object-fit: contain;">
-                        @else
-                            FL
-                        @endif
+                        <span>F</span>
                     </div>
                     <div class="payment-method-info">
-                        <p class="payment-method-name" style="color: #1A237E;">Flooz</p>
+                        <p class="payment-method-name" style="color: #1565C0;">Flooz</p>
                         <p class="payment-method-desc">Paiement mobile Moov Africa</p>
                     </div>
                     <div class="payment-method-radio"></div>
                 </div>
-                <input type="radio" name="methode" value="flooz" x-model="methode" style="display: none;">
+                <input type="radio" name="moyen_paiement" value="flooz" x-model="methode" style="display: none;">
 
-                {{-- Carte bancaire --}}
-                <div class="payment-method-card carte"
-                     :class="methode === 'carte' ? 'selected' : ''"
-                     @click="methode = 'carte'">
-                    <div class="payment-method-icon">
-                        @if(setting('logo_carte_bancaire'))
-                            <img src="{{ Storage::url(setting('logo_carte_bancaire')) }}" alt="Carte bancaire" style="width: 32px; height: 32px; object-fit: contain;">
-                        @else
-                            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                            </svg>
-                        @endif
+                {{-- Champ téléphone visible si une méthode est sélectionnée --}}
+                <div x-show="methode !== ''" x-transition style="margin-bottom: 20px;">
+                    <label style="display: block; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500; color: #444; margin-bottom: 6px;">
+                        Numéro de téléphone
+                    </label>
+                    <div class="phone-input-wrapper">
+                        <span class="phone-prefix">+228</span>
+                        <input type="tel"
+                               name="telephone"
+                               x-model="telephone"
+                               maxlength="8"
+                               placeholder="XX XX XX XX"
+                               style="oninput: this.value = this.value.replace(/[^0-9]/g, '').slice(0,8);">
                     </div>
-                    <div class="payment-method-info">
-                        <p class="payment-method-name">Carte bancaire</p>
-                        <p class="payment-method-desc">Visa, Mastercard, other</p>
-                    </div>
-                    <div class="payment-method-radio"></div>
-                </div>
-                <input type="radio" name="methode" value="carte" x-model="methode" style="display: none;">
-
-                {{-- Formulaire TMoney/Flooz --}}
-                <div class="payment-form" x-show="methode === 'tmoney' || methode === 'flooz'" x-transition>
-                    <div class="form-group">
-                        <label for="telephone">Numéro de téléphone</label>
-                        <div class="phone-input-wrapper">
-                            <span class="phone-prefix">+228</span>
-                            <input type="tel"
-                                   id="telephone"
-                                   name="telephone"
-                                   placeholder="XX XX XX XX"
-                                   pattern="[0-9]{8}"
-                                   maxlength="8">
-                        </div>
-                        <p class="form-hint">Vous allez recevoir une demande de confirmation sur votre téléphone.</p>
-                    </div>
-
-                    <button type="submit" class="btn-confirmer">
-                        Procéder au paiement
-                    </button>
+                    <p class="form-hint">Vous recevrez une demande de confirmation sur ce numéro.</p>
+                    @error('telephone')
+                        <p style="color: #CC0000; font-size: 12px; margin-top: 4px;">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                {{-- Formulaire Carte bancaire --}}
-                <div class="payment-form" x-show="methode === 'carte'" x-transition>
-                    <div class="form-group">
-                        <label for="numero_carte">Numéro de carte</label>
-                        <input type="text"
-                               id="numero_carte"
-                               name="numero_carte"
-                               placeholder="XXXX XXXX XXXX XXXX"
-                               maxlength="19"
-                               autocomplete="off">
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <div class="form-group">
-                            <label for="expiration">Date d'expiration</label>
-                            <input type="text"
-                                   id="expiration"
-                                   name="expiration"
-                                   placeholder="MM/AA"
-                                   maxlength="5"
-                                   autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label for="cvv">CVV</label>
-                            <input type="text"
-                                   id="cvv"
-                                   name="cvv"
-                                   placeholder="XXX"
-                                   maxlength="3"
-                                   autocomplete="off">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="nom_titulaire">Nom du titulaire</label>
-                        <input type="text"
-                               id="nom_titulaire"
-                               name="nom_titulaire"
-                               placeholder="Nom appearant sur la carte"
-                               autocomplete="off">
-                    </div>
-
-                    <button type="submit" class="btn-confirmer">
-                        Procéder au paiement
-                    </button>
-                </div>
+                {{-- Bouton payer --}}
+                <button type="submit" x-show="methode !== '' && telephone.length === 8"
+                        style="width: 100%; background: linear-gradient(to right, #CC0000, #910000); color: white; border: none; border-radius: 40px; padding: 14px; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 15px; cursor: pointer; outline: none; transition: all 0.25s ease;">
+                    Confirmer le paiement — {{ number_format($price ?? $total, 0, ',', ' ') }} XOF
+                </button>
             </form>
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script>
-document.getElementById('numero_carte')?.addEventListener('input', function(e) {
-    let value = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
-    let formatted = value.match(/.{1,4}/g)?.join(' ') || '';
-    e.target.value = formatted;
-});
-</script>
-@endpush
 @endsection

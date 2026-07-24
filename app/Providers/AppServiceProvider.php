@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Auth\Events\Login;
 use App\Listeners\UpdateLastLogin;
 use App\Services\PzgateService;
+use App\Services\PayGateService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,6 +18,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(PzgateService::class, fn() => new PzgateService());
+        $this->app->singleton(PayGateService::class, fn() => new PayGateService());
     }
 
     /**

@@ -11,8 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Exclure les webhooks PZGate du CSRF
+        // Exclure les webhooks PayGate et PZGate du CSRF
         $middleware->validateCsrfTokens(except: [
+            'webhook/paygate',
             'webhook/pzgate',
             'webhook/pzgate/vip',
             'webhook/pzgate/premium',

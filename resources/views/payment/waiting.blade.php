@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Paiement en cours - ELEDJI')
+@section('title', 'En attente de confirmation - ELEDJI')
 
 @push('styles')
 <style>
@@ -30,8 +30,8 @@
     }
 
     .loading-spinner {
-        width: 64px;
-        height: 64px;
+        width: 60px;
+        height: 60px;
         border: 4px solid #F0F0F0;
         border-top: 4px solid var(--rouge);
         border-radius: 50%;
@@ -54,13 +54,14 @@
     .status-message {
         font-size: 14px;
         color: var(--texte-doux);
-        line-height: 1.6;
-        margin-bottom: 32px;
+        line-height: 1.7;
+        margin-bottom: 28px;
     }
 
     .status-message a {
         color: var(--rouge);
         text-decoration: none;
+        font-weight: 600;
     }
 
     .status-message a:hover {
@@ -70,15 +71,15 @@
     .booking-summary {
         background: #F9F9F9;
         border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 24px;
+        padding: 18px;
+        margin-bottom: 20px;
         text-align: left;
     }
 
     .booking-summary p {
         font-size: 13px;
         color: #444;
-        margin: 0 0 8px 0;
+        margin: 0 0 6px 0;
     }
 
     .booking-summary p:last-child {
@@ -86,13 +87,30 @@
     }
 
     .booking-summary .amount {
-        color: var(--rouge);
+        font-size: 15px;
         font-weight: 700;
+        color: var(--rouge);
+        margin-top: 6px !important;
     }
 
     .reference {
-        font-size: 12px;
+        font-size: 11px;
         color: #AAAAAA;
+    }
+
+    .expired-message {
+        display: none;
+        margin-top: 20px;
+        padding: 16px;
+        background: #FFF5F5;
+        border-radius: 10px;
+        border: 1px solid #FFCCCC;
+    }
+
+    .expired-message p {
+        font-size: 13px;
+        color: var(--rouge);
+        margin: 0 0 10px 0;
     }
 </style>
 @endpush
@@ -101,64 +119,68 @@
 <div class="waiting-page">
     <div class="waiting-container">
 
-        {{-- Animation de chargement --}}
-        <div id="loading-spinner" class="loading-spinner"></div>
+        <div id="spinner" class="loading-spinner"></div>
 
-        <h2 class="waiting-title">Paiement en cours...</h2>
+        <h2 class="waiting-title">En attente de confirmation</h2>
 
-        <p id="status-message" class="status-message">
+        <p id="msg" class="status-message">
             @if($booking->moyen_paiement === 'tmoney')
-                Confirmez la transaction sur votre téléphone Togocel (T-Money).
-            @elseif($booking->moyen_paiement === 'flooz')
-                Confirmez la transaction sur votre téléphone Moov Africa (Flooz).
+                Une demande de paiement T-Money a été envoyée sur votre téléphone.<br>
+                <strong>Confirmez la transaction sur votre téléphone Togocel.</strong>
             @else
-                Votre paiement carte est en cours de vérification.
+                Une demande de paiement Flooz a été envoyée sur votre téléphone.<br>
+                <strong>Confirmez la transaction sur votre téléphone Moov Africa.</strong>
             @endif
         </p>
 
         <div class="booking-summary">
             <p><strong>Événement :</strong> {{ $booking->event->titre }}</p>
-            <p><strong>Type de billet :</strong> {{ ucfirst($booking->type_billet) }}</p>
-            <p class="amount"><strong>Montant :</strong> {{ number_format($booking->total, 0, ',', ' ') }} FCFA</p>
+            <p><strong>Billet :</strong> {{ ucfirst($booking->type_billet) }}</p>
+            <p class="amount">{{ number_format($booking->total, 0, ',', ' ') }} FCFA</p>
         </div>
 
-        <p class="reference">Référence : {{ $booking->pzgate_reference }}</p>
+        <p class="reference">Réf : {{ $booking->paygate_identifier }}</p>
+
+        <div id="expired-msg" class="expired-message">
+            <p>Le délai de confirmation est dépassé.</p>
+            <a href="{{ route('events.show', $booking->event->slug) }}">Retour à l'événement →</a>
+        </div>
+
     </div>
 </div>
 
 @push('scripts')
 <script>
-const bookingId  = {{ $booking->id }};
-const checkUrl   = '/paiement/statut/' + bookingId;
-let   checkCount = 0;
-const maxChecks  = 36; // 3 minutes maximum
+const checkUrl  = '{{ route('payment.status', $booking->id) }}';
+let   attempts  = 0;
+const maxChecks = 36; // 3 minutes
 
-const interval = setInterval(async () => {
-    checkCount++;
+const timer = setInterval(async () => {
+    attempts++;
 
-    if (checkCount >= maxChecks) {
-        clearInterval(interval);
-        document.getElementById('status-message').innerHTML =
-            'Le délai d\'attente est dépassé. <a href="/mes-reservations" style="color:#CC0000;">Voir mes réservations</a>';
-        document.getElementById('loading-spinner').style.display = 'none';
+    if (attempts >= maxChecks) {
+        clearInterval(timer);
+        document.getElementById('spinner').style.display   = 'none';
+        document.getElementById('msg').style.display       = 'none';
+        document.getElementById('expired-msg').style.display = 'block';
         return;
     }
 
     try {
-        const response = await fetch(checkUrl);
-        const data     = await response.json();
+        const res  = await fetch(checkUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const data = await res.json();
 
-        if (data.statut === 'confirmee') {
-            clearInterval(interval);
-            window.location.href = '/reservation/confirmation/' + bookingId;
-        } else if (data.statut === 'annulee') {
-            clearInterval(interval);
-            document.getElementById('status-message').innerHTML =
-                'Le paiement a échoué ou a été annulé. <a href="javascript:history.back()" style="color:#CC0000;">Réessayer</a>';
-            document.getElementById('loading-spinner').style.display = 'none';
+        if (data.statut === 'confirme' && data.redirect) {
+            clearInterval(timer);
+            window.location.href = data.redirect;
+        } else if (data.statut === 'annule') {
+            clearInterval(timer);
+            document.getElementById('msg').innerHTML =
+                'Le paiement a été annulé ou a expiré. <a href="{{ route('events.show', $booking->event->slug) }}" style="color:#CC0000;">Retour à l\'événement</a>';
+            document.getElementById('spinner').style.display = 'none';
         }
-    } catch (e) {
-        console.error('Erreur vérification statut', e);
+    } catch(e) {
+        console.error('Erreur polling:', e);
     }
 }, 5000);
 </script>

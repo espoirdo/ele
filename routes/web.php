@@ -130,7 +130,10 @@ Route::post('/events/{event}/badge/track', function (\App\Models\Event $event) {
 
 Route::get('/paiement/callback', [PaymentController::class, 'callback'])->name('payment.callback');
 
-// Webhook PZGate — pas de middleware auth
+// Webhook PayGate — hors middleware auth et CSRF
+Route::post('/webhook/paygate', [WebhookController::class, 'paygate'])->name('webhook.paygate');
+
+// Webhook PZGate (garde compatibilité)
 Route::post('/webhook/pzgate', [WebhookController::class, 'pzgate'])->name('webhook.pzgate');
 Route::post('/webhook/pzgate/vip', [VipController::class, 'webhook'])->name('webhook.pzgate.vip');
 Route::post('/webhook/pzgate/premium', [PremiumPaymentController::class, 'webhook'])->name('webhook.pzgate.premium');
@@ -140,11 +143,10 @@ Route::get('/paiement/attente/{booking}', [PaymentController::class, 'waiting'])
      ->name('payment.waiting')
      ->middleware('auth');
 
-// Vérification du statut du paiement (AJAX)
-Route::get('/paiement/statut/{booking}', function (\App\Models\Booking $booking) {
-    abort_if($booking->user_id !== auth()->id(), 403);
-    return response()->json(['statut' => $booking->fresh()->status]);
-})->name('payment.status')->middleware('auth');
+// Vérification du statut du paiement (AJAX) - utilise checkStatus
+Route::get('/paiement/statut/{booking}', [PaymentController::class, 'checkStatus'])
+     ->name('payment.status')
+     ->middleware('auth');
 
 // Pages statiques
 Route::get('/news', function () {
