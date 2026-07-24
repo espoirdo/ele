@@ -155,7 +155,7 @@
         <div class="section-header-flex">
             <div>
                 <p class="section-label">Nouveautes</p>
-                <h2 class="section-title">Nouvelle Evenements a <span class="text-red">Lome</span></h2>
+                <h2 class="section-title">Nouveau évènements <span class="text-red">Lomé</span></h2>
             </div>
             <a href="{{ route('events.index') }}" class="btn-voir-plus">
                 {{ setting('home_voir_plus_label', 'Voir plus') }}
