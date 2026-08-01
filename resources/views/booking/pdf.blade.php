@@ -373,7 +373,7 @@
                 Présentez ce billet à l'entrée de l'événement
             </div>
             <div class="ticket-secure-text">
-                Paiement 100% sécurisé via Eledji
+                Paiement 100% sécurisé via PAYGATE
             </div>
             <div class="ticket-copyright">
                 © {{ date('Y') }} Eledji - Tous droits réservés

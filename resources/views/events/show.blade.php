@@ -1084,7 +1084,7 @@
                                      10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133
                                      -2.052-.382-3.016z"/>
                         </svg>
-                        Paiement 100% securise via CinetPay
+                        Paiement 100% securise via PAYGATE
                     </div>
                 </div>
 
