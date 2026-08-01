@@ -97,16 +97,6 @@
 
                 <div class="checkbox-card">
                     <label class="checkbox-label">
-                        <input type="checkbox" name="cgv" id="cgv" value="1" {{ old('cgv') ? 'checked' : '' }} required>
-                        <span class="checkbox-custom"></span>
-                        <span class="checkbox-text">
-                            J'accepte les <a href="#" class="auth-link">Conditions Generales de Vente (CGV)</a> et les conditions d'utilisation de la plateforme.
-                        </span>
-                    </label>
-                </div>
-
-                <div class="checkbox-card">
-                    <label class="checkbox-label">
                         <input type="checkbox" name="captcha" id="captcha" value="1" {{ old('captcha') ? 'checked' : '' }} required>
                         <span class="checkbox-custom"></span>
                         <span class="checkbox-text">Je ne suis pas un robot</span>
