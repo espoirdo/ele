@@ -35,6 +35,10 @@ class AdminUserController extends Controller
             return back()->with('error', 'Impossible de supprimer un administrateur');
         }
 
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'Vous ne pouvez pas supprimer votre propre compte');
+        }
+
         $user->delete();
         return redirect()->route('admin.users.index')->with('success', 'Utilisateur supprimé');
     }

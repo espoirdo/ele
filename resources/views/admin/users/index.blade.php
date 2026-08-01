@@ -110,6 +110,17 @@
                                     <i class="fas fa-user-shield"></i>
                                 </button>
                             </form>
+                            @if($user->id !== auth()->id())
+                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;"
+                                            onclick="return confirm('Supprimer definitivement cet utilisateur ainsi que tous ses evenements, commentaires et paiements ? Cette action est irreversible.')"
+                                            title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            @endif
                         @endif
                     </div>
                 </td>
