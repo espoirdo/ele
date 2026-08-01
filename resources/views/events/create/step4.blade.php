@@ -133,22 +133,43 @@
                 <h3 class="card-title">Badge "J'y serai"</h3>
 
                 {{-- Toggle --}}
-                <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px; padding: 16px; background: #FAFAFA; border-radius: 12px;">
-                    <label style="position: relative; display: inline-block; width: 52px; height: 28px; cursor: pointer; flex-shrink: 0;">
-                        <input type="checkbox"
-                               x-model="badgeActif"
-                               name="badge_actif"
-                               value="1"
-                               style="opacity: 0; width: 100%; height: 100%; position: absolute; cursor: pointer; z-index: 2; margin: 0;">
-                        <span style="position: absolute; inset: 0; border-radius: 28px; transition: 0.3s; pointer-events: none;"
-                              :style="badgeActif ? 'background: #CC0000;' : 'background: #CCCCCC;'"></span>
-                        <span style="position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; background: white; border-radius: 50%; transition: 0.3s; pointer-events: none; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"
-                              :style="badgeActif ? 'transform: translateX(24px);' : ''"></span>
-                    </label>
-                    <span style="font-family: 'Poppins', sans-serif; font-size: 13px; color: #444;">
-                        <strong style="display: block; color: #1a1a1a; margin-bottom: 2px;">Activer le badge "J'y serai"</strong>
-                        Permettez à vos participants de créer un visuel personnalisé à partager
-                    </span>
+                <div @click="toggleBadge()"
+                     :style="badgeActif ?
+                             'border: 1.5px solid #CC0000; background: #FFFAFA;' :
+                             'border: 1.5px solid #EEEEEE; background: #FAFAFA;'"
+                     style="display: flex; align-items: center; gap: 14px;
+                            margin-bottom: 16px; padding: 16px;
+                            border-radius: 12px; cursor: pointer;
+                            transition: all 0.2s ease; user-select: none;
+                            box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+
+                    <div :style="badgeActif ?
+                                 'background: #CC0000; border-color: #CC0000;' :
+                                 'background: white; border-color: #DDDDDD;'"
+                         style="width: 18px; height: 18px; border: 2px solid #DDDDDD;
+                                border-radius: 4px; display: flex; align-items: center;
+                                justify-content: center; flex-shrink: 0;
+                                transition: all 0.2s ease; pointer-events: none;">
+                        <svg x-show="badgeActif" width="10" height="8"
+                             viewBox="0 0 10 8" fill="none">
+                            <path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8"
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+
+                    <div style="flex: 1; min-width: 0;">
+                        <p style="font-family: 'Poppins', sans-serif; font-size: 14px;
+                                  font-weight: 600; color: #1a1a1a; margin: 0 0 2px 0;">
+                            Activer le badge "J'y serai"
+                        </p>
+                        <p style="font-family: 'Poppins', sans-serif; font-size: 12px;
+                                  color: #888888; margin: 0;">
+                            Permettez à vos participants de créer un visuel personnalisé à partager
+                        </p>
+                    </div>
+
+                    <input type="checkbox" name="badge_actif" value="1"
+                           :checked="badgeActif" style="display: none;">
                 </div>
 
                 {{-- Section upload affiche (visible si badge activé) --}}
@@ -559,8 +580,8 @@
 }
 
 .publish-card.selected .publish-check {
-    background: #CC0000;
-    border-color: #CC0000;
+    background: #1E88E5;
+    border-color: #1E88E5;
 }
 
 .recap {
@@ -713,6 +734,9 @@ function eventStep4() {
         },
         togglePremium(key) {
             this.premiumOptions[key] = !this.premiumOptions[key];
+        },
+        toggleBadge() {
+            this.badgeActif = !this.badgeActif;
         },
 
         // === Badge J'y serai ===
