@@ -30,6 +30,13 @@ class LoginController extends Controller
                 ])->withInput();
             }
 
+            // Bloque la connexion tant que l'email n'est pas vérifié
+            if (is_null(auth()->user()->email_verified_at)) {
+                Auth::logout();
+                return redirect()->route('verification.notice')
+                    ->withErrors(['email' => 'Vous devez vérifier votre adresse email avant de vous connecter.']);
+            }
+
             // Update last_login_at
             auth()->user()->update(['last_login_at' => now()]);
 

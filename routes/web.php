@@ -31,6 +31,14 @@ Route::get('/register', [RegisterController::class, 'showForm'])->name('register
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// Pages legales
+Route::view('/conditions-generales-utilisation', 'legal.cgu')
+     ->name('cgu');
+Route::view('/politique-confidentialite', 'legal.confidentialite')
+     ->name('politique.confidentialite');
+Route::view('/politique-cookies', 'legal.cookies')
+     ->name('politique.cookies');
+
 // Profile routes (requires verified email)
 Route::middleware(['auth', 'verified', 'vip'])->group(function () {
     Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'show'])->name('user.profile');
