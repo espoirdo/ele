@@ -13,7 +13,7 @@ class Event extends Model
 {
     protected $fillable = [
         'user_id', 'category_id', 'titre', 'description', 'image_couverture',
-        'date', 'heure', 'lieu', 'latitude', 'longitude', 'statut',
+        'date', 'date_fin', 'heure_debut', 'heure_fin', 'lieu', 'latitude', 'longitude', 'statut',
         'premium_mise_en_avant', 'premium_newsletter', 'premium_reseaux',
         'est_gratuit', 'raison_rejet',
         // Ticket types
@@ -28,6 +28,7 @@ class Event extends Model
 
     protected $casts = [
         'date' => 'date',
+        'date_fin' => 'date',
         'est_gratuit' => 'boolean',
         'premium_mise_en_avant' => 'boolean',
         'premium_newsletter' => 'boolean',
@@ -146,7 +147,7 @@ class Event extends Model
             return null;
         }
 
-        $time = $this->heure ?: '00:00:00';
+        $time = $this->heure_debut ?: '00:00:00';
         return Carbon::parse(sprintf('%s %s', $this->date->format('Y-m-d'), $time));
     }
 

@@ -502,7 +502,16 @@
                     </div>
                     <div class="recap-item">
                         <span class="recap-label">Date</span>
-                        <span class="recap-value">{{ $step2['date'] ?? '' }} de {{ $step2['heure_debut'] ?? '' }} a {{ $step2['heure_fin'] ?? '' }}</span>
+                        <span class="recap-value">
+                            @if(!empty($step2['date_fin']) && ($step2['date_fin'] ?? '') !== ($step2['date'] ?? ''))
+                                Du {{ $step2['date'] ?? '' }} au {{ $step2['date_fin'] ?? '' }}<br>
+                            @else
+                                Le {{ $step2['date'] ?? '' }}<br>
+                            @endif
+                            <span style="color:#666;font-weight:500">
+                                de {{ $step2['heure_debut'] ?? '' }} a {{ $step2['heure_fin'] ?? '' }}
+                            </span>
+                        </span>
                     </div>
                     <div class="recap-item">
                         <span class="recap-label">Billetterie</span>

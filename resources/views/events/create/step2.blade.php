@@ -20,7 +20,7 @@
 
             <div class="form-card">
                 <div class="form-group">
-                    <label for="lieu">Lieu</label>
+                    <label for="lieu">Lieu <span class="required-mark">*</span></label>
                     <input type="text"
                            id="lieu"
                            name="lieu"
@@ -34,22 +34,37 @@
                     @enderror
                 </div>
 
-                <div class="form-group">
-                    <label for="date">Date</label>
-                    <input type="date"
-                           id="date"
-                           name="date"
-                           value="{{ old('date', $data['date'] ?? '') }}"
-                           required
-                           min="{{ date('Y-m-d') }}">
-                    @error('date')
-                        <span class="error-message">{{ $message }}</span>
-                    @enderror
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="date">Date de debut <span class="required-mark">*</span></label>
+                        <input type="date"
+                               id="date"
+                               name="date"
+                               value="{{ old('date', $data['date'] ?? '') }}"
+                               required
+                               min="{{ date('Y-m-d') }}">
+                        @error('date')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date_fin">Date de fin <span class="required-mark">*</span></label>
+                        <input type="date"
+                               id="date_fin"
+                               name="date_fin"
+                               value="{{ old('date_fin', $data['date_fin'] ?? '') }}"
+                               required
+                               min="{{ date('Y-m-d') }}">
+                        @error('date_fin')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
+                    </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="heure_debut">Heure de debut</label>
+                        <label for="heure_debut">Heure de debut <span class="required-mark">*</span></label>
                         <input type="time"
                                id="heure_debut"
                                name="heure_debut"
@@ -61,7 +76,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="heure_fin">Heure de fin</label>
+                        <label for="heure_fin">Heure de fin <span class="required-mark">*</span></label>
                         <input type="time"
                                id="heure_fin"
                                name="heure_fin"
@@ -147,6 +162,12 @@
     font-weight: 500;
     color: #444444;
     margin-bottom: 6px;
+}
+
+.required-mark {
+    color: #CC0000;
+    font-weight: 700;
+    margin-left: 2px;
 }
 
 .form-group input,

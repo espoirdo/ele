@@ -66,10 +66,19 @@ class EventCreateController extends Controller
         $validated = $request->validate([
             'lieu' => 'required|string|max:255',
             'date' => 'required|date|after_or_equal:today',
+            'date_fin' => 'required|date|after_or_equal:date',
             'heure_debut' => 'required|date_format:H:i',
             'heure_fin' => 'required|date_format:H:i|after:heure_debut',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
+        ], [
+            'lieu.required' => 'Le lieu est obligatoire.',
+            'date.required' => 'La date de debut est obligatoire.',
+            'date_fin.required' => 'La date de fin est obligatoire.',
+            'date_fin.after_or_equal' => 'La date de fin doit etre identique ou posterieure a la date de debut.',
+            'heure_debut.required' => 'L\'heure de debut est obligatoire.',
+            'heure_fin.required' => 'L\'heure de fin est obligatoire.',
+            'heure_fin.after' => 'L\'heure de fin doit etre posterieure a l\'heure de debut.',
         ]);
 
         session(['event_step2' => $validated]);
