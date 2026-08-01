@@ -3,24 +3,7 @@
 @section('title', 'Creer un evenement - Etape 4 sur 4 - ELEDJI')
 
 @section('content')
-<div class="create-event-page" x-data="{
-    ...mediaUploader(),
-    selections: [],
-    total: 0,
-    toggleOption(key, prix) {
-        const index = this.selections.indexOf(key);
-        if (index === -1) {
-            this.selections.push(key);
-            this.total += parseInt(prix);
-        } else {
-            this.selections.splice(index, 1);
-            this.total -= parseInt(prix);
-        }
-    },
-    isSelected(key) {
-        return this.selections.includes(key);
-    }
-}">
+<div class="create-event-page" x-data="eventStep4()" x-cloak>
     <div class="create-event-container">
         {{-- Progress Bar --}}
         @include('events.create.progress-bar', ['currentStep' => 4])
@@ -35,6 +18,7 @@
         <form action="{{ route('events.create.step4.post') }}" method="POST" class="create-event-form" enctype="multipart/form-data">
             @csrf
 
+            {{-- Image de couverture --}}
             <div class="form-card">
                 <h3 class="card-title">Image de couverture</h3>
 
@@ -70,60 +54,38 @@
                 </div>
             </div>
 
+            {{-- Options premium --}}
             <div class="form-card">
                 <h3 class="card-title">Options premium</h3>
                 <p class="card-subtitle">Boostez la visibilité de votre événement</p>
 
-                <div x-data="{
-                    options: {
-                        mise_en_avant: false,
-                        newsletter: false,
-                        reseaux_sociaux: false
-                    },
-                    prix: {
-                        mise_en_avant: {{ setting('premium_mise_en_avant_prix', 5000) }},
-                        newsletter: {{ setting('premium_newsletter_prix', 3000) }},
-                        reseaux_sociaux: {{ setting('premium_reseaux_prix', 2000) }}
-                    },
-                    get total() {
-                        let t = 0;
-                        for (let key in this.options) {
-                            if (this.options[key]) t += this.prix[key];
-                        }
-                        return t;
-                    }
-                }" style="display: flex; flex-direction: column; gap: 10px;">
-
-                    @foreach([
-                        ['key' => 'mise_en_avant', 'label' => 'Mise en avant sur la page d\'accueil', 'desc' => 'Votre événement en tête de page pendant 7 jours', 'prix_key' => 'premium_mise_en_avant_prix', 'default' => 5000],
-                        ['key' => 'newsletter', 'label' => 'Publication dans la newsletter', 'desc' => 'Envoi à tous les abonnés de la newsletter Eledji', 'prix_key' => 'premium_newsletter_prix', 'default' => 3000],
-                        ['key' => 'reseaux_sociaux', 'label' => 'Partage sur les réseaux sociaux', 'desc' => 'Publication sur les pages Facebook et Instagram d\'Eledji', 'prix_key' => 'premium_reseaux_prix', 'default' => 2000],
-                    ] as $opt)
-
-                    <div @click="options.{{ $opt['key'] }} = !options.{{ $opt['key'] }}"
-                         :style="options.{{ $opt['key'] }} ?
+                @foreach([
+                    ['key' => 'mise_en_avant', 'label' => 'Mise en avant sur la page d\'accueil', 'desc' => 'Votre événement en tête de page pendant 7 jours', 'prix_key' => 'premium_mise_en_avant_prix', 'default' => 5000],
+                    ['key' => 'newsletter', 'label' => 'Publication dans la newsletter', 'desc' => 'Envoi à tous les abonnés de la newsletter Eledji', 'prix_key' => 'premium_newsletter_prix', 'default' => 3000],
+                    ['key' => 'reseaux_sociaux', 'label' => 'Partage sur les réseaux sociaux', 'desc' => 'Publication sur les pages Facebook et Instagram d\'Eledji', 'prix_key' => 'premium_reseaux_prix', 'default' => 2000],
+                ] as $opt)
+                    <div @click="togglePremium('{{ $opt['key'] }}')"
+                         :style="premiumOptions.{{ $opt['key'] }} ?
                                  'border: 1.5px solid #CC0000; background: #FFFAFA;' :
                                  'border: 1.5px solid #EEEEEE; background: #FFFFFF;'"
-                         style="border-radius: 12px; padding: 16px 20px; cursor: pointer;
-                                transition: all 0.2s ease; display: flex; align-items: center;
-                                gap: 14px; user-select: none;
-                                box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
+                         style="border-radius: 12px; padding: 16px 20px; margin-bottom: 10px;
+                                cursor: pointer; transition: all 0.2s ease;
+                                display: flex; align-items: center; gap: 14px;
+                                user-select: none; box-shadow: 0 1px 4px rgba(0,0,0,0.04);">
 
-                        {{-- Case à cocher carrée --}}
-                        <div :style="options.{{ $opt['key'] }} ?
+                        <div :style="premiumOptions.{{ $opt['key'] }} ?
                                      'background: #CC0000; border-color: #CC0000;' :
                                      'background: white; border-color: #DDDDDD;'"
                              style="width: 18px; height: 18px; border: 2px solid #DDDDDD;
                                     border-radius: 4px; display: flex; align-items: center;
                                     justify-content: center; flex-shrink: 0; transition: all 0.2s ease;">
-                            <svg x-show="options.{{ $opt['key'] }}" width="10" height="8"
+                            <svg x-show="premiumOptions.{{ $opt['key'] }}" width="10" height="8"
                                  viewBox="0 0 10 8" fill="none">
                                 <path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8"
                                       stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </div>
 
-                        {{-- Texte --}}
                         <div style="flex: 1; min-width: 0;">
                             <p style="font-family: 'Poppins', sans-serif; font-size: 14px;
                                       font-weight: 600; color: #222222; margin: 0 0 2px 0;">
@@ -135,7 +97,6 @@
                             </p>
                         </div>
 
-                        {{-- Prix --}}
                         <div style="text-align: right; flex-shrink: 0;">
                             <span style="font-family: 'Poppins', sans-serif; font-weight: 700;
                                          font-size: 15px; color: #CC0000;">
@@ -147,271 +108,69 @@
 
                         <input type="checkbox" name="options_premium[]"
                                value="{{ $opt['key'] }}"
-                               :checked="options.{{ $opt['key'] }}"
+                               :checked="premiumOptions.{{ $opt['key'] }}"
                                style="display: none;">
                     </div>
+                @endforeach
 
-                    @endforeach
-
-                    {{-- Total --}}
-                    <div x-show="total > 0" x-transition
-                         style="margin-top: 4px; padding: 14px 20px; background: #F9F9F9;
-                                border: 1px solid #EEEEEE; border-radius: 10px;
-                                display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-family: 'Poppins', sans-serif; font-size: 13px;
-                                     color: #666666; font-weight: 500;">
-                            Total options premium
-                        </span>
-                        <span style="font-family: 'Poppins', sans-serif; font-weight: 700;
-                                     font-size: 18px; color: #CC0000;"
-                              x-text="total.toLocaleString('fr-FR') + ' FCA'">
-                        </span>
-                    </div>
-
+                <div x-show="premiumTotal > 0" x-transition
+                     style="margin-top: 4px; padding: 14px 20px; background: #F9F9F9;
+                            border: 1px solid #EEEEEE; border-radius: 10px;
+                            display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-family: 'Poppins', sans-serif; font-size: 13px;
+                                 color: #666666; font-weight: 500;">
+                        Total options premium
+                    </span>
+                    <span style="font-family: 'Poppins', sans-serif; font-weight: 700;
+                                 font-size: 18px; color: #CC0000;"
+                          x-text="premiumTotal.toLocaleString('fr-FR') + ' FCFA'">
+                    </span>
                 </div>
             </div>
 
-            {{-- Badge J'y serai Section --}}
-            <div class="form-card" x-data="{
-                badgeActif: false,
-                affichePreview: null,
-                canvasCtx: null,
-                imageLoaded: false,
-                zoneType: 'cercle',
-                zoneX: 50,
-                zoneY: 50,
-                zoneWidth: 30,
-                zoneHeight: 30,
-                isDragging: false,
-                isResizing: false,
-                resizeCorner: null,
-                startX: 0,
-                startY: 0,
-                startZone: {},
-                loadAffiche(event) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        if (file.size > 10 * 1024 * 1024) {
-                            alert('Image trop grande. Maximum 10MB.');
-                            return;
-                        }
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            this.affichePreview = e.target.result;
-                            this.$nextTick(() => this.initCanvas());
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                },
-                initCanvas() {
-                    const canvas = document.getElementById('badge-canvas');
-                    if (!canvas) return;
-                    this.canvasCtx = canvas.getContext('2d');
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
-                    img.onload = () => {
-                        this.imageLoaded = true;
-                        this.drawCanvas(img);
-                    };
-                    img.src = this.affichePreview;
-                },
-                drawCanvas(img) {
-                    if (!this.canvasCtx || !this.imageLoaded) return;
-                    const canvas = this.canvasCtx.canvas;
-                    const ctx = this.canvasCtx;
-
-                    const maxWidth = 600;
-                    const scale = Math.min(1, maxWidth / img.width);
-                    canvas.width = img.width * scale;
-                    canvas.height = img.height * scale;
-
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                    const x = (this.zoneX / 100) * canvas.width;
-                    const y = (this.zoneY / 100) * canvas.height;
-                    const w = (this.zoneWidth / 100) * canvas.width;
-                    const h = (this.zoneHeight / 100) * canvas.height;
-
-                    ctx.fillStyle = 'rgba(204, 0, 0, 0.35)';
-                    ctx.strokeStyle = '#CC0000';
-                    ctx.lineWidth = 2;
-
-                    if (this.zoneType === 'cercle') {
-                        ctx.beginPath();
-                        ctx.arc(x, y, Math.min(w, h) / 2, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-                    } else {
-                        ctx.fillRect(x - w/2, y - h/2, w, h);
-                        ctx.strokeRect(x - w/2, y - h/2, w, h);
-                    }
-
-                    if (this.zoneType === 'rectangle') {
-                        const handleSize = 8;
-                        ctx.fillStyle = '#CC0000';
-                        ctx.fillRect(x - w/2 - handleSize/2, y - h/2 - handleSize/2, handleSize, handleSize);
-                        ctx.fillRect(x + w/2 - handleSize/2, y - h/2 - handleSize/2, handleSize, handleSize);
-                        ctx.fillRect(x - w/2 - handleSize/2, y + h/2 - handleSize/2, handleSize, handleSize);
-                        ctx.fillRect(x + w/2 - handleSize/2, y + h/2 - handleSize/2, handleSize, handleSize);
-                    }
-
-                    document.getElementById('badge_zone_x').value = this.zoneX;
-                    document.getElementById('badge_zone_y').value = this.zoneY;
-                    document.getElementById('badge_zone_width').value = this.zoneWidth;
-                    document.getElementById('badge_zone_height').value = this.zoneHeight;
-                },
-                handleMouseDown(e) {
-                    const canvas = this.canvasCtx.canvas;
-                    const rect = canvas.getBoundingClientRect();
-                    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-                    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-
-                    const zoneX = (this.zoneX / 100) * canvas.width;
-                    const zoneY = (this.zoneY / 100) * canvas.height;
-                    const zoneW = (this.zoneWidth / 100) * canvas.width;
-                    const zoneH = (this.zoneHeight / 100) * canvas.height;
-
-                    if (this.zoneType === 'rectangle') {
-                        const handleSize = 12;
-                        const corners = [
-                            { cx: zoneX - zoneW/2, cy: zoneY - zoneH/2 },
-                            { cx: zoneX + zoneW/2, cy: zoneY - zoneH/2 },
-                            { cx: zoneX - zoneW/2, cy: zoneY + zoneH/2 },
-                            { cx: zoneX + zoneW/2, cy: zoneY + zoneH/2 },
-                        ];
-                        for (let i = 0; i < corners.length; i++) {
-                            if (Math.abs(x - corners[i].cx) < handleSize && Math.abs(y - corners[i].cy) < handleSize) {
-                                this.isResizing = true;
-                                this.resizeCorner = i;
-                                this.startX = x;
-                                this.startY = y;
-                                this.startZone = { x: this.zoneX, y: this.zoneY, w: this.zoneWidth, h: this.zoneHeight };
-                                return;
-                            }
-                        }
-                    }
-
-                    if (this.zoneType === 'cercle') {
-                        const radius = Math.min(zoneW, zoneH) / 2;
-                        const dist = Math.sqrt((x - zoneX) ** 2 + (y - zoneY) ** 2);
-                        if (dist <= radius) {
-                            this.isDragging = true;
-                        }
-                    } else {
-                        if (x >= zoneX - zoneW/2 && x <= zoneX + zoneW/2 &&
-                            y >= zoneY - zoneH/2 && y <= zoneY + zoneH/2) {
-                            this.isDragging = true;
-                        }
-                    }
-
-                    if (this.isDragging) {
-                        this.startX = x;
-                        this.startY = y;
-                    }
-                },
-                handleMouseMove(e) {
-                    if (!this.isDragging && !this.isResizing) return;
-
-                    const canvas = this.canvasCtx.canvas;
-                    const rect = canvas.getBoundingClientRect();
-                    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-                    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-
-                    if (this.isDragging) {
-                        const dx = x - this.startX;
-                        const dy = y - this.startY;
-                        const dxPercent = (dx / canvas.width) * 100;
-                        const dyPercent = (dy / canvas.height) * 100;
-
-                        this.zoneX = Math.max(0, Math.min(100, this.startZone.x + dxPercent));
-                        this.zoneY = Math.max(0, Math.min(100, this.startZone.y + dyPercent));
-
-                        this.startX = x;
-                        this.startY = y;
-                    } else if (this.isResizing) {
-                        const dx = x - this.startX;
-                        const dy = y - this.startY;
-                        const dxPercent = (dx / canvas.width) * 100;
-                        const dyPercent = (dy / canvas.height) * 100;
-
-                        if (this.resizeCorner === 0) {
-                            this.zoneWidth = Math.max(10, this.startZone.w - dxPercent);
-                            this.zoneHeight = Math.max(10, this.startZone.h - dyPercent);
-                            this.zoneX = this.startZone.x + dxPercent / 2;
-                            this.zoneY = this.startZone.y + dyPercent / 2;
-                        } else if (this.resizeCorner === 1) {
-                            this.zoneWidth = Math.max(10, this.startZone.w + dxPercent);
-                            this.zoneHeight = Math.max(10, this.startZone.h - dyPercent);
-                            this.zoneY = this.startZone.y + dyPercent / 2;
-                        } else if (this.resizeCorner === 2) {
-                            this.zoneWidth = Math.max(10, this.startZone.w - dxPercent);
-                            this.zoneHeight = Math.max(10, this.startZone.h + dyPercent);
-                            this.zoneX = this.startZone.x + dxPercent / 2;
-                        } else if (this.resizeCorner === 3) {
-                            this.zoneWidth = Math.max(10, this.startZone.w + dxPercent);
-                            this.zoneHeight = Math.max(10, this.startZone.h + dyPercent);
-                        }
-
-                        this.zoneX = Math.max(0, Math.min(100, this.zoneX));
-                        this.zoneY = Math.max(0, Math.min(100, this.zoneY));
-                        this.zoneWidth = Math.max(10, Math.min(100, this.zoneWidth));
-                        this.zoneHeight = Math.max(10, Math.min(100, this.zoneHeight));
-                    }
-
-                    this.redrawCanvas();
-                },
-                handleMouseUp() {
-                    this.isDragging = false;
-                    this.isResizing = false;
-                    this.resizeCorner = null;
-                },
-                redrawCanvas() {
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
-                    img.onload = () => this.drawCanvas(img);
-                    img.src = this.affichePreview;
-                },
-                updateZoneType(type) {
-                    this.zoneType = type;
-                    document.getElementById('badge_zone_type').value = type;
-                    this.redrawCanvas();
-                }
-            }">
+            {{-- Badge J'y serai --}}
+            <div class="form-card">
                 <h3 class="card-title">Badge "J'y serai"</h3>
 
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                    <label style="position: relative; display: inline-block; width: 52px; height: 28px; cursor: pointer;">
-                        <input type="checkbox" x-model="badgeActif" name="badge_actif" value="1" style="opacity: 0; width: 0; height: 0;">
-                        <span style="position: absolute; inset: 0; background: #333333; border-radius: 28px; transition: 0.3s;"
-                              :style="badgeActif ? 'background: #CC0000;' : 'background: #333333;'"></span>
-                        <span style="position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"
+                {{-- Toggle --}}
+                <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px; padding: 16px; background: #FAFAFA; border-radius: 12px;">
+                    <label style="position: relative; display: inline-block; width: 52px; height: 28px; cursor: pointer; flex-shrink: 0;">
+                        <input type="checkbox"
+                               x-model="badgeActif"
+                               name="badge_actif"
+                               value="1"
+                               style="opacity: 0; width: 100%; height: 100%; position: absolute; cursor: pointer; z-index: 2; margin: 0;">
+                        <span style="position: absolute; inset: 0; border-radius: 28px; transition: 0.3s; pointer-events: none;"
+                              :style="badgeActif ? 'background: #CC0000;' : 'background: #CCCCCC;'"></span>
+                        <span style="position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; background: white; border-radius: 50%; transition: 0.3s; pointer-events: none; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"
                               :style="badgeActif ? 'transform: translateX(24px);' : ''"></span>
                     </label>
-                    <span style="font-family: 'Poppins', sans-serif; font-size: 13px; color: #666;">
-                        Activer le badge J'y serai — Permettez à vos participants de créer un visuel personnalisé à partager
+                    <span style="font-family: 'Poppins', sans-serif; font-size: 13px; color: #444;">
+                        <strong style="display: block; color: #1a1a1a; margin-bottom: 2px;">Activer le badge "J'y serai"</strong>
+                        Permettez à vos participants de créer un visuel personnalisé à partager
                     </span>
                 </div>
 
+                {{-- Section upload affiche (visible si badge activé) --}}
                 <div x-show="badgeActif" x-transition style="margin-top: 20px;">
                     <div class="upload-zone"
                          :class="affichePreview ? 'has-image' : ''"
-                         style="border: 2px dashed #CC0000; background: #FFF5F5; border-radius: 12px; height: 180px; display: flex; align-items: center; justify-content: center;">
+                         style="border: 2px dashed #CC0000; background: #FFF5F5; border-radius: 12px; height: 200px; display: flex; align-items: center; justify-content: center; position: relative;">
                         <template x-if="!affichePreview">
-                            <div style="text-align: center; color: #CC0000;">
+                            <div style="text-align: center; color: #CC0000; pointer-events: none;">
                                 <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 8px;">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                                 <p style="font-family: 'Poppins', sans-serif; font-size: 13px; margin: 0; font-weight: 600;">
-                                    Uploadez l'affiche officielle de votre événement (PNG, JPG, max 10MB)
+                                    Uploadez l'affiche officielle (PNG, JPG, max 10MB)
                                 </p>
                             </div>
                         </template>
                         <template x-if="affichePreview">
                             <div style="width: 100%; height: 100%; position: relative;">
                                 <img :src="affichePreview" alt="Affiche" style="width: 100%; height: 100%; object-fit: contain; border-radius: 10px;">
-                                <button type="button" @click="affichePreview = null; imageLoaded = false;"
-                                        style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.7); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                <button type="button" @click.stop="removeAffiche()"
+                                        style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.7); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5;">
                                     <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                                     </svg>
@@ -422,68 +181,111 @@
                                name="affiche_officielle"
                                accept="image/png,image/jpeg"
                                @change="loadAffiche($event)"
-                               style="position: absolute; inset: 0; opacity: 0; cursor: pointer;">
+                               style="position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 3;">
                     </div>
 
-                    <div x-show="imageLoaded" x-transition style="margin-top: 20px;">
+                    {{-- Zone de positionnement (visible quand image chargée) --}}
+                    <div x-show="imageLoaded" x-transition style="margin-top: 24px;">
+                        <h4 style="font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600; color: #1a1a1a; margin: 0 0 12px;">
+                            Positionnez la zone de la photo
+                        </h4>
+
                         <div style="display: flex; gap: 12px; margin-bottom: 16px;">
                             <button type="button"
-                                    @click="updateZoneType('cercle')"
-                                    :style="zoneType === 'cercle' ? 'background: #CC0000; color: white; border-color: #CC0000;' : 'background: white; color: #666; border-color: #ddd;'"
-                                    style="padding: 10px 20px; border: 2px solid #ddd; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                    @click="setZoneType('cercle')"
+                                    :class="zoneType === 'cercle' ? 'zone-type-btn active' : 'zone-type-btn'"
+                                    style="padding: 10px 20px; border: 2px solid #ddd; border-radius: 8px;
+                                           font-family: 'Poppins', sans-serif; font-size: 13px;
+                                           font-weight: 600; cursor: pointer; transition: all 0.2s;
+                                           background: white; color: #666;">
                                 Cercle
                             </button>
                             <button type="button"
-                                    @click="updateZoneType('rectangle')"
-                                    :style="zoneType === 'rectangle' ? 'background: #CC0000; color: white; border-color: #CC0000;' : 'background: white; color: #666; border-color: #ddd;'"
-                                    style="padding: 10px 20px; border: 2px solid #ddd; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                    @click="setZoneType('rectangle')"
+                                    :class="zoneType === 'rectangle' ? 'zone-type-btn active' : 'zone-type-btn'"
+                                    style="padding: 10px 20px; border: 2px solid #ddd; border-radius: 8px;
+                                           font-family: 'Poppins', sans-serif; font-size: 13px;
+                                           font-weight: 600; cursor: pointer; transition: all 0.2s;
+                                           background: white; color: #666;">
                                 Rectangle
                             </button>
                         </div>
 
                         <p style="font-family: 'Poppins', sans-serif; font-size: 12px; color: #888; margin-bottom: 12px;">
-                            Placez le cadre à l'endroit où apparaîtra la photo du participant. Faites glisser le cadre pour le déplacer, ou utilisez les coins pour le redimensionner.
+                            Faites glisser le cadre rouge pour le positionner. Utilisez les coins pour le redimensionner.
                         </p>
 
-                        <canvas id="badge-canvas"
-                                @mousedown="handleMouseDown($event)"
-                                @mousemove="handleMouseMove($event)"
-                                @mouseup="handleMouseUp()"
-                                @mouseleave="handleMouseUp()"
-                                style="max-width: 100%; border-radius: 8px; cursor: move; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                        </canvas>
+                        <div style="display: inline-block; position: relative; max-width: 100%;">
+                            <canvas id="badge-canvas"
+                                    @mousedown="handleCanvasMouseDown($event)"
+                                    @mousemove="handleCanvasMouseMove($event)"
+                                    @mouseup="handleCanvasMouseUp()"
+                                    @mouseleave="handleCanvasMouseUp()"
+                                    @touchstart.prevent="handleCanvasMouseDown($event)"
+                                    @touchmove.prevent="handleCanvasMouseMove($event)"
+                                    @touchend="handleCanvasMouseUp()"
+                                    style="max-width: 100%; border-radius: 8px; cursor: move;
+                                           box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: block; touch-action: none;">
+                            </canvas>
+                        </div>
 
-                        <input type="hidden" id="badge_zone_type" name="badge_zone_type" x-model="zoneType">
-                        <input type="hidden" id="badge_zone_x" name="badge_zone_x" x-model="zoneX">
-                        <input type="hidden" id="badge_zone_y" name="badge_zone_y" x-model="zoneY">
-                        <input type="hidden" id="badge_zone_width" name="badge_zone_width" x-model="zoneWidth">
-                        <input type="hidden" id="badge_zone_height" name="badge_zone_height" x-model="zoneHeight">
+                        <input type="hidden" id="badge_zone_type" name="badge_zone_type" :value="zoneType">
+                        <input type="hidden" id="badge_zone_x" name="badge_zone_x" :value="zoneX">
+                        <input type="hidden" id="badge_zone_y" name="badge_zone_y" :value="zoneY">
+                        <input type="hidden" id="badge_zone_width" name="badge_zone_width" :value="zoneWidth">
+                        <input type="hidden" id="badge_zone_height" name="badge_zone_height" :value="zoneHeight">
                     </div>
                 </div>
             </div>
 
+            {{-- Statut de publication --}}
             <div class="form-card">
                 <h3 class="card-title">Statut de publication</h3>
 
                 <div class="publish-options">
-                    <label class="publish-card" :class="statut === 'brouillon' ? 'selected' : ''">
-                        <input type="radio" name="statut" value="brouillon" x-model="statut">
+                    <label class="publish-card"
+                           :class="statut === 'brouillon' ? 'selected' : ''"
+                           @click.prevent="statut = 'brouillon'"
+                           style="cursor: pointer;">
+                        <input type="radio"
+                               name="statut"
+                               value="brouillon"
+                               x-model="statut"
+                               style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;">
                         <div class="publish-info">
                             <span class="publish-name">Brouillon</span>
                             <span class="publish-desc">Enregistrer et publier plus tard</span>
                         </div>
+                        <div class="publish-check">
+                            <svg x-show="statut === 'brouillon'" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
                     </label>
 
-                    <label class="publish-card" :class="statut === 'publie' ? 'selected' : ''">
-                        <input type="radio" name="statut" value="publie" x-model="statut">
+                    <label class="publish-card"
+                           :class="statut === 'publie' ? 'selected' : ''"
+                           @click.prevent="statut = 'publie'"
+                           style="cursor: pointer;">
+                        <input type="radio"
+                               name="statut"
+                               value="publie"
+                               x-model="statut"
+                               style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;">
                         <div class="publish-info">
                             <span class="publish-name">Publier maintenant</span>
                             <span class="publish-desc">Rendre visible immediatement</span>
+                        </div>
+                        <div class="publish-check">
+                            <svg x-show="statut === 'publie'" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
                         </div>
                     </label>
                 </div>
             </div>
 
+            {{-- Recapitulatif --}}
             <div class="form-card">
                 <h3 class="card-title">Recapitulatif</h3>
 
@@ -528,7 +330,7 @@
                                         </span>
                                         <span style="color: #CC0000; font-weight: 700;">
                                             @if($billet['prix'] > 0)
-                                                {{ number_format($billet['prix'], 0, ',', ' ') }} FCF
+                                                {{ number_format($billet['prix'], 0, ',', ' ') }} FCFA
                                             @else
                                                 Gratuit
                                             @endif
@@ -564,6 +366,8 @@
 
 @push('styles')
 <style>
+[x-cloak] { display: none !important; }
+
 .create-event-page {
     min-height: calc(100vh - 200px);
     padding: 120px 24px 60px;
@@ -634,6 +438,7 @@
     inset: 0;
     opacity: 0;
     cursor: pointer;
+    z-index: 2;
 }
 
 .upload-content {
@@ -642,6 +447,7 @@
     align-items: center;
     gap: 8px;
     color: #CC0000;
+    pointer-events: none;
 }
 
 .upload-text {
@@ -681,84 +487,17 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.25s ease;
+    z-index: 5;
 }
 
 .remove-image:hover {
     background: #CC0000;
 }
 
-.premium-options {
-    display: grid;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.premium-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px;
-    border: 1.5px solid #E0E0E0;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-}
-
-.premium-card:hover {
-    border-color: #CC0000;
-}
-
-.premium-card.selected {
-    border-color: #CC0000;
-    background: rgba(204, 0, 0, 0.05);
-}
-
-.premium-card input {
-    display: none;
-}
-
-.premium-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.premium-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1a1a1a;
-}
-
-.premium-desc {
-    font-size: 12px;
-    color: #666;
-}
-
-.premium-price {
-    font-size: 14px;
-    font-weight: 700;
-    color: #CC0000;
-}
-
-.premium-checkboxes {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.checkbox-inline {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    color: #555;
-    cursor: pointer;
-}
-
-.checkbox-inline input {
-    width: 18px;
-    height: 18px;
-    accent-color: #CC0000;
+.zone-type-btn.active {
+    background: #CC0000 !important;
+    color: white !important;
+    border-color: #CC0000 !important;
 }
 
 .publish-options {
@@ -768,6 +507,7 @@
 }
 
 .publish-card {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -776,6 +516,7 @@
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.25s ease;
+    background: white;
 }
 
 .publish-card:hover {
@@ -787,11 +528,8 @@
     background: rgba(204, 0, 0, 0.05);
 }
 
-.publish-card input {
-    display: none;
-}
-
 .publish-info {
+    flex: 1;
     display: flex;
     flex-direction: column;
 }
@@ -805,6 +543,24 @@
 .publish-desc {
     font-size: 12px;
     color: #666;
+}
+
+.publish-check {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    background: white;
+}
+
+.publish-card.selected .publish-check {
+    background: #CC0000;
+    border-color: #CC0000;
 }
 
 .recap {
@@ -932,36 +688,77 @@
 
 @push('scripts')
 <script>
-function mediaUploader() {
+function eventStep4() {
     return {
+        // === Image de couverture ===
         imagePreview: null,
-        selectedOptions: [],
-        miseEnAvant: false,
-        newsletter: false,
-        reseaux: false,
+
+        // === Options premium ===
+        premiumOptions: {
+            mise_en_avant: false,
+            newsletter: false,
+            reseaux_sociaux: false,
+        },
+        premiumPrices: {
+            mise_en_avant: {{ setting('premium_mise_en_avant_prix', 5000) }},
+            newsletter: {{ setting('premium_newsletter_prix', 3000) }},
+            reseaux_sociaux: {{ setting('premium_reseaux_prix', 2000) }},
+        },
+        get premiumTotal() {
+            let t = 0;
+            for (const key in this.premiumOptions) {
+                if (this.premiumOptions[key]) t += this.premiumPrices[key] || 0;
+            }
+            return t;
+        },
+        togglePremium(key) {
+            this.premiumOptions[key] = !this.premiumOptions[key];
+        },
+
+        // === Badge J'y serai ===
+        badgeActif: false,
+        affichePreview: null,
+        imageLoaded: false,
+        zoneType: 'cercle',
+        zoneX: 50,
+        zoneY: 50,
+        zoneWidth: 30,
+        zoneHeight: 30,
+        isDragging: false,
+        isResizing: false,
+        resizeCorner: null,
+        dragStart: { x: 0, y: 0 },
+        zoneStart: { x: 50, y: 50, w: 30, h: 30 },
+        canvasImage: null,
+
+        // === Statut ===
         statut: 'publie',
 
+        // === Image de couverture handlers ===
         handleFileSelect(event) {
             const file = event.target.files[0];
-            if (file) {
-                this.previewFile(file);
-            }
+            if (file) this.previewFile(file);
         },
 
         dragOver(event) {
-            event.target.closest('.upload-zone').classList.add('drag-over');
+            event.currentTarget.classList.add('drag-over');
         },
 
         dragLeave(event) {
-            event.target.closest('.upload-zone').classList.remove('drag-over');
+            event.currentTarget.classList.remove('drag-over');
         },
 
         drop(event) {
-            const zone = event.target.closest('.upload-zone');
+            const zone = event.currentTarget;
             zone.classList.remove('drag-over');
             const file = event.dataTransfer.files[0];
             if (file && file.type.startsWith('image/')) {
-                document.getElementById('image_couverture').files = event.dataTransfer.files;
+                const input = document.getElementById('image_couverture');
+                if (input) {
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    input.files = dt.files;
+                }
                 this.previewFile(file);
             }
         },
@@ -980,8 +777,207 @@ function mediaUploader() {
 
         removeImage() {
             this.imagePreview = null;
-            document.getElementById('image_couverture').value = '';
-        }
+            const input = document.getElementById('image_couverture');
+            if (input) input.value = '';
+        },
+
+        // === Badge handlers ===
+        loadAffiche(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Image trop grande. Maximum 10MB.');
+                event.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.affichePreview = e.target.result;
+                const img = new Image();
+                img.onload = () => {
+                    this.canvasImage = img;
+                    this.imageLoaded = true;
+                    this.$nextTick(() => this.drawCanvas());
+                };
+                img.onerror = () => {
+                    alert("Impossible de charger l'image.");
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        },
+
+        removeAffiche() {
+            this.affichePreview = null;
+            this.imageLoaded = false;
+            this.canvasImage = null;
+        },
+
+        setZoneType(type) {
+            this.zoneType = type;
+            this.drawCanvas();
+        },
+
+        drawCanvas() {
+            if (!this.canvasImage || !this.imageLoaded) return;
+            const canvas = document.getElementById('badge-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            const maxWidth = 600;
+            const scale = Math.min(1, maxWidth / this.canvasImage.width);
+            const w = this.canvasImage.width * scale;
+            const h = this.canvasImage.height * scale;
+            canvas.width = w;
+            canvas.height = h;
+
+            ctx.clearRect(0, 0, w, h);
+            ctx.drawImage(this.canvasImage, 0, 0, w, h);
+
+            const x = (this.zoneX / 100) * w;
+            const y = (this.zoneY / 100) * h;
+            const zw = (this.zoneWidth / 100) * w;
+            const zh = (this.zoneHeight / 100) * h;
+
+            ctx.fillStyle = 'rgba(204, 0, 0, 0.35)';
+            ctx.strokeStyle = '#CC0000';
+            ctx.lineWidth = 2;
+
+            if (this.zoneType === 'cercle') {
+                ctx.beginPath();
+                ctx.arc(x, y, Math.min(zw, zh) / 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            } else {
+                ctx.fillRect(x - zw / 2, y - zh / 2, zw, zh);
+                ctx.strokeRect(x - zw / 2, y - zh / 2, zw, zh);
+            }
+
+            if (this.zoneType === 'rectangle') {
+                const handleSize = 8;
+                ctx.fillStyle = '#CC0000';
+                const corners = [
+                    [x - zw / 2, y - zh / 2],
+                    [x + zw / 2, y - zh / 2],
+                    [x - zw / 2, y + zh / 2],
+                    [x + zw / 2, y + zh / 2],
+                ];
+                corners.forEach(([cx, cy]) => {
+                    ctx.fillRect(cx - handleSize / 2, cy - handleSize / 2, handleSize, handleSize);
+                });
+            }
+        },
+
+        getCanvasCoords(e) {
+            const canvas = document.getElementById('badge-canvas');
+            if (!canvas) return null;
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches ? e.touches[0] : e;
+            return {
+                x: (touch.clientX - rect.left) * (canvas.width / rect.width),
+                y: (touch.clientY - rect.top) * (canvas.height / rect.height),
+            };
+        },
+
+        handleCanvasMouseDown(e) {
+            if (!this.imageLoaded) return;
+            const coords = this.getCanvasCoords(e);
+            if (!coords) return;
+            const canvas = document.getElementById('badge-canvas');
+            if (!canvas) return;
+
+            const x = (this.zoneX / 100) * canvas.width;
+            const y = (this.zoneY / 100) * canvas.height;
+            const zw = (this.zoneWidth / 100) * canvas.width;
+            const zh = (this.zoneHeight / 100) * canvas.height;
+
+            if (this.zoneType === 'rectangle') {
+                const handleSize = 12;
+                const corners = [
+                    { cx: x - zw / 2, cy: y - zh / 2 },
+                    { cx: x + zw / 2, cy: y - zh / 2 },
+                    { cx: x - zw / 2, cy: y + zh / 2 },
+                    { cx: x + zw / 2, cy: y + zh / 2 },
+                ];
+                for (let i = 0; i < corners.length; i++) {
+                    if (Math.abs(coords.x - corners[i].cx) < handleSize &&
+                        Math.abs(coords.y - corners[i].cy) < handleSize) {
+                        this.isResizing = true;
+                        this.resizeCorner = i;
+                        this.dragStart = coords;
+                        this.zoneStart = { x: this.zoneX, y: this.zoneY, w: this.zoneWidth, h: this.zoneHeight };
+                        return;
+                    }
+                }
+            }
+
+            let inside = false;
+            if (this.zoneType === 'cercle') {
+                const r = Math.min(zw, zh) / 2;
+                const dist = Math.sqrt((coords.x - x) ** 2 + (coords.y - y) ** 2);
+                inside = dist <= r;
+            } else {
+                inside = coords.x >= x - zw / 2 && coords.x <= x + zw / 2 &&
+                         coords.y >= y - zh / 2 && coords.y <= y + zh / 2;
+            }
+
+            if (inside) {
+                this.isDragging = true;
+                this.dragStart = coords;
+                this.zoneStart = { x: this.zoneX, y: this.zoneY, w: this.zoneWidth, h: this.zoneHeight };
+            }
+        },
+
+        handleCanvasMouseMove(e) {
+            if (!this.isDragging && !this.isResizing) return;
+            const coords = this.getCanvasCoords(e);
+            if (!coords) return;
+            const canvas = document.getElementById('badge-canvas');
+            if (!canvas) return;
+
+            if (this.isDragging) {
+                const dx = (coords.x - this.dragStart.x) / canvas.width * 100;
+                const dy = (coords.y - this.dragStart.y) / canvas.height * 100;
+                this.zoneX = Math.max(0, Math.min(100, this.zoneStart.x + dx));
+                this.zoneY = Math.max(0, Math.min(100, this.zoneStart.y + dy));
+            } else if (this.isResizing) {
+                const dx = (coords.x - this.dragStart.x) / canvas.width * 100;
+                const dy = (coords.y - this.dragStart.y) / canvas.height * 100;
+
+                if (this.resizeCorner === 0) {
+                    this.zoneWidth = Math.max(10, this.zoneStart.w - dx);
+                    this.zoneHeight = Math.max(10, this.zoneStart.h - dy);
+                    this.zoneX = this.zoneStart.x + dx / 2;
+                    this.zoneY = this.zoneStart.y + dy / 2;
+                } else if (this.resizeCorner === 1) {
+                    this.zoneWidth = Math.max(10, this.zoneStart.w + dx);
+                    this.zoneHeight = Math.max(10, this.zoneStart.h - dy);
+                    this.zoneY = this.zoneStart.y + dy / 2;
+                } else if (this.resizeCorner === 2) {
+                    this.zoneWidth = Math.max(10, this.zoneStart.w - dx);
+                    this.zoneHeight = Math.max(10, this.zoneStart.h + dy);
+                    this.zoneX = this.zoneStart.x + dx / 2;
+                } else if (this.resizeCorner === 3) {
+                    this.zoneWidth = Math.max(10, this.zoneStart.w + dx);
+                    this.zoneHeight = Math.max(10, this.zoneStart.h + dy);
+                }
+
+                this.zoneX = Math.max(0, Math.min(100, this.zoneX));
+                this.zoneY = Math.max(0, Math.min(100, this.zoneY));
+                this.zoneWidth = Math.max(10, Math.min(100, this.zoneWidth));
+                this.zoneHeight = Math.max(10, Math.min(100, this.zoneHeight));
+            }
+
+            this.drawCanvas();
+        },
+
+        handleCanvasMouseUp() {
+            this.isDragging = false;
+            this.isResizing = false;
+            this.resizeCorner = null;
+        },
     };
 }
 </script>
