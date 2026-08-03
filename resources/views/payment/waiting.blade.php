@@ -170,10 +170,10 @@ const timer = setInterval(async () => {
         const res  = await fetch(checkUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
         const data = await res.json();
 
-        if (data.statut === 'confirme' && data.redirect) {
+        if (data.statut === 'confirmee' && data.redirect) {
             clearInterval(timer);
             window.location.href = data.redirect;
-        } else if (data.statut === 'annule') {
+        } else if (data.statut === 'annulee' || data.statut === 'annule') {
             clearInterval(timer);
             document.getElementById('msg').innerHTML =
                 'Le paiement a été annulé ou a expiré. <a href="{{ route('events.show', $booking->event->slug) }}" style="color:#CC0000;">Retour à l\'événement</a>';

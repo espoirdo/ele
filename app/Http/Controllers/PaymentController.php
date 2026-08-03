@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\ParticipationConfirmee;
 use App\Models\Booking;
 use App\Models\Event;
+use App\Models\Payment;
 use App\Services\PayGateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -124,6 +125,20 @@ class PaymentController extends Controller
                     'paygate_payment_reference' => $result['payment_reference'] ?? null,
                     'paygate_response'          => $result,
                 ]);
+
+                // Enregistre aussi dans la table `payments` pour la cohérence (dashboard admin)
+                Payment::updateOrCreate(
+                    ['booking_id' => $booking->id],
+                    [
+                        'user_id'        => $booking->user_id,
+                        'event_id'       => $booking->event_id,
+                        'transaction_id' => $booking->paygate_identifier ?? $booking->paygate_tx_reference,
+                        'montant'        => $booking->total,
+                        'type'           => 'ticket',
+                        'statut'         => 'success',
+                        'methode'        => $booking->moyen_paiement,
+                    ]
+                );
 
                 // Envoie le billet par email
                 try {

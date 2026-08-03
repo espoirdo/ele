@@ -7,6 +7,9 @@ use App\Models\Event;
 use App\Models\User;
 use App\Models\Payment;
 use App\Models\Comment;
+use App\Models\Booking;
+use App\Models\PremiumPayment;
+use App\Models\VipPayment;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -74,11 +77,25 @@ class DashboardController extends Controller
             'pending_events' => Event::where('statut', 'en_attente')->count(),
             'published_events' => Event::where('statut', 'publie')->count(),
             'total_users' => User::where('role', 'user')->count(),
-            'total_revenus' => Payment::where('statut', 'success')->sum('montant'),
-            'revenus_this_month' => Payment::where('statut', 'success')
+            // Revenus réels = somme des bookings confirmés (billets) + premiums confirmés + VIP confirmés
+            'total_revenus' => (int) Booking::where('status', 'confirmee')->sum('total')
+                + (int) PremiumPayment::where('statut', 'confirme')->sum('total')
+                + (int) VipPayment::where('statut', 'confirme')->sum('montant'),
+            'revenus_this_month' => (int) Booking::where('status', 'confirmee')
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('total')
+                + (int) PremiumPayment::where('statut', 'confirme')
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('total')
+                + (int) VipPayment::where('statut', 'confirme')
                 ->whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)
                 ->sum('montant'),
+            'revenus_tickets' => (int) Booking::where('status', 'confirmee')->sum('total'),
+            'revenus_premium' => (int) PremiumPayment::where('statut', 'confirme')->sum('total'),
+            'revenus_vip' => (int) VipPayment::where('statut', 'confirme')->sum('montant'),
             'premium_actifs' => Event::where('premium_mise_en_avant', true)
                 ->where('statut', 'publie')
                 ->count(),

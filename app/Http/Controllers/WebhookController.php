@@ -65,6 +65,20 @@ class WebhookController extends Controller
             'paygate_response'         => $data,
         ]);
 
+        // Synchronise la table `payments` pour le dashboard admin
+        Payment::updateOrCreate(
+            ['booking_id' => $booking->id],
+            [
+                'user_id'        => $booking->user_id,
+                'event_id'       => $booking->event_id,
+                'transaction_id' => $txReference ?? $identifier,
+                'montant'        => (int) $amount,
+                'type'           => 'ticket',
+                'statut'         => 'success',
+                'methode'        => $booking->moyen_paiement,
+            ]
+        );
+
         // Envoie le billet par email
         try {
             Mail::to($booking->user->email)->send(new ParticipationConfirmee($booking));

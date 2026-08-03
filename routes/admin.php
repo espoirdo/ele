@@ -51,7 +51,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::patch('users/{user}/promote',[AdminUserController::class,'promote'])->name('users.promote');
         Route::patch('users/{user}/verify',[AdminUserController::class,'verifyEmail'])->name('users.verify');
         Route::resource('categories', AdminCategoryController::class);
-        Route::resource('payments', AdminPaymentController::class)->only(['index','show']);
+        Route::get('payments', [AdminPaymentController::class, 'index'])->name('payments.index');
+        Route::get('payments/{id}', [AdminPaymentController::class, 'show'])->name('payments.show')->where('id', '.*');
         Route::resource('bookings', AdminBookingController::class)->only(['index','show','update']);
         Route::patch('bookings/{booking}/confirm',[AdminBookingController::class,'confirmPayment'])->name('bookings.confirm');
         Route::patch('bookings/{booking}/status',[AdminBookingController::class,'updateStatus'])->name('bookings.updateStatus');
